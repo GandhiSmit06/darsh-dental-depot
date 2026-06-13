@@ -161,3 +161,89 @@ export const authApi = {
   getMe: () =>
     apiFetch<MeResponse>("/auth/me"),
 };
+
+// ─── Shop-specific API calls ────────────────────────────────────────────────
+
+interface ApiOk<T> {
+  success: true;
+  message: string;
+  data: T;
+}
+
+export interface ShopProduct {
+  _id: string;
+  sku: string;
+  name: string;
+  category: string;
+  brand: string;
+  price: number;
+  stock: number;
+  imageUrl: string;
+  status: string;
+}
+
+export interface ShopInventoryItem {
+  _id: string;
+  sku: string;
+  productName: string;
+  stock: number;
+  status: string;
+}
+
+export interface ShopOrder {
+  _id: string;
+  orderId: string;
+  customerName: string;
+  customerEmail: string;
+  itemCount: number;
+  total: number;
+  status: string;
+  paymentStatus: string;
+  date: string;
+}
+
+export interface ShopStats {
+  totalSales: number;
+  revenue: number;
+  orders: number;
+  customers: number;
+  weeklyChanges: {
+    sales: number;
+    revenue: number;
+    orders: number;
+    customers: number;
+  };
+}
+
+export interface WeeklySalesItem {
+  day: string;
+  sales: number;
+}
+
+export interface MonthlyTrendItem {
+  month: string;
+  sales: number;
+  orders: number;
+}
+
+export interface CategoryShareItem {
+  name: string;
+  value: number;
+}
+
+export interface ProductPerformanceItem {
+  productName: string;
+  unitsSold: number;
+}
+
+export const shopApi = {
+  getStats: () => apiFetch<ApiOk<ShopStats>>("/shop/stats"),
+  getProducts: () => apiFetch<ApiOk<ShopProduct[]>>("/shop/products"),
+  getInventory: () => apiFetch<ApiOk<ShopInventoryItem[]>>("/shop/inventory"),
+  getOrders: () => apiFetch<ApiOk<ShopOrder[]>>("/shop/orders"),
+  getOrderInvoice: (id: string) => apiFetch<ApiOk<unknown>>(`/shop/orders/${id}/invoice`),
+  getWeeklySales: () => apiFetch<ApiOk<WeeklySalesItem[]>>("/shop/analytics/weekly-sales"),
+  getMonthlyTrend: () => apiFetch<ApiOk<MonthlyTrendItem[]>>("/shop/analytics/monthly-trend"),
+  getCategoryShare: () => apiFetch<ApiOk<CategoryShareItem[]>>("/shop/analytics/category-share"),
+  getProductPerformance: () => apiFetch<ApiOk<ProductPerformanceItem[]>>("/shop/analytics/product-performance"),
+};

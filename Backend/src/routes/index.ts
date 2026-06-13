@@ -11,6 +11,7 @@ import notificationRoutes from './notification.routes';
 import analyticsRoutes from './analytics.routes';
 import paymentRoutes from './payment.routes';
 import uploadRoutes from './upload.routes';
+import shopRoutes from './shop.routes';
 
 const router = Router();
 
@@ -26,5 +27,6 @@ router.use('/notifications', notificationRoutes);
 router.use('/analytics', analyticsRoutes);
 router.use('/payments', paymentRoutes);
 router.use('/upload', uploadRoutes);
+router.use('/shop', shopRoutes);
 
 export default router;

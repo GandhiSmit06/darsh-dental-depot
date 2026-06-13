@@ -1,0 +1,1095 @@
+openapi: 3.0.3
+info:
+  title: Darsh Dental Depot API
+  description: |
+    Production-ready REST API for Darsh Dental Depot — a dental material management system.
+    
+    ## Authentication
+    Uses JWT Bearer tokens. Get your token from `POST /auth/login`.
+    
+    ## Roles
+    - **admin** — Full platform access
+    - **shop_owner** — Manage their own products, view orders
+    - **doctor** — Browse products, place orders
+    
+  version: 1.0.0
+  contact:
+    name: Darsh Dental Depot Support
+    email: support@darshdental.com
+
+servers:
+  - url: http://localhost:5000/api/v1
+    description: Development server
+  - url: https://api.darshdental.com/api/v1
+    description: Production server
+
+tags:
+  - name: Auth
+    description: Authentication and account management
+  - name: Users
+    description: User profile management
+  - name: Products
+    description: Product catalog management
+  - name: Inventory
+    description: Stock management
+  - name: Orders
+    description: Order lifecycle management
+  - name: Cart
+    description: Shopping cart
+  - name: Wishlist
+    description: Product wishlist
+  - name: Reviews
+    description: Product reviews
+  - name: Notifications
+    description: In-app notifications
+  - name: Analytics
+    description: Platform analytics and reporting
+  - name: Payments
+    description: Razorpay and Stripe payment processing
+  - name: Upload
+    description: Image upload via Cloudinary
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    ApiResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+        data:
+          type: object
+
+    User:
+      type: object
+      properties:
+        _id:
+          type: string
+        fullName:
+          type: string
+        email:
+          type: string
+        phone:
+          type: string
+        role:
+          type: string
+          enum: [admin, shop_owner, doctor]
+        clinicName:
+          type: string
+        profileImage:
+          type: string
+        isVerified:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+
+    Product:
+      type: object
+      properties:
+        _id:
+          type: string
+        name:
+          type: string
+        category:
+          type: string
+        description:
+          type: string
+        images:
+          type: array
+          items:
+            type: string
+        SKU:
+          type: string
+        brand:
+          type: string
+        stock:
+          type: integer
+        sellingPrice:
+          type: number
+        discountPrice:
+          type: number
+        status:
+          type: string
+          enum: [active, inactive, out_of_stock]
+        rating:
+          type: number
+        reviewCount:
+          type: integer
+
+    Order:
+      type: object
+      properties:
+        _id:
+          type: string
+        customerId:
+          type: string
+        products:
+          type: array
+          items:
+            type: object
+            properties:
+              productId:
+                type: string
+              name:
+                type: string
+              quantity:
+                type: integer
+              price:
+                type: number
+        totalPrice:
+          type: number
+        orderStatus:
+          type: string
+          enum: [pending, processing, shipped, delivered, cancelled]
+        paymentStatus:
+          type: string
+          enum: [pending, paid, failed, refunded]
+        paymentMethod:
+          type: string
+          enum: [razorpay, stripe, cod]
+
+    Error:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        message:
+          type: string
+        errors:
+          type: array
+          items:
+            type: object
+
+paths:
+  # ─── Auth ──────────────────────────────────────────────────────────────────
+  /auth/register:
+    post:
+      tags: [Auth]
+      summary: Register a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [fullName, email, phone, password, confirmPassword]
+              properties:
+                fullName:
+                  type: string
+                  example: Dr. Priya Sharma
+                email:
+                  type: string
+                  example: priya@dental.com
+                phone:
+                  type: string
+                  example: "9876543210"
+                password:
+                  type: string
+                  example: Password@123
+                confirmPassword:
+                  type: string
+                  example: Password@123
+                role:
+                  type: string
+                  enum: [doctor, shop_owner]
+                  example: doctor
+                clinicName:
+                  type: string
+                  example: Sharma Dental Clinic
+      responses:
+        '201':
+          description: Registration successful
+        '409':
+          description: Email already registered
+
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email:
+                  type: string
+                  example: admin@darshdental.com
+                password:
+                  type: string
+                  example: Admin@123456
+      responses:
+        '200':
+          description: Login successful — returns accessToken + user
+        '401':
+          description: Invalid credentials
+
+  /auth/logout:
+    post:
+      tags: [Auth]
+      summary: Logout
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Logged out
+
+  /auth/refresh-token:
+    post:
+      tags: [Auth]
+      summary: Refresh access token
+      description: Send refreshToken in request body or as httpOnly cookie
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                refreshToken:
+                  type: string
+      responses:
+        '200':
+          description: New tokens issued
+
+  /auth/verify-email/{token}:
+    get:
+      tags: [Auth]
+      summary: Verify email address
+      parameters:
+        - in: path
+          name: token
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Email verified
+
+  /auth/forgot-password:
+    post:
+      tags: [Auth]
+      summary: Request password reset email
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+      responses:
+        '200':
+          description: Reset email sent (if address exists)
+
+  /auth/reset-password/{token}:
+    post:
+      tags: [Auth]
+      summary: Reset password
+      parameters:
+        - in: path
+          name: token
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                password:
+                  type: string
+                confirmPassword:
+                  type: string
+      responses:
+        '200':
+          description: Password reset
+
+  /auth/me:
+    get:
+      tags: [Auth]
+      summary: Get current user profile
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Current user profile
+
+  # ─── Users ─────────────────────────────────────────────────────────────────
+  /users:
+    get:
+      tags: [Users]
+      summary: Get all users (Admin only)
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+        - in: query
+          name: limit
+          schema:
+            type: integer
+        - in: query
+          name: role
+          schema:
+            type: string
+            enum: [admin, shop_owner, doctor]
+        - in: query
+          name: search
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Users list with pagination
+
+  /users/export:
+    get:
+      tags: [Users]
+      summary: Export users as CSV (Admin only)
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: CSV file
+          content:
+            text/csv: {}
+
+  /users/{id}:
+    get:
+      tags: [Users]
+      summary: Get user by ID
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: User object
+    put:
+      tags: [Users]
+      summary: Update user
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                fullName:
+                  type: string
+                phone:
+                  type: string
+                clinicName:
+                  type: string
+                address:
+                  type: string
+      responses:
+        '200':
+          description: Updated user
+    delete:
+      tags: [Users]
+      summary: Delete user (Admin only)
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: User deleted
+
+  # ─── Products ──────────────────────────────────────────────────────────────
+  /products:
+    get:
+      tags: [Products]
+      summary: Get all products (public)
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+        - in: query
+          name: limit
+          schema:
+            type: integer
+        - in: query
+          name: category
+          schema:
+            type: string
+        - in: query
+          name: brand
+          schema:
+            type: string
+        - in: query
+          name: minPrice
+          schema:
+            type: number
+        - in: query
+          name: maxPrice
+          schema:
+            type: number
+        - in: query
+          name: inStock
+          schema:
+            type: boolean
+        - in: query
+          name: search
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Products list
+    post:
+      tags: [Products]
+      summary: Create product (Admin/ShopOwner)
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Product'
+      responses:
+        '201':
+          description: Product created
+
+  /products/{id}:
+    get:
+      tags: [Products]
+      summary: Get product by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Product
+    put:
+      tags: [Products]
+      summary: Update product
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Product'
+      responses:
+        '200':
+          description: Updated product
+    delete:
+      tags: [Products]
+      summary: Delete product
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Product deleted
+
+  /products/export-csv:
+    get:
+      tags: [Products]
+      summary: Export products as CSV
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: CSV file
+
+  /products/import-csv:
+    post:
+      tags: [Products]
+      summary: Import products from CSV
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: Import results
+
+  # ─── Inventory ─────────────────────────────────────────────────────────────
+  /inventory:
+    get:
+      tags: [Inventory]
+      summary: Get inventory summary
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Inventory with summary
+
+  /inventory/low-stock:
+    get:
+      tags: [Inventory]
+      summary: Get low stock products
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Low stock products
+
+  /inventory/update-stock/{id}:
+    put:
+      tags: [Inventory]
+      summary: Update product stock
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                stock:
+                  type: integer
+      responses:
+        '200':
+          description: Stock updated
+
+  # ─── Orders ────────────────────────────────────────────────────────────────
+  /orders:
+    post:
+      tags: [Orders]
+      summary: Place an order
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                products:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      productId:
+                        type: string
+                      quantity:
+                        type: integer
+                paymentMethod:
+                  type: string
+                  enum: [razorpay, stripe, cod]
+                address:
+                  type: object
+                  properties:
+                    street:
+                      type: string
+                    city:
+                      type: string
+                    state:
+                      type: string
+                    pincode:
+                      type: string
+      responses:
+        '201':
+          description: Order placed
+    get:
+      tags: [Orders]
+      summary: Get orders
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Orders list
+
+  /orders/{id}:
+    get:
+      tags: [Orders]
+      summary: Get order by ID
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Order
+
+  /orders/{id}/status:
+    put:
+      tags: [Orders]
+      summary: Update order status (Admin/ShopOwner)
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [pending, processing, shipped, delivered, cancelled]
+      responses:
+        '200':
+          description: Status updated
+
+  /orders/{id}/cancel:
+    post:
+      tags: [Orders]
+      summary: Cancel an order
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Order cancelled
+
+  # ─── Cart ──────────────────────────────────────────────────────────────────
+  /cart:
+    get:
+      tags: [Cart]
+      summary: Get cart
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Cart with items
+    post:
+      tags: [Cart]
+      summary: Add item to cart
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                productId:
+                  type: string
+                quantity:
+                  type: integer
+      responses:
+        '200':
+          description: Updated cart
+    delete:
+      tags: [Cart]
+      summary: Clear cart
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Cart cleared
+
+  /cart/{itemId}:
+    put:
+      tags: [Cart]
+      summary: Update cart item quantity
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: itemId
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                quantity:
+                  type: integer
+      responses:
+        '200':
+          description: Updated cart
+    delete:
+      tags: [Cart]
+      summary: Remove item from cart
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: itemId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Updated cart
+
+  # ─── Wishlist ──────────────────────────────────────────────────────────────
+  /wishlist:
+    get:
+      tags: [Wishlist]
+      summary: Get wishlist
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Wishlist
+    post:
+      tags: [Wishlist]
+      summary: Add product to wishlist
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                productId:
+                  type: string
+      responses:
+        '200':
+          description: Updated wishlist
+
+  /wishlist/{productId}:
+    delete:
+      tags: [Wishlist]
+      summary: Remove product from wishlist
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: productId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Updated wishlist
+
+  # ─── Reviews ───────────────────────────────────────────────────────────────
+  /reviews:
+    post:
+      tags: [Reviews]
+      summary: Submit a review
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [productId, rating, comment]
+              properties:
+                productId:
+                  type: string
+                rating:
+                  type: integer
+                  minimum: 1
+                  maximum: 5
+                comment:
+                  type: string
+      responses:
+        '201':
+          description: Review submitted
+
+  /reviews/{productId}:
+    get:
+      tags: [Reviews]
+      summary: Get approved reviews for a product
+      parameters:
+        - in: path
+          name: productId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Reviews
+
+  /reviews/{id}/moderate:
+    put:
+      tags: [Reviews]
+      summary: Approve or reject a review (Admin)
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                isApproved:
+                  type: boolean
+      responses:
+        '200':
+          description: Review moderated
+
+  # ─── Notifications ─────────────────────────────────────────────────────────
+  /notifications:
+    get:
+      tags: [Notifications]
+      summary: Get user notifications
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Notifications
+
+  /notifications/read-all:
+    put:
+      tags: [Notifications]
+      summary: Mark all notifications as read
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: All marked as read
+
+  /notifications/{id}/read:
+    put:
+      tags: [Notifications]
+      summary: Mark notification as read
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Marked as read
+
+  # ─── Analytics ─────────────────────────────────────────────────────────────
+  /analytics/summary:
+    get:
+      tags: [Analytics]
+      summary: Platform summary (Admin)
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Summary stats
+
+  /analytics/sales:
+    get:
+      tags: [Analytics]
+      summary: Sales report (Admin)
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: query
+          name: startDate
+          schema:
+            type: string
+            format: date
+        - in: query
+          name: endDate
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Sales data
+
+  /analytics/categories:
+    get:
+      tags: [Analytics]
+      summary: Category revenue report (Admin)
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Category data
+
+  /analytics/users:
+    get:
+      tags: [Analytics]
+      summary: User growth report (Admin)
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: User growth data
+
+  # ─── Payments ──────────────────────────────────────────────────────────────
+  /payments/razorpay/create:
+    post:
+      tags: [Payments]
+      summary: Create Razorpay order
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                amount:
+                  type: number
+                currency:
+                  type: string
+                  example: INR
+      responses:
+        '200':
+          description: Razorpay order ID
+
+  /payments/razorpay/verify:
+    post:
+      tags: [Payments]
+      summary: Verify Razorpay payment
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                razorpayOrderId:
+                  type: string
+                razorpayPaymentId:
+                  type: string
+                razorpaySignature:
+                  type: string
+                orderId:
+                  type: string
+      responses:
+        '200':
+          description: Payment verified
+
+  /payments/stripe/intent:
+    post:
+      tags: [Payments]
+      summary: Create Stripe Payment Intent
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                amount:
+                  type: number
+                orderId:
+                  type: string
+      responses:
+        '200':
+          description: Client secret returned
+
+  /payments/stripe/webhook:
+    post:
+      tags: [Payments]
+      summary: Stripe webhook (no auth — Stripe-Signature header)
+      responses:
+        '200':
+          description: Webhook received
+
+  # ─── Upload ────────────────────────────────────────────────────────────────
+  /upload/image:
+    post:
+      tags: [Upload]
+      summary: Upload single image to Cloudinary
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                image:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: Image URL
+
+  /upload/images:
+    post:
+      tags: [Upload]
+      summary: Upload multiple images to Cloudinary
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                images:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+      responses:
+        '200':
+          description: Image URLs array

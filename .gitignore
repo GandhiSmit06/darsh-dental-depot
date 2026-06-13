@@ -1,0 +1,11 @@
+# Root-level ignores
+node_modules/
+.env
+.env.*
+!.env.example
+dist/
+logs/
+*.log
+.DS_Store
+.vscode/
+.idea/

@@ -4,8 +4,6 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Stethoscope, Store, ShieldCheck } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -39,7 +37,7 @@ function getDashboardRoute(role: string): string {
   }
 }
 
-function LoginForm({ roleLabel }: { roleLabel: string }) {
+function LoginPage() {
   const nav = useNavigate();
   const { login } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -57,52 +55,18 @@ function LoginForm({ roleLabel }: { roleLabel: string }) {
     try {
       const user = await login(data);
       toast.success(`Welcome back, ${user.fullName}!`);
-      // Navigate based on the role returned by the API, not the tab
       nav({ to: getDashboardRoute(user.role) });
     } catch (err) {
       if (err instanceof ApiError) {
         toast.error(err.message);
       } else {
-        toast.error("Something went wrong. Please try again.");
+        toast.error("Invalid email or password.");
       }
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  return (
-    <form className="space-y-3" onSubmit={handleSubmit(onSubmit)}>
-      <div>
-        <Label className="mb-1.5">Email</Label>
-        <Input
-          type="email"
-          placeholder={`${roleLabel.toLowerCase()}@example.com`}
-          {...register("email")}
-        />
-        {errors.email && (
-          <p className="text-xs text-destructive mt-1">{errors.email.message}</p>
-        )}
-      </div>
-      <div>
-        <Label className="mb-1.5">Password</Label>
-        <Input type="password" placeholder="••••••••" {...register("password")} />
-        {errors.password && (
-          <p className="text-xs text-destructive mt-1">{errors.password.message}</p>
-        )}
-      </div>
-      <div className="flex justify-end">
-        <Link to="/login" className="text-xs text-primary hover:underline">
-          Forgot password?
-        </Link>
-      </div>
-      <Button type="submit" className="w-full" disabled={isSubmitting}>
-        {isSubmitting ? "Signing in..." : `Sign in as ${roleLabel}`}
-      </Button>
-    </form>
-  );
-}
-
-function LoginPage() {
   return (
     <PublicLayout>
       <div className="container mx-auto px-4 py-16 max-w-md">
@@ -113,31 +77,34 @@ function LoginPage() {
               Sign in to your account
             </p>
           </div>
-          <Tabs defaultValue="doctor">
-            <TabsList className="grid grid-cols-3 w-full">
-              <TabsTrigger value="doctor">
-                <Stethoscope className="h-4 w-4 mr-1" />
-                Doctor
-              </TabsTrigger>
-              <TabsTrigger value="shop">
-                <Store className="h-4 w-4 mr-1" />
-                Shop
-              </TabsTrigger>
-              <TabsTrigger value="admin">
-                <ShieldCheck className="h-4 w-4 mr-1" />
-                Admin
-              </TabsTrigger>
-            </TabsList>
-            <TabsContent value="doctor" className="mt-6">
-              <LoginForm roleLabel="Doctor" />
-            </TabsContent>
-            <TabsContent value="shop" className="mt-6">
-              <LoginForm roleLabel="Shop Owner" />
-            </TabsContent>
-            <TabsContent value="admin" className="mt-6">
-              <LoginForm roleLabel="Admin" />
-            </TabsContent>
-          </Tabs>
+          <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
+            <div>
+              <Label className="mb-1.5">Email</Label>
+              <Input
+                type="email"
+                placeholder="you@example.com"
+                {...register("email")}
+              />
+              {errors.email && (
+                <p className="text-xs text-destructive mt-1">{errors.email.message}</p>
+              )}
+            </div>
+            <div>
+              <Label className="mb-1.5">Password</Label>
+              <Input type="password" placeholder="••••••••" {...register("password")} />
+              {errors.password && (
+                <p className="text-xs text-destructive mt-1">{errors.password.message}</p>
+              )}
+            </div>
+            <div className="flex justify-end">
+              <Link to="/login" className="text-xs text-primary hover:underline">
+                Forgot password?
+              </Link>
+            </div>
+            <Button type="submit" className="w-full" disabled={isSubmitting}>
+              {isSubmitting ? "Signing in..." : "Sign in"}
+            </Button>
+          </form>
           <p className="text-center text-sm text-muted-foreground mt-6">
             Don't have an account?{" "}
             <Link

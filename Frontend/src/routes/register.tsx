@@ -5,8 +5,15 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { toast } from "sonner";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useState } from "react";
@@ -22,6 +29,9 @@ const registerSchema = z
       .string()
       .min(1, "Phone is required")
       .regex(/^[6-9]\d{9}$/, "Enter a valid 10-digit Indian phone number"),
+    role: z.enum(["doctor", "shop_owner"], {
+      required_error: "Please select a role",
+    }),
     medicalRegistrationNumber: z.string().min(1, "Medical registration number is required"),
     address: z.string().min(1, "Address is required"),
     password: z
@@ -54,9 +64,13 @@ function RegisterPage() {
     register,
     handleSubmit,
     setError,
+    control,
     formState: { errors },
   } = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
+    defaultValues: {
+      role: "doctor",
+    },
   });
 
   const onSubmit = async (data: RegisterFormData) => {
@@ -67,10 +81,9 @@ function RegisterPage() {
       nav({ to: "/login" });
     } catch (err) {
       if (err instanceof ApiError) {
-        // Show field-level errors if available
         if (err.errors && err.errors.length > 0) {
           const validFields: Array<keyof RegisterFormData> = [
-            "fullName", "clinicName", "email", "phone",
+            "fullName", "clinicName", "email", "phone", "role",
             "medicalRegistrationNumber", "address", "password", "confirmPassword",
           ];
           err.errors.forEach((e) => {
@@ -130,6 +143,27 @@ function RegisterPage() {
               <Input type="tel" {...register("phone")} placeholder="9876543210" />
               {errors.phone && (
                 <p className="text-xs text-destructive mt-1">{errors.phone.message}</p>
+              )}
+            </div>
+            <div className="sm:col-span-2">
+              <Label className="mb-1.5">I am a</Label>
+              <Controller
+                control={control}
+                name="role"
+                render={({ field }) => (
+                  <Select value={field.value} onValueChange={field.onChange}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select your role" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="doctor">Doctor</SelectItem>
+                      <SelectItem value="shop_owner">Shop Owner</SelectItem>
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+              {errors.role && (
+                <p className="text-xs text-destructive mt-1">{errors.role.message}</p>
               )}
             </div>
             <div className="sm:col-span-2">

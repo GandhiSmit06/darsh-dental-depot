@@ -7,7 +7,13 @@ import { Card } from "@/components/ui/card";
 import type { Product } from "@/lib/mock-data";
 import { toast } from "sonner";
 
-export function ProductCard({ product }: { product: Product }) {
+export interface ProductCardProps {
+  product: any; // Using any or specific interface as needed, currently it receives mapped props
+  onAdd?: (product: any) => void;
+  onWishlist?: (product: any) => void;
+}
+
+export function ProductCard({ product, onAdd, onWishlist }: ProductCardProps) {
   const inStock = product.stock > 0;
   return (
     <motion.div
@@ -29,7 +35,11 @@ export function ProductCard({ product }: { product: Product }) {
             {inStock ? "In Stock" : "Out of Stock"}
           </Badge>
           <button
-            onClick={(e) => { e.preventDefault(); toast.success("Added to wishlist"); }}
+            onClick={(e) => { 
+              e.preventDefault(); 
+              if (onWishlist) onWishlist(product);
+              else toast.success("Added to wishlist"); 
+            }}
             className="absolute top-3 right-3 h-8 w-8 rounded-full bg-background/90 grid place-items-center hover:bg-background"
             aria-label="Wishlist"
           >
@@ -46,11 +56,14 @@ export function ProductCard({ product }: { product: Product }) {
             {product.rating.toFixed(1)} <span className="opacity-60">({product.reviewCount})</span>
           </div>
           <div className="mt-auto flex items-center justify-between pt-2">
-            <div className="font-bold text-lg">${product.price.toFixed(2)}</div>
+            <div className="font-bold text-lg">₹{product.price.toFixed(2)}</div>
             <Button
               size="sm"
               disabled={!inStock}
-              onClick={() => toast.success(`${product.name} added to cart`)}
+              onClick={() => {
+                if (onAdd) onAdd(product);
+                else toast.success(`${product.name} added to cart`);
+              }}
             >
               <ShoppingCart className="h-4 w-4 mr-1" /> Add
             </Button>

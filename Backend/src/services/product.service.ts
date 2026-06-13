@@ -39,9 +39,14 @@ export class ProductService {
       filter.$text = { $search: req.query.search as string };
     }
 
+    let finalSort = sort;
+    if (req.query.recommended === 'true') {
+      finalSort = { rating: -1, reviewCount: -1 };
+    }
+
     const [products, total] = await Promise.all([
       Product.find(filter)
-        .sort(req.query.search ? { score: { $meta: 'textScore' } } : sort)
+        .sort(req.query.search ? { score: { $meta: 'textScore' } } : finalSort)
         .skip(skip)
         .limit(limit)
         .populate('createdBy', 'fullName clinicName'),

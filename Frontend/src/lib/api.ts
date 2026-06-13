@@ -247,3 +247,95 @@ export const shopApi = {
   getCategoryShare: () => apiFetch<ApiOk<CategoryShareItem[]>>("/shop/analytics/category-share"),
   getProductPerformance: () => apiFetch<ApiOk<ProductPerformanceItem[]>>("/shop/analytics/product-performance"),
 };
+
+// ─── Doctor-specific API calls ──────────────────────────────────────────────
+
+export interface DoctorProfile {
+  name: string;
+  email: string;
+  clinicName: string;
+  phone: string;
+}
+
+export interface DoctorStats {
+  activeOrders: number;
+  wishlistCount: number;
+  totalSpent: number;
+  cartItems: number;
+  spentChangePercent: number;
+}
+
+export interface DoctorCartItem {
+  cartItemId: string;
+  productId: string;
+  name: string;
+  brand: string;
+  imageUrl: string;
+  price: number;
+  quantity: number;
+}
+
+export interface DoctorWishlistItem {
+  wishlistItemId: string;
+  productId: string;
+  name: string;
+  brand: string;
+  price: number;
+  stock: number;
+  rating: number;
+  reviewCount: number;
+  imageUrl: string;
+}
+
+export interface DoctorActiveOrder {
+  orderId: string;
+  itemCount: number;
+  total: number;
+  status: string;
+}
+
+export interface DoctorOrderHistoryItem {
+  orderId: string;
+  itemCount: number;
+  total: number;
+  status: string;
+  date: string;
+}
+
+export interface ProductResponse {
+  _id: string;
+  name: string;
+  brand: string;
+  category: string;
+  sellingPrice: number;
+  stock: number;
+  rating: number;
+  reviewCount: number;
+  images: string[];
+}
+
+export const doctorApi = {
+  getProfile: () => apiFetch<ApiOk<DoctorProfile>>("/doctor/profile"),
+  getStats: () => apiFetch<ApiOk<DoctorStats>>("/doctor/stats"),
+  getCart: () => apiFetch<ApiOk<DoctorCartItem[]>>("/doctor/cart"),
+  addToCart: (productId: string, quantity: number = 1) => 
+    apiFetch<ApiOk<DoctorCartItem[]>>("/doctor/cart", { method: "POST", body: JSON.stringify({ productId, quantity }) }),
+  updateCartItem: (id: string, quantity: number) => 
+    apiFetch<ApiOk<DoctorCartItem[]>>(`/doctor/cart/${id}`, { method: "PATCH", body: JSON.stringify({ quantity }) }),
+  removeFromCart: (id: string) => 
+    apiFetch<ApiOk<DoctorCartItem[]>>(`/doctor/cart/${id}`, { method: "DELETE" }),
+  getWishlist: () => apiFetch<ApiOk<DoctorWishlistItem[]>>("/doctor/wishlist"),
+  addToWishlist: (productId: string) => 
+    apiFetch<ApiOk<DoctorWishlistItem[]>>("/doctor/wishlist", { method: "POST", body: JSON.stringify({ productId }) }),
+  removeFromWishlist: (id: string) => 
+    apiFetch<ApiOk<DoctorWishlistItem[]>>(`/doctor/wishlist/${id}`, { method: "DELETE" }),
+  getActiveOrder: () => apiFetch<ApiOk<DoctorActiveOrder | null>>("/doctor/orders/active"),
+  getOrderHistory: () => apiFetch<ApiOk<DoctorOrderHistoryItem[]>>("/doctor/orders/history"),
+  placeOrder: () => apiFetch<ApiOk<{ orderId: string, total: number }>>("/doctor/orders", { method: "POST" }),
+};
+
+export const productsApi = {
+  getProducts: (recommended = false) => 
+    apiFetch<{ products: ProductResponse[] }>(`/products${recommended ? '?recommended=true&limit=4' : '?limit=100'}`),
+};
+

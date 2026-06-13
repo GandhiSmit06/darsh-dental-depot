@@ -1,11 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   LayoutDashboard, ShoppingCart, Heart, ShoppingBag, Bell, Settings, Package,
-  CheckCircle2, Truck, Clock, Plus, Minus, Trash2,
+  CheckCircle2, Truck, Plus, Minus, Trash2, Loader2
 } from "lucide-react";
 import { DashboardLayout, type NavItem } from "@/components/dashboard/DashboardLayout";
-import { StatCard, StatusBadge, EmptyState } from "@/components/dashboard/widgets";
+import { StatCard, StatusBadge } from "@/components/dashboard/widgets";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,8 +14,12 @@ import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ProductCard } from "@/components/site/ProductCard";
-import { products, orders } from "@/lib/mock-data";
 import { toast } from "sonner";
+import {
+  doctorApi, productsApi, type DoctorProfile, type DoctorStats,
+  type DoctorCartItem, type DoctorWishlistItem, type DoctorActiveOrder,
+  type DoctorOrderHistoryItem, type ProductResponse
+} from "@/lib/api";
 
 export const Route = createFileRoute("/doctor")({
   head: () => ({ meta: [{ title: "Doctor Dashboard — Darsh Dental Depot" }] }),
@@ -32,6 +36,61 @@ const items: NavItem[] = [
   { key: "settings", label: "Settings", icon: Settings },
 ];
 
+// ─── Shared loading / error / empty helpers ─────────────────────────────────
+
+function LoadingSpinner({ label }: { label?: string }) {
+  return (
+    <div className="flex flex-col items-center justify-center py-16 text-muted-foreground gap-2">
+      <Loader2 className="h-8 w-8 animate-spin" />
+      {label && <span className="text-sm">{label}</span>}
+    </div>
+  );
+}
+
+function ErrorBanner({ onRetry }: { onRetry: () => void }) {
+  return (
+    <div className="flex flex-col items-center justify-center py-16 gap-3 text-muted-foreground">
+      <p className="text-sm">Failed to load data. Please try again.</p>
+      <Button variant="outline" size="sm" onClick={onRetry}>Retry</Button>
+    </div>
+  );
+}
+
+function EmptyBanner({ label }: { label: string }) {
+  return (
+    <div className="flex items-center justify-center py-16 text-muted-foreground">
+      <p className="text-sm">{label}</p>
+    </div>
+  );
+}
+
+// ─── Generic fetch hook ─────────────────────────────────────────────────────
+
+function useApiData<T>(fetcher: () => Promise<{ data: T } | { products: T }>) {
+  const [data, setData] = useState<T | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    setError(false);
+    try {
+      const res = await fetcher();
+      setData('data' in res ? res.data : res.products);
+    } catch {
+      setError(true);
+    } finally {
+      setLoading(false);
+    }
+  }, [fetcher]);
+
+  useEffect(() => { load(); }, [load]);
+
+  return { data, loading, error, retry: load, mutate: setData };
+}
+
+// ─── Main layout ────────────────────────────────────────────────────────────
+
 function DoctorDashboard() {
   const [active, setActive] = useState("dashboard");
   return (
@@ -47,67 +106,175 @@ function DoctorDashboard() {
   );
 }
 
+// ─── Mapping ProductResponse to ProductCard props ───────────────────────────
+
+function mapToProductCardProps(p: ProductResponse | DoctorWishlistItem) {
+  return {
+    id: 'productId' in p ? p.productId : p._id,
+    name: p.name,
+    brand: p.brand,
+    category: 'category' in p ? p.category : '',
+    price: 'sellingPrice' in p ? p.sellingPrice : p.price,
+    stock: p.stock,
+    rating: p.rating,
+    reviewCount: p.reviewCount,
+    description: '',
+    image: 'images' in p ? p.images[0] || '' : p.imageUrl || '',
+  };
+}
+
+// ─── PAGE 1: Dashboard ──────────────────────────────────────────────────────
+
 function Overview() {
+  const profile = useApiData<DoctorProfile>(doctorApi.getProfile);
+  const stats = useApiData<DoctorStats>(doctorApi.getStats);
+  const recommended = useApiData<ProductResponse[]>(() => productsApi.getProducts(true));
+
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Welcome, Dr. Khan</h1>
+        <h1 className="text-2xl font-bold">
+          {profile.loading ? "Loading..." : profile.error ? "Welcome" : `Welcome, ${profile.data?.name || 'Doctor'}`}
+        </h1>
         <p className="text-muted-foreground text-sm">Your practice at a glance.</p>
       </div>
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard label="Active Orders" value="3" icon={ShoppingBag} change={0} />
-        <StatCard label="Wishlist Items" value="12" icon={Heart} />
-        <StatCard label="Total Spent" value="4,210" prefix="$" icon={Package} change={6.2} />
-        <StatCard label="Cart Items" value="5" icon={ShoppingCart} />
-      </div>
+
+      {stats.loading ? <LoadingSpinner /> : stats.error ? <ErrorBanner onRetry={stats.retry} /> : stats.data && (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <StatCard label="Active Orders" value={String(stats.data.activeOrders)} icon={ShoppingBag} />
+          <StatCard label="Wishlist Items" value={String(stats.data.wishlistCount)} icon={Heart} />
+          <StatCard label="Total Spent" value={stats.data.totalSpent.toLocaleString()} prefix="₹" icon={Package} change={stats.data.spentChangePercent} />
+          <StatCard label="Cart Items" value={String(stats.data.cartItems)} icon={ShoppingCart} />
+        </div>
+      )}
+
       <Card className="p-6">
         <h3 className="font-semibold mb-4">Recommended for you</h3>
-        <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
-          {products.slice(0, 4).map((p) => <ProductCard key={p.id} product={p} />)}
-        </div>
+        {recommended.loading ? <LoadingSpinner /> : recommended.error ? <ErrorBanner onRetry={recommended.retry} /> : !recommended.data?.length ? <EmptyBanner label="No recommendations available" /> : (
+          <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
+            {recommended.data.map((p) => (
+              <ProductCard 
+                key={p._id} 
+                product={mapToProductCardProps(p)} 
+                onAdd={async () => {
+                  try {
+                    await doctorApi.addToCart(p._id, 1);
+                    toast.success(`${p.name} added to cart`);
+                    stats.retry(); // refresh stats
+                  } catch { toast.error("Failed to add to cart"); }
+                }}
+                onWishlist={async () => {
+                  try {
+                    await doctorApi.addToWishlist(p._id);
+                    toast.success("Added to wishlist");
+                    stats.retry(); // refresh stats
+                  } catch { toast.error("Failed to add to wishlist"); }
+                }}
+              />
+            ))}
+          </div>
+        )}
       </Card>
     </div>
   );
 }
 
+// ─── PAGE 2: Browse Products ────────────────────────────────────────────────
+
 function Browse() {
+  const { data: products, loading, error, retry } = useApiData<ProductResponse[]>(() => productsApi.getProducts());
+
   return (
     <div className="space-y-5">
       <h1 className="text-2xl font-bold">Browse products</h1>
-      <div className="grid gap-5 grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {products.slice(0, 12).map((p) => <ProductCard key={p.id} product={p} />)}
-      </div>
+      {loading ? <LoadingSpinner label="Loading products..." /> : error ? <ErrorBanner onRetry={retry} /> : !products?.length ? <EmptyBanner label="No products found" /> : (
+        <div className="grid gap-5 grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {products.map((p) => (
+            <ProductCard 
+              key={p._id} 
+              product={mapToProductCardProps(p)} 
+              onAdd={async () => {
+                try {
+                  await doctorApi.addToCart(p._id, 1);
+                  toast.success(`${p.name} added to cart`);
+                } catch { toast.error("Failed to add to cart"); }
+              }}
+              onWishlist={async () => {
+                try {
+                  await doctorApi.addToWishlist(p._id);
+                  toast.success("Added to wishlist");
+                } catch { toast.error("Failed to add to wishlist"); }
+              }}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
 
+// ─── PAGE 3: Cart ───────────────────────────────────────────────────────────
+
 function CartSection() {
-  const [cart, setCart] = useState(
-    products.slice(0, 4).map((p) => ({ ...p, qty: 1 }))
-  );
-  const total = cart.reduce((s, i) => s + i.price * i.qty, 0);
+  const { data: cart, loading, error, retry, mutate } = useApiData<DoctorCartItem[]>(doctorApi.getCart);
+  const [isCheckingOut, setIsCheckingOut] = useState(false);
+
+  const total = cart?.reduce((s, i) => s + i.price * i.quantity, 0) || 0;
+
+  const updateQuantity = async (id: string, qty: number) => {
+    try {
+      const res = await doctorApi.updateCartItem(id, qty);
+      mutate(res.data);
+    } catch {
+      toast.error("Failed to update cart");
+    }
+  };
+
+  const removeItem = async (id: string) => {
+    try {
+      const res = await doctorApi.removeFromCart(id);
+      mutate(res.data);
+      toast.success("Item removed");
+    } catch {
+      toast.error("Failed to remove item");
+    }
+  };
+
+  const handleCheckout = async () => {
+    setIsCheckingOut(true);
+    try {
+      await doctorApi.placeOrder();
+      toast.success("Order placed successfully!");
+      mutate([]);
+    } catch {
+      toast.error("Failed to place order");
+    } finally {
+      setIsCheckingOut(false);
+    }
+  };
+
   return (
     <div className="space-y-5">
       <h1 className="text-2xl font-bold">Your cart</h1>
-      {cart.length === 0 ? (
-        <EmptyState title="Cart is empty" description="Browse products to add items." />
+      {loading ? <LoadingSpinner label="Loading cart..." /> : error ? <ErrorBanner onRetry={retry} /> : !cart?.length ? (
+        <EmptyBanner label="Cart is empty" />
       ) : (
         <div className="grid lg:grid-cols-3 gap-5">
           <Card className="lg:col-span-2 divide-y">
             {cart.map((item) => (
-              <div key={item.id} className="p-4 flex items-center gap-4">
-                <img src={item.image} alt="" className="h-16 w-16 rounded object-cover" />
+              <div key={item.cartItemId} className="p-4 flex items-center gap-4">
+                {item.imageUrl && <img src={item.imageUrl} alt="" className="h-16 w-16 rounded object-cover" />}
                 <div className="flex-1 min-w-0">
                   <div className="font-medium truncate">{item.name}</div>
                   <div className="text-xs text-muted-foreground">{item.brand}</div>
                 </div>
                 <div className="flex items-center border rounded-md">
-                  <button className="px-2 py-1" onClick={() => setCart(c => c.map(x => x.id === item.id ? { ...x, qty: Math.max(1, x.qty - 1) } : x))}><Minus className="h-3 w-3" /></button>
-                  <span className="w-8 text-center text-sm">{item.qty}</span>
-                  <button className="px-2 py-1" onClick={() => setCart(c => c.map(x => x.id === item.id ? { ...x, qty: x.qty + 1 } : x))}><Plus className="h-3 w-3" /></button>
+                  <button className="px-2 py-1" onClick={() => updateQuantity(item.cartItemId, Math.max(1, item.quantity - 1))}><Minus className="h-3 w-3" /></button>
+                  <span className="w-8 text-center text-sm">{item.quantity}</span>
+                  <button className="px-2 py-1" onClick={() => updateQuantity(item.cartItemId, item.quantity + 1)}><Plus className="h-3 w-3" /></button>
                 </div>
-                <div className="w-20 text-right font-semibold">${(item.price * item.qty).toFixed(2)}</div>
-                <Button variant="ghost" size="icon" onClick={() => setCart(c => c.filter(x => x.id !== item.id))}>
+                <div className="w-20 text-right font-semibold">₹{(item.price * item.quantity).toFixed(2)}</div>
+                <Button variant="ghost" size="icon" onClick={() => removeItem(item.cartItemId)}>
                   <Trash2 className="h-4 w-4" />
                 </Button>
               </div>
@@ -116,11 +283,13 @@ function CartSection() {
           <Card className="p-5 h-fit">
             <h3 className="font-semibold mb-3">Summary</h3>
             <div className="space-y-2 text-sm">
-              <div className="flex justify-between"><span>Subtotal</span><span>${total.toFixed(2)}</span></div>
+              <div className="flex justify-between"><span>Subtotal</span><span>₹{total.toFixed(2)}</span></div>
               <div className="flex justify-between text-muted-foreground"><span>Shipping</span><span>Free</span></div>
-              <div className="flex justify-between font-bold border-t pt-3 mt-3"><span>Total</span><span>${total.toFixed(2)}</span></div>
+              <div className="flex justify-between font-bold border-t pt-3 mt-3"><span>Total</span><span>₹{total.toFixed(2)}</span></div>
             </div>
-            <Button className="w-full mt-4" onClick={() => toast.success("Checkout started")}>Checkout</Button>
+            <Button className="w-full mt-4" disabled={isCheckingOut} onClick={handleCheckout}>
+              {isCheckingOut ? "Processing..." : "Checkout"}
+            </Button>
           </Card>
         </div>
       )}
@@ -128,71 +297,123 @@ function CartSection() {
   );
 }
 
+// ─── PAGE 4: Wishlist ───────────────────────────────────────────────────────
+
 function Wishlist() {
+  const { data: wishlist, loading, error, retry } = useApiData<DoctorWishlistItem[]>(doctorApi.getWishlist);
+
   return (
     <div className="space-y-5">
       <h1 className="text-2xl font-bold">Wishlist</h1>
-      <div className="grid gap-5 grid-cols-2 lg:grid-cols-4">
-        {products.slice(4, 8).map((p) => <ProductCard key={p.id} product={p} />)}
-      </div>
+      {loading ? <LoadingSpinner label="Loading wishlist..." /> : error ? <ErrorBanner onRetry={retry} /> : !wishlist?.length ? <EmptyBanner label="Wishlist is empty" /> : (
+        <div className="grid gap-5 grid-cols-2 lg:grid-cols-4">
+          {wishlist.map((p) => (
+            <ProductCard 
+              key={p.wishlistItemId} 
+              product={mapToProductCardProps(p)} 
+              onAdd={async () => {
+                try {
+                  await doctorApi.addToCart(p.productId, 1);
+                  toast.success(`${p.name} added to cart`);
+                } catch { toast.error("Failed to add to cart"); }
+              }}
+              onWishlist={async () => {
+                try {
+                  await doctorApi.removeFromWishlist(p.productId);
+                  toast.success("Removed from wishlist");
+                  retry(); // Refresh wishlist
+                } catch { toast.error("Failed to remove from wishlist"); }
+              }}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
 
+// ─── PAGE 5: Orders ─────────────────────────────────────────────────────────
+
 function OrdersSection() {
+  const activeOrder = useApiData<DoctorActiveOrder | null>(doctorApi.getActiveOrder);
+  const history = useApiData<DoctorOrderHistoryItem[]>(doctorApi.getOrderHistory);
+
   const stages = [
-    { label: "Ordered", icon: CheckCircle2, done: true },
-    { label: "Processing", icon: Package, done: true },
-    { label: "Shipped", icon: Truck, done: true },
-    { label: "Delivered", icon: CheckCircle2, done: false },
+    { label: "Ordered", icon: CheckCircle2 },
+    { label: "Processing", icon: Package },
+    { label: "Shipped", icon: Truck },
+    { label: "Delivered", icon: CheckCircle2 },
   ];
+
+  const getProgressWidth = (status?: string) => {
+    switch (status) {
+      case "pending": return "0%";
+      case "processing": return "33%";
+      case "shipped": return "66%";
+      case "delivered": return "100%";
+      default: return "0%";
+    }
+  };
+
+  const isDone = (status: string | undefined, index: number) => {
+    const s = status || "pending";
+    const map: Record<string, number> = { pending: 0, processing: 1, shipped: 2, delivered: 3 };
+    return (map[s] || 0) >= index;
+  };
+
   return (
     <div className="space-y-5">
       <h1 className="text-2xl font-bold">Order history</h1>
 
-      <Card className="p-5">
-        <div className="flex items-center justify-between mb-5">
-          <div>
-            <div className="text-sm text-muted-foreground">Order #ORD-1024</div>
-            <div className="font-semibold">3 items · $324.50</div>
-          </div>
-          <Badge>In transit</Badge>
-        </div>
-        <div className="relative flex items-center justify-between">
-          <div className="absolute top-4 left-4 right-4 h-0.5 bg-border" />
-          <div className="absolute top-4 left-4 h-0.5 bg-primary" style={{ width: "calc(66% - 1rem)" }} />
-          {stages.map((s) => (
-            <div key={s.label} className="relative flex flex-col items-center gap-2 z-10">
-              <div className={`h-9 w-9 rounded-full grid place-items-center border-2 ${s.done ? "bg-primary border-primary text-primary-foreground" : "bg-card border-border text-muted-foreground"}`}>
-                <s.icon className="h-4 w-4" />
-              </div>
-              <span className="text-xs">{s.label}</span>
+      {activeOrder.loading ? <LoadingSpinner /> : activeOrder.error ? <ErrorBanner onRetry={activeOrder.retry} /> : activeOrder.data && (
+        <Card className="p-5">
+          <div className="flex items-center justify-between mb-5">
+            <div>
+              <div className="text-sm text-muted-foreground">Order #{activeOrder.data.orderId}</div>
+              <div className="font-semibold">{activeOrder.data.itemCount} items · ₹{activeOrder.data.total.toFixed(2)}</div>
             </div>
-          ))}
-        </div>
-      </Card>
-
-      <Card className="overflow-hidden">
-        <Table>
-          <TableHeader>
-            <TableRow><TableHead>Order</TableHead><TableHead>Items</TableHead><TableHead>Total</TableHead><TableHead>Status</TableHead><TableHead>Date</TableHead></TableRow>
-          </TableHeader>
-          <TableBody>
-            {orders.slice(0, 8).map((o) => (
-              <TableRow key={o.id}>
-                <TableCell className="font-mono">{o.id}</TableCell>
-                <TableCell>{o.items}</TableCell>
-                <TableCell>${o.total.toFixed(2)}</TableCell>
-                <TableCell><StatusBadge status={o.status} /></TableCell>
-                <TableCell className="text-muted-foreground">{o.date}</TableCell>
-              </TableRow>
+            <Badge>{activeOrder.data.status}</Badge>
+          </div>
+          <div className="relative flex items-center justify-between">
+            <div className="absolute top-4 left-4 right-4 h-0.5 bg-border" />
+            <div className="absolute top-4 left-4 h-0.5 bg-primary transition-all duration-500" style={{ width: `calc(${getProgressWidth(activeOrder.data.status)} - 1rem)` }} />
+            {stages.map((s, i) => (
+              <div key={s.label} className="relative flex flex-col items-center gap-2 z-10">
+                <div className={`h-9 w-9 rounded-full grid place-items-center border-2 transition-colors duration-500 ${isDone(activeOrder.data?.status, i) ? "bg-primary border-primary text-primary-foreground" : "bg-card border-border text-muted-foreground"}`}>
+                  <s.icon className="h-4 w-4" />
+                </div>
+                <span className="text-xs">{s.label}</span>
+              </div>
             ))}
-          </TableBody>
-        </Table>
-      </Card>
+          </div>
+        </Card>
+      )}
+
+      {history.loading ? <LoadingSpinner /> : history.error ? <ErrorBanner onRetry={history.retry} /> : !history.data?.length ? <EmptyBanner label="No past orders" /> : (
+        <Card className="overflow-hidden">
+          <Table>
+            <TableHeader>
+              <TableRow><TableHead>Order</TableHead><TableHead>Items</TableHead><TableHead>Total</TableHead><TableHead>Status</TableHead><TableHead>Date</TableHead></TableRow>
+            </TableHeader>
+            <TableBody>
+              {history.data.map((o) => (
+                <TableRow key={o.orderId}>
+                  <TableCell className="font-mono">{o.orderId}</TableCell>
+                  <TableCell>{o.itemCount}</TableCell>
+                  <TableCell>₹{o.total.toFixed(2)}</TableCell>
+                  <TableCell><StatusBadge status={o.status as any} /></TableCell>
+                  <TableCell className="text-muted-foreground">{o.date}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </Card>
+      )}
     </div>
   );
 }
+
+// ─── Notifications (unchanged) ──────────────────────────────────────────────
 
 function NotificationsSection() {
   return (
@@ -213,13 +434,17 @@ function NotificationsSection() {
   );
 }
 
+// ─── Settings (unchanged) ───────────────────────────────────────────────────
+
 function SettingsSection() {
+  const { data: profile } = useApiData<DoctorProfile>(doctorApi.getProfile);
+  
   return (
     <div className="space-y-5 max-w-2xl">
       <h1 className="text-2xl font-bold">Settings</h1>
       <Card className="p-6 space-y-4">
-        <div><Label className="mb-1.5">Full name</Label><Input defaultValue="Dr. Aisha Khan" /></div>
-        <div><Label className="mb-1.5">Clinic</Label><Input defaultValue="SmileCare Mumbai" /></div>
+        <div><Label className="mb-1.5">Full name</Label><Input defaultValue={profile?.name || ""} /></div>
+        <div><Label className="mb-1.5">Clinic</Label><Input defaultValue={profile?.clinicName || ""} /></div>
         <div className="flex items-center justify-between"><span className="text-sm">Order updates via email</span><Switch defaultChecked /></div>
         <Button onClick={() => toast.success("Saved")}>Save</Button>
       </Card>

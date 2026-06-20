@@ -9,12 +9,11 @@ import multer from 'multer';
 const router = Router();
 const csvUpload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
 
-// Public routes
-router.get('/', productController.getAllProducts);
-router.get('/export-csv', authenticate, authorize('admin', 'shop_owner'), productController.exportProducts);
-router.get('/:id', productController.getProductById);
-
 // Protected routes
+router.get('/', authenticate, productController.getAllProducts);
+router.get('/export-csv', authenticate, authorize('admin', 'shop_owner'), productController.exportProducts);
+router.get('/:id', authenticate, productController.getProductById);
+
 router.post(
   '/',
   authenticate,

@@ -41,6 +41,9 @@ export const createProductValidator = [
   body('expiryDate')
     .optional()
     .isISO8601().withMessage('Invalid date format'),
+  body('batchNumber').optional().trim(),
+  body('hsnCode').optional().trim(),
+  body('gstPercentage').optional().isFloat({ min: 0, max: 100 }).withMessage('Invalid GST percentage'),
 ];
 
 export const updateProductValidator = [
@@ -50,6 +53,9 @@ export const updateProductValidator = [
   body('sellingPrice').optional().isFloat({ min: 0 }),
   body('discountPrice').optional().isFloat({ min: 0 }),
   body('status').optional().isIn(['active', 'inactive', 'out_of_stock']),
+  body('batchNumber').optional().trim(),
+  body('hsnCode').optional().trim(),
+  body('gstPercentage').optional().isFloat({ min: 0, max: 100 }).withMessage('Invalid GST percentage'),
 ];
 
 export const updateStockValidator = [

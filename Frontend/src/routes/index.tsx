@@ -11,13 +11,24 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { PublicLayout } from "@/components/site/PublicLayout";
 import { ProductCard } from "@/components/site/ProductCard";
-import { brands, categories, faqs, featuredProducts, testimonials } from "@/lib/mock-data";
+import { productsApi } from "@/lib/api";
+import { useAuth } from "@/lib/auth-context";
+import { useQuery } from "@tanstack/react-query";
+import { brands, categories, faqs, testimonials } from "@/lib/mock-data";
 
 export const Route = createFileRoute("/")({ component: HomePage });
 
 const fade = { initial: { opacity: 0, y: 24 }, whileInView: { opacity: 1, y: 0 }, viewport: { once: true }, transition: { duration: 0.5 } };
 
 function HomePage() {
+  const { isAuthenticated } = useAuth();
+  const { data: featuredResponse } = useQuery({
+    queryKey: ["featured-products"],
+    queryFn: () => productsApi.getProducts(true),
+    enabled: isAuthenticated,
+  });
+  const realFeaturedProducts = featuredResponse?.data || [];
+
   return (
     <PublicLayout>
       {/* Hero */}
@@ -90,15 +101,17 @@ function HomePage() {
       </section>
 
       {/* Featured */}
-      <section className="container mx-auto px-4 py-12">
-        <motion.div {...fade} className="flex items-end justify-between mb-8">
-          <h2 className="text-3xl font-bold tracking-tight">Featured Products</h2>
-          <Button variant="ghost" asChild><Link to="/products">All products <ArrowRight className="ml-1 h-4 w-4" /></Link></Button>
-        </motion.div>
-        <div className="grid gap-5 grid-cols-2 lg:grid-cols-4">
-          {featuredProducts.map((p) => <ProductCard key={p.id} product={p} />)}
-        </div>
-      </section>
+      {isAuthenticated && realFeaturedProducts.length > 0 && (
+        <section className="container mx-auto px-4 py-12">
+          <motion.div {...fade} className="flex items-end justify-between mb-8">
+            <h2 className="text-3xl font-bold tracking-tight">Featured Products</h2>
+            <Button variant="ghost" asChild><Link to="/products">All products <ArrowRight className="ml-1 h-4 w-4" /></Link></Button>
+          </motion.div>
+          <div className="grid gap-5 grid-cols-2 lg:grid-cols-4">
+            {realFeaturedProducts.map((p: any) => <ProductCard key={p._id} product={p} />)}
+          </div>
+        </section>
+      )}
 
       {/* Why us */}
       <section className="bg-card border-y mt-16">
@@ -108,7 +121,7 @@ function HomePage() {
           <div className="grid md:grid-cols-4 gap-6 mt-10">
             {[
               { i: ShieldCheck, t: "Authentic Products", d: "Sourced directly from authorized distributors." },
-              { i: Truck, t: "Fast Delivery", d: "Most metros in 1–3 business days." },
+              { i: Truck, t: "Fast Delivery", d: "Fast delivery to doctors across Vadodara." },
               { i: Award, t: "Best Pricing", d: "Tiered discounts for clinics and shops." },
               { i: Headphones, t: "Expert Support", d: "Dental specialists on call, 24/7." },
             ].map((f, i) => (
@@ -187,7 +200,7 @@ function HomePage() {
             <div className="mt-6 space-y-3 text-sm">
               <div><span className="font-semibold">Phone:</span> +91 98765 43210</div>
               <div><span className="font-semibold">Email:</span> hello@darshdental.com</div>
-              <div><span className="font-semibold">Address:</span> 12, Linking Road, Mumbai, India</div>
+              <div><span className="font-semibold">Address:</span> Vadodara, Gujarat, India (<a href="https://maps.app.goo.gl/T6URzoYFGa8462Fn7" target="_blank" rel="noreferrer" className="text-primary underline">Map</a>)</div>
             </div>
           </div>
           <form className="space-y-3" onSubmit={(e) => e.preventDefault()}>

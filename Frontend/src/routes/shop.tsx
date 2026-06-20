@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState, useEffect, useCallback } from "react";
 import {
   LayoutDashboard, Package, Warehouse, ShoppingBag, Users, BarChart3, Bell, Settings,
-  DollarSign, TrendingUp, Plus, FileText, Loader2,
+  DollarSign, TrendingUp, Plus, FileText, Loader2, Trash2, Edit
 } from "lucide-react";
 import {
   Bar, BarChart, CartesianGrid, Cell, Legend, Line, LineChart, Pie, PieChart,
@@ -216,28 +216,73 @@ function DashboardSection() {
 
 // ─── PAGE 2: Products ───────────────────────────────────────────────────────
 
-function ProductForm({ onClose }: { onClose: () => void }) {
+function ProductForm({ onClose, onSuccess }: { onClose: () => void, onSuccess: () => void }) {
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const payload = {
+      name: formData.get("name") as string,
+      category: formData.get("category") as string,
+      brand: formData.get("brand") as string,
+      price: Number(formData.get("price")),
+      sellingPrice: Number(formData.get("price")), // mapping Price to sellingPrice
+      purchasePrice: Number(formData.get("purchasePrice") || formData.get("price")),
+      stock: Number(formData.get("stock")),
+      SKU: formData.get("SKU") as string,
+      hsnCode: formData.get("hsnCode") as string,
+      gstPercentage: Number(formData.get("gstPercentage") || 0),
+      batchNumber: formData.get("batchNumber") as string,
+      description: formData.get("description") as string,
+    };
+
+    setLoading(true);
+    try {
+      await shopApi.createProduct(payload);
+      toast.success("Product created successfully!");
+      onSuccess();
+      onClose();
+    } catch (err: any) {
+      toast.error(err.message || "Failed to create product");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <form className="grid grid-cols-2 gap-3" onSubmit={(e) => { e.preventDefault(); toast.success("Product saved"); onClose(); }}>
-      <div className="col-span-2"><Label className="mb-1.5">Name</Label><Input required /></div>
+    <form className="grid grid-cols-2 gap-3 max-h-[70vh] overflow-y-auto px-1 pb-1" onSubmit={handleSubmit}>
+      <div className="col-span-2"><Label className="mb-1.5">Name *</Label><Input name="name" required /></div>
       <div>
-        <Label className="mb-1.5">Category</Label>
-        <Select><SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+        <Label className="mb-1.5">Category *</Label>
+        <Select name="category" required defaultValue={formCategories[0]}>
+          <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
           <SelectContent>{formCategories.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
         </Select>
       </div>
       <div>
         <Label className="mb-1.5">Brand</Label>
-        <Select><SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+        <Select name="brand" defaultValue={formBrands[0]}>
+          <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
           <SelectContent>{formBrands.map((b) => <SelectItem key={b} value={b}>{b}</SelectItem>)}</SelectContent>
         </Select>
       </div>
-      <div><Label className="mb-1.5">Price</Label><Input type="number" required /></div>
-      <div><Label className="mb-1.5">Stock</Label><Input type="number" required /></div>
-      <div className="col-span-2"><Label className="mb-1.5">Description</Label><Textarea rows={3} /></div>
-      <div className="col-span-2 flex justify-end gap-2">
-        <Button type="button" variant="outline" onClick={onClose}>Cancel</Button>
-        <Button type="submit">Save</Button>
+      <div><Label className="mb-1.5">SKU *</Label><Input name="SKU" required placeholder="e.g. COMP-001" /></div>
+      <div><Label className="mb-1.5">Stock *</Label><Input name="stock" type="number" required min="0" /></div>
+      
+      <div><Label className="mb-1.5">Selling Price (₹) *</Label><Input name="price" type="number" required min="0" step="0.01" /></div>
+      <div><Label className="mb-1.5">Purchase Price (₹)</Label><Input name="purchasePrice" type="number" min="0" step="0.01" /></div>
+      
+      <div><Label className="mb-1.5">HSN Code</Label><Input name="hsnCode" placeholder="e.g. 90184900" /></div>
+      <div><Label className="mb-1.5">GST (%)</Label><Input name="gstPercentage" type="number" min="0" max="100" placeholder="e.g. 18" /></div>
+      
+      <div className="col-span-2"><Label className="mb-1.5">Batch Number</Label><Input name="batchNumber" /></div>
+
+      <div className="col-span-2"><Label className="mb-1.5">Description *</Label><Textarea name="description" rows={3} required /></div>
+      
+      <div className="col-span-2 flex justify-end gap-2 mt-2">
+        <Button type="button" variant="outline" onClick={onClose} disabled={loading}>Cancel</Button>
+        <Button type="submit" disabled={loading}>{loading ? "Saving..." : "Save Product"}</Button>
       </div>
     </form>
   );
@@ -253,7 +298,7 @@ function ProductsSection() {
         <h1 className="text-2xl font-bold">Products</h1>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild><Button><Plus className="h-4 w-4 mr-2" />Add Product</Button></DialogTrigger>
-          <DialogContent><DialogHeader><DialogTitle>Add product</DialogTitle></DialogHeader><ProductForm onClose={() => setOpen(false)} /></DialogContent>
+          <DialogContent className="max-w-2xl"><DialogHeader><DialogTitle>Add product</DialogTitle></DialogHeader><ProductForm onClose={() => setOpen(false)} onSuccess={() => retry()} /></DialogContent>
         </Dialog>
       </div>
       {loading ? <LoadingSpinner label="Loading products..." /> : error ? <ErrorBanner onRetry={retry} /> : !products?.length ? <EmptyBanner label="No products yet. Add your first product!" /> : (
@@ -276,7 +321,26 @@ function ProductsSection() {
                   <TableCell>{p.brand}</TableCell>
                   <TableCell>₹{p.price.toFixed(2)}</TableCell>
                   <TableCell>{p.stock}</TableCell>
-                  <TableCell><Button size="sm" variant="ghost" onClick={() => toast.message("Open edit form")}>Edit</Button></TableCell>
+                  <TableCell className="text-right">
+                    <Button size="sm" variant="ghost" onClick={() => toast.message("Open edit form")}>
+                      <Edit className="h-4 w-4 mr-2" />
+                      Edit
+                    </Button>
+                    <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive" onClick={async () => {
+                      if (confirm("Are you sure you want to delete this product?")) {
+                        try {
+                          await shopApi.deleteProduct(p._id);
+                          toast.success("Product deleted successfully");
+                          retry();
+                        } catch (e: any) {
+                          toast.error(e.message || "Failed to delete product");
+                        }
+                      }
+                    }}>
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Delete
+                    </Button>
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>

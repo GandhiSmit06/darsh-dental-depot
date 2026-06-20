@@ -21,9 +21,9 @@ export function ProductCard({ product, onAdd, onWishlist }: ProductCardProps) {
       transition={{ type: "spring", stiffness: 300, damping: 22 }}
     >
       <Card className="overflow-hidden h-full flex flex-col group">
-        <Link to="/products/$id" params={{ id: product.id }} className="relative block aspect-square bg-accent overflow-hidden">
+        <Link to="/products/$id" params={{ id: product.id || product._id }} className="relative block aspect-square bg-accent overflow-hidden">
           <img
-            src={product.image}
+            src={product.image || (product.images && product.images[0]) || 'https://via.placeholder.com/300?text=No+Image'}
             alt={product.name}
             loading="lazy"
             className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500"
@@ -48,7 +48,7 @@ export function ProductCard({ product, onAdd, onWishlist }: ProductCardProps) {
         </Link>
         <div className="p-4 flex flex-col gap-2 flex-1">
           <div className="text-xs text-muted-foreground uppercase tracking-wide">{product.brand}</div>
-          <Link to="/products/$id" params={{ id: product.id }} className="font-semibold leading-snug line-clamp-2 hover:text-primary">
+          <Link to="/products/$id" params={{ id: product.id || product._id }} className="font-semibold leading-snug line-clamp-2 hover:text-primary">
             {product.name}
           </Link>
           <div className="flex items-center gap-1 text-xs text-muted-foreground">
@@ -56,7 +56,7 @@ export function ProductCard({ product, onAdd, onWishlist }: ProductCardProps) {
             {product.rating.toFixed(1)} <span className="opacity-60">({product.reviewCount})</span>
           </div>
           <div className="mt-auto flex items-center justify-between pt-2">
-            <div className="font-bold text-lg">₹{product.price.toFixed(2)}</div>
+            <div className="font-bold text-lg">₹{(product.price || product.sellingPrice || 0).toFixed(2)}</div>
             <Button
               size="sm"
               disabled={!inStock}

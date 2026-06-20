@@ -182,6 +182,22 @@ export interface ShopProduct {
   status: string;
 }
 
+export interface CreateProductPayload {
+  name: string;
+  category: string;
+  description: string;
+  SKU: string;
+  stock: number;
+  purchasePrice: number;
+  sellingPrice: number;
+  brand?: string;
+  manufacturer?: string;
+  hsnCode?: string;
+  gstPercentage?: number;
+  batchNumber?: string;
+  expiryDate?: string;
+}
+
 export interface ShopInventoryItem {
   _id: string;
   sku: string;
@@ -246,6 +262,8 @@ export const shopApi = {
   getMonthlyTrend: () => apiFetch<ApiOk<MonthlyTrendItem[]>>("/shop/analytics/monthly-trend"),
   getCategoryShare: () => apiFetch<ApiOk<CategoryShareItem[]>>("/shop/analytics/category-share"),
   getProductPerformance: () => apiFetch<ApiOk<ProductPerformanceItem[]>>("/shop/analytics/product-performance"),
+  createProduct: (data: CreateProductPayload) => apiFetch<ApiOk<ShopProduct>>("/products", { method: "POST", body: JSON.stringify(data) }),
+  deleteProduct: (id: string) => apiFetch<ApiOk<null>>(`/products/${id}`, { method: "DELETE" }),
 };
 
 // ─── Doctor-specific API calls ──────────────────────────────────────────────
@@ -336,6 +354,8 @@ export const doctorApi = {
 
 export const productsApi = {
   getProducts: (recommended = false) => 
-    apiFetch<{ products: ProductResponse[] }>(`/products${recommended ? '?recommended=true&limit=4' : '?limit=100'}`),
+    apiFetch<ApiOk<ProductResponse[]>>(`/products${recommended ? '?recommended=true&limit=4' : '?limit=100'}`),
+  getProductById: (id: string) => 
+    apiFetch<ApiOk<ProductResponse>>(`/products/${id}`),
 };
 

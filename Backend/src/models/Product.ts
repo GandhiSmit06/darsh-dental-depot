@@ -23,6 +23,8 @@ const productSchema = new Schema<IProduct>(
     images: [{ type: String }],
     SKU: { type: String, required: true, unique: true, uppercase: true, trim: true },
     batchNumber: { type: String, trim: true },
+    hsnCode: { type: String, trim: true },
+    gstPercentage: { type: Number, min: 0, max: 100 },
     manufacturer: { type: String, trim: true },
     brand: { type: String, trim: true },
     stock: { type: Number, required: true, default: 0, min: 0 },

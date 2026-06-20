@@ -5,31 +5,148 @@ import { Product } from '../src/models/Product';
 import { hashPassword } from '../src/helpers/bcrypt.helper';
 import { env } from '../src/config/env';
 
-const categories = [
-  'Composites',
-  'Impression Materials',
-  'Endodontics',
-  'Orthodontics',
-  'Instruments',
-  'Disposables',
-  'Cements & Adhesives',
-  'Whitening',
+const realProductsData = [
+  {
+    name: '3M ESPE Filtek Z350 XT Universal Restorative',
+    category: 'Composites',
+    brand: '3M ESPE',
+    manufacturer: '3M',
+    description: 'A versatile, high-performance nanocomposite. Excellent aesthetics for anterior restorations and strength for posterior restorations.',
+    images: ['https://images.unsplash.com/photo-1606811841689-23dfddce3e95?auto=format&fit=crop&w=600&q=80'],
+    hsnCode: '30064000',
+    gstPercentage: 12,
+    sellingPrice: 2450.00,
+    purchasePrice: 2100.00,
+    stock: 25,
+    SKU: '3M-FLT-Z350',
+  },
+  {
+    name: 'GC Fuji I Glass Ionomer Luting Cement',
+    category: 'Cements & Adhesives',
+    brand: 'GC',
+    manufacturer: 'GC Corporation',
+    description: 'Radiopaque glass ionomer luting cement. Ideal for the luting of metal-based and opaque ceramic restorations.',
+    images: ['https://images.unsplash.com/photo-1598256989800-fea5f9508d50?auto=format&fit=crop&w=600&q=80'],
+    hsnCode: '30064000',
+    gstPercentage: 12,
+    sellingPrice: 1850.00,
+    purchasePrice: 1550.00,
+    stock: 40,
+    SKU: 'GC-FUJI-1',
+  },
+  {
+    name: 'Dentsply ProTaper Gold Rotary Files',
+    category: 'Endodontics',
+    brand: 'Dentsply Sirona',
+    manufacturer: 'Dentsply Sirona',
+    description: 'ProTaper Gold rotary files feature the same exact geometries as ProTaper Universal but with enhanced flexibility.',
+    images: ['https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?auto=format&fit=crop&w=600&q=80'],
+    hsnCode: '90184900',
+    gstPercentage: 12,
+    sellingPrice: 3200.00,
+    purchasePrice: 2800.00,
+    stock: 0, // OUT OF STOCK
+    SKU: 'DENT-PTG-001',
+  },
+  {
+    name: 'Septodont Septocaine 1:100,000 (Articaine)',
+    category: 'Disposables',
+    brand: 'Septodont',
+    manufacturer: 'Septodont',
+    description: 'Articaine hydrochloride 4% with Epinephrine 1:100,000 local anesthetic for dental use.',
+    images: ['https://images.unsplash.com/photo-1584362917165-526a968579e8?auto=format&fit=crop&w=600&q=80'],
+    hsnCode: '30049099',
+    gstPercentage: 12,
+    sellingPrice: 2100.00,
+    purchasePrice: 1900.00,
+    stock: 120,
+    SKU: 'SEPT-ART-100',
+  },
+  {
+    name: 'Kerr OptiBond FL Adhesive Kit',
+    category: 'Cements & Adhesives',
+    brand: 'Kerr',
+    manufacturer: 'Kerr Dental',
+    description: 'Total-etch, two-component dental adhesive. Renowned for its high bond strengths and proven long-term performance.',
+    images: ['https://images.unsplash.com/photo-1606811841689-23dfddce3e95?auto=format&fit=crop&w=600&q=80'],
+    hsnCode: '30064000',
+    gstPercentage: 12,
+    sellingPrice: 4800.00,
+    purchasePrice: 4200.00,
+    stock: 15,
+    SKU: 'KERR-OPT-FL',
+  },
+  {
+    name: 'Woodpecker Ultrasonic Scaler Tips (G1, G2, G4)',
+    category: 'Instruments',
+    brand: 'Woodpecker',
+    manufacturer: 'Guilin Woodpecker',
+    description: 'High quality stainless steel scaler tips compatible with EMS and Woodpecker ultrasonic scalers. Set of 3.',
+    images: ['https://images.unsplash.com/photo-1598256989800-fea5f9508d50?auto=format&fit=crop&w=600&q=80'],
+    hsnCode: '90184900',
+    gstPercentage: 18,
+    sellingPrice: 850.00,
+    purchasePrice: 600.00,
+    stock: 50,
+    SKU: 'WOOD-SCL-GSET',
+  },
+  {
+    name: 'Waldent Dental Airotor Handpiece (Standard Head)',
+    category: 'Instruments',
+    brand: 'Waldent',
+    manufacturer: 'Waldent',
+    description: 'High-speed airotor handpiece with ceramic bearings, standard head, and push-button chuck.',
+    images: ['https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?auto=format&fit=crop&w=600&q=80'],
+    hsnCode: '90184100',
+    gstPercentage: 18,
+    sellingPrice: 1550.00,
+    purchasePrice: 1200.00,
+    stock: 0, // OUT OF STOCK
+    SKU: 'WALD-AIR-STD',
+  },
+  {
+    name: 'Ivoclar Vivadent Tetric N-Ceram Bulk Fill',
+    category: 'Composites',
+    brand: 'Ivoclar',
+    manufacturer: 'Ivoclar Vivadent',
+    description: 'Light-curing radiopaque nanohybrid composite for bulk placement in posterior teeth.',
+    images: ['https://images.unsplash.com/photo-1584362917165-526a968579e8?auto=format&fit=crop&w=600&q=80'],
+    hsnCode: '30064000',
+    gstPercentage: 12,
+    sellingPrice: 2250.00,
+    purchasePrice: 1950.00,
+    stock: 35,
+    SKU: 'IVOC-TET-BF',
+  },
+  {
+    name: 'Zhermack Tropicalgin Alginate Impression Material',
+    category: 'Impression Materials',
+    brand: 'Zhermack',
+    manufacturer: 'Zhermack SpA',
+    description: 'Chromatic alginate for highly precise and elastic impressions. Fast setting with mango flavor.',
+    images: ['https://images.unsplash.com/photo-1606811841689-23dfddce3e95?auto=format&fit=crop&w=600&q=80'],
+    hsnCode: '34070000',
+    gstPercentage: 18,
+    sellingPrice: 480.00,
+    purchasePrice: 350.00,
+    stock: 200,
+    SKU: 'ZHER-TROP-ALG',
+  },
+  {
+    name: 'Prevest DenPro Cal LC (Light Cure Calcium Hydroxide)',
+    category: 'Endodontics',
+    brand: 'Prevest DenPro',
+    manufacturer: 'Prevest DenPro',
+    description: 'Light cured radiopaque calcium hydroxide paste. Effective for indirect pulp capping and as a cavity liner.',
+    images: ['https://images.unsplash.com/photo-1598256989800-fea5f9508d50?auto=format&fit=crop&w=600&q=80'],
+    hsnCode: '30064000',
+    gstPercentage: 12,
+    sellingPrice: 380.00,
+    purchasePrice: 250.00,
+    stock: 80,
+    SKU: 'PREV-CAL-LC',
+  }
 ];
-
-const brands = ['3M ESPE', 'Ivoclar', 'Dentsply Sirona', 'GC', 'Kerr', 'Septodont', 'VOCO'];
-
-const productNames = [
-  'Filtek Universal Composite',
-  'Alginate Impression Powder',
-  'RotoFile Endo Rotary Set',
-  'Orthodontic Bracket Kit',
-  'Stainless Steel Scaler',
-  'Disposable Bib Roll',
-  'GC Fuji Glass Ionomer',
-  'Opalescence Whitening Gel',
-];
-
-const productSuffixes = ['A2', 'Pro', 'Plus', 'Premium', 'Kit', 'Pack'];
 
 async function seed() {
   console.log('🌱 Starting seed...');
@@ -64,7 +181,7 @@ async function seed() {
     phone: '9000000002',
     password: shopOwnerPassword,
     clinicName: 'Mehta Medical Depot',
-    address: '42 Gandhi Road, Ahmedabad, Gujarat',
+    address: '42 Gandhi Road, Vadodara, Gujarat',
     isVerified: true,
     isActive: true,
   });
@@ -80,46 +197,29 @@ async function seed() {
     password: doctorPassword,
     clinicName: 'Khan Dental Clinic',
     medicalRegistrationNumber: 'MCI-DEN-2023-001',
-    address: 'B-12, Andheri West, Mumbai, Maharashtra',
+    address: 'B-12, Alkapuri, Vadodara, Gujarat',
     isVerified: true,
     isActive: true,
   });
   console.log(`✅ Doctor created: ${doctor.email}`);
 
-  // Create 24 products (matching frontend mock data structure)
-  const products = [];
-  for (let i = 0; i < 24; i++) {
-    const cat = categories[i % categories.length];
-    const brand = brands[i % brands.length];
-    const name = `${productNames[i % 8]} ${productSuffixes[i % 6]}`;
-    const sellingPrice = Math.round((19 + ((i * 7.3) % 280)) * 100) / 100;
-    const stock = (i * 13) % 60;
-    const skuSuffix = String(i + 1).padStart(3, '0');
-
-    products.push({
-      name,
-      category: cat,
-      description: 'Premium-grade dental material designed for clinical excellence. Trusted by professionals for consistent results, durability, and patient comfort.',
-      images: [`https://images.unsplash.com/photo-1606811971618-4486d14f3f99?auto=format&fit=crop&w=600&q=80`],
-      SKU: `DDD-${cat.slice(0, 3).toUpperCase()}-${skuSuffix}`,
-      batchNumber: `BATCH-2025-${skuSuffix}`,
-      manufacturer: brand,
-      brand,
-      stock,
-      purchasePrice: Math.round(sellingPrice * 0.7 * 100) / 100,
-      sellingPrice,
-      discountPrice: i % 4 === 0 ? Math.round(sellingPrice * 0.9 * 100) / 100 : undefined,
+  // Format real products with necessary database fields
+  const productsToInsert = realProductsData.map((prod, i) => {
+    return {
+      ...prod,
+      batchNumber: `BATCH-2025-${prod.SKU}`,
+      discountPrice: i % 3 === 0 ? Math.round(prod.sellingPrice * 0.95) : undefined,
       expiryDate: new Date(Date.now() + (365 + i * 30) * 24 * 60 * 60 * 1000),
-      status: stock === 0 ? 'out_of_stock' : 'active',
+      status: prod.stock === 0 ? 'out_of_stock' : 'active',
       lowStockThreshold: 10,
-      rating: Math.round((3.8 + ((i * 0.17) % 1.2)) * 10) / 10,
-      reviewCount: 12 + (i * 7) % 240,
+      rating: Math.round((4.0 + ((i * 0.17) % 0.9)) * 10) / 10,
+      reviewCount: 45 + (i * 7) % 180,
       createdBy: shopOwner._id,
-    });
-  }
+    };
+  });
 
-  await Product.insertMany(products);
-  console.log(`✅ Created ${products.length} products`);
+  await Product.insertMany(productsToInsert);
+  console.log(`✅ Created ${productsToInsert.length} real products`);
 
   console.log('\n🎉 Seed complete!');
   console.log('───────────────────────────────────');

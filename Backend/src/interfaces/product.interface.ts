@@ -10,6 +10,8 @@ export interface IProduct extends Document {
   images: string[];
   SKU: string;
   batchNumber?: string;
+  hsnCode?: string;
+  gstPercentage?: number;
   manufacturer?: string;
   brand?: string;
   stock: number;

@@ -28,7 +28,7 @@ function ContactPage() {
           {[
             { i: Phone, t: "Phone", v: "+91 98765 43210" },
             { i: Mail, t: "Email", v: "hello@darshdental.com" },
-            { i: MapPin, t: "Address", v: "12, Linking Road, Mumbai" },
+            { i: MapPin, t: "Address", v: "Vadodara, Gujarat" },
           ].map((c) => (
             <Card key={c.t} className="p-6 text-center">
               <div className="h-11 w-11 rounded-lg bg-primary/10 text-primary grid place-items-center mx-auto mb-3">
@@ -65,9 +65,12 @@ function ContactPage() {
                 }}
               />
               <div className="relative text-center">
-                <MapPin className="h-10 w-10 mx-auto text-primary" />
-                <div className="font-semibold mt-2">Map placeholder</div>
-                <div className="text-xs">12, Linking Road, Mumbai</div>
+                <a href="https://maps.app.goo.gl/T6URzoYFGa8462Fn7" target="_blank" rel="noreferrer" className="hover:opacity-80 transition-opacity block">
+                  <MapPin className="h-10 w-10 mx-auto text-primary" />
+                  <div className="font-semibold mt-2">Darsh Dental Depot</div>
+                  <div className="text-xs text-primary underline mt-1">View on Google Maps</div>
+                  <div className="text-xs mt-1">Vadodara, Gujarat</div>
+                </a>
               </div>
             </div>
           </Card>

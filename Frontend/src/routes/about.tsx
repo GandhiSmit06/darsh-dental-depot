@@ -27,8 +27,8 @@ function AboutPage() {
           Our story
         </motion.h1>
         <p className="mt-6 text-lg text-muted-foreground">
-          Founded in 2014, Darsh Dental Depot began as a single storefront in Mumbai with one mission: make world-class
-          dental materials accessible to every clinic in India. A decade later, we serve over 5,000 practices with
+          Founded in 2014, Darsh Dental Depot began as a single storefront in Vadodara, Gujarat with one mission: make world-class
+          dental materials accessible to every doctor and clinic in Vadodara. A decade later, we serve thousands of practices with
           premium products, fair pricing, and a team that genuinely cares about your craft.
         </p>
       </section>

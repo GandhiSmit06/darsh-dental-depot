@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import {
   LayoutDashboard, Package, Warehouse, ShoppingBag, Users, BarChart3, Bell, Settings,
   DollarSign, TrendingUp, Plus, FileText, Loader2, Trash2, Edit
@@ -94,18 +94,23 @@ function useApiData<T>(fetcher: () => Promise<{ data: T }>) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
+  const fetcherRef = useRef(fetcher);
+  useEffect(() => {
+    fetcherRef.current = fetcher;
+  }, [fetcher]);
+
   const load = useCallback(async () => {
     setLoading(true);
     setError(false);
     try {
-      const res = await fetcher();
+      const res = await fetcherRef.current();
       setData(res.data);
     } catch {
       setError(true);
     } finally {
       setLoading(false);
     }
-  }, [fetcher]);
+  }, []);
 
   useEffect(() => { load(); }, [load]);
 
@@ -116,14 +121,23 @@ function useApiData<T>(fetcher: () => Promise<{ data: T }>) {
 
 function ShopDashboard() {
   const [active, setActive] = useState("dashboard");
+  const [search, setSearch] = useState("");
 
   return (
-    <DashboardLayout title="Shop Owner" role="Shop Owner" items={items} active={active} onChange={setActive}>
+    <DashboardLayout 
+      title="Shop Owner" 
+      role="Shop Owner" 
+      items={items} 
+      active={active} 
+      onChange={setActive}
+      search={search}
+      onSearchChange={setSearch}
+    >
       {active === "dashboard" && <DashboardSection />}
-      {active === "products" && <ProductsSection />}
-      {active === "inventory" && <InventorySection />}
-      {active === "orders" && <OrdersSection />}
-      {active === "customers" && <CustomersSection />}
+      {active === "products" && <ProductsSection search={search} />}
+      {active === "inventory" && <InventorySection search={search} />}
+      {active === "orders" && <OrdersSection search={search} />}
+      {active === "customers" && <CustomersSection search={search} />}
       {active === "analytics" && <AnalyticsSection />}
       {active === "notifications" && <NotificationsSection />}
       {active === "settings" && <SettingsSection />}
@@ -216,7 +230,7 @@ function DashboardSection() {
 
 // ─── PAGE 2: Products ───────────────────────────────────────────────────────
 
-function ProductForm({ onClose, onSuccess }: { onClose: () => void, onSuccess: () => void }) {
+function ProductForm({ onClose, onSuccess, initialData }: { onClose: () => void, onSuccess: () => void, initialData?: any }) {
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -239,12 +253,17 @@ function ProductForm({ onClose, onSuccess }: { onClose: () => void, onSuccess: (
 
     setLoading(true);
     try {
-      await shopApi.createProduct(payload);
-      toast.success("Product created successfully!");
+      if (initialData) {
+        await shopApi.updateProduct(initialData._id, payload);
+        toast.success("Product updated successfully!");
+      } else {
+        await shopApi.createProduct(payload);
+        toast.success("Product created successfully!");
+      }
       onSuccess();
       onClose();
     } catch (err: any) {
-      toast.error(err.message || "Failed to create product");
+      toast.error(err.message || (initialData ? "Failed to update product" : "Failed to create product"));
     } finally {
       setLoading(false);
     }
@@ -252,56 +271,76 @@ function ProductForm({ onClose, onSuccess }: { onClose: () => void, onSuccess: (
 
   return (
     <form className="grid grid-cols-2 gap-3 max-h-[70vh] overflow-y-auto px-1 pb-1" onSubmit={handleSubmit}>
-      <div className="col-span-2"><Label className="mb-1.5">Name *</Label><Input name="name" required /></div>
+      <div className="col-span-2"><Label className="mb-1.5">Name *</Label><Input name="name" defaultValue={initialData?.name} required /></div>
       <div>
         <Label className="mb-1.5">Category *</Label>
-        <Select name="category" required defaultValue={formCategories[0]}>
+        <Select name="category" required defaultValue={initialData?.category || formCategories[0]}>
           <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
           <SelectContent>{formCategories.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
         </Select>
       </div>
       <div>
         <Label className="mb-1.5">Brand</Label>
-        <Select name="brand" defaultValue={formBrands[0]}>
+        <Select name="brand" defaultValue={initialData?.brand || formBrands[0]}>
           <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
           <SelectContent>{formBrands.map((b) => <SelectItem key={b} value={b}>{b}</SelectItem>)}</SelectContent>
         </Select>
       </div>
-      <div><Label className="mb-1.5">SKU *</Label><Input name="SKU" required placeholder="e.g. COMP-001" /></div>
-      <div><Label className="mb-1.5">Stock *</Label><Input name="stock" type="number" required min="0" /></div>
+      <div><Label className="mb-1.5">SKU *</Label><Input name="SKU" defaultValue={initialData?.sku || initialData?.SKU} required placeholder="e.g. COMP-001" /></div>
+      <div><Label className="mb-1.5">Stock *</Label><Input name="stock" defaultValue={initialData?.stock} type="number" required min="0" /></div>
       
-      <div><Label className="mb-1.5">Selling Price (₹) *</Label><Input name="price" type="number" required min="0" step="0.01" /></div>
-      <div><Label className="mb-1.5">Purchase Price (₹)</Label><Input name="purchasePrice" type="number" min="0" step="0.01" /></div>
+      <div><Label className="mb-1.5">Selling Price (₹) *</Label><Input name="price" defaultValue={initialData?.sellingPrice || initialData?.price} type="number" required min="0" step="0.01" /></div>
+      <div><Label className="mb-1.5">Purchase Price (₹)</Label><Input name="purchasePrice" defaultValue={initialData?.purchasePrice} type="number" min="0" step="0.01" /></div>
       
-      <div><Label className="mb-1.5">HSN Code</Label><Input name="hsnCode" placeholder="e.g. 90184900" /></div>
-      <div><Label className="mb-1.5">GST (%)</Label><Input name="gstPercentage" type="number" min="0" max="100" placeholder="e.g. 18" /></div>
+      <div><Label className="mb-1.5">HSN Code</Label><Input name="hsnCode" defaultValue={initialData?.hsnCode} placeholder="e.g. 90184900" /></div>
+      <div><Label className="mb-1.5">GST (%)</Label><Input name="gstPercentage" defaultValue={initialData?.gstPercentage} type="number" min="0" max="100" placeholder="e.g. 18" /></div>
       
-      <div className="col-span-2"><Label className="mb-1.5">Batch Number</Label><Input name="batchNumber" /></div>
+      <div className="col-span-2"><Label className="mb-1.5">Batch Number</Label><Input name="batchNumber" defaultValue={initialData?.batchNumber} /></div>
 
-      <div className="col-span-2"><Label className="mb-1.5">Description *</Label><Textarea name="description" rows={3} required /></div>
+      <div className="col-span-2"><Label className="mb-1.5">Description *</Label><Textarea name="description" defaultValue={initialData?.description} rows={3} required /></div>
       
       <div className="col-span-2 flex justify-end gap-2 mt-2">
         <Button type="button" variant="outline" onClick={onClose} disabled={loading}>Cancel</Button>
-        <Button type="submit" disabled={loading}>{loading ? "Saving..." : "Save Product"}</Button>
+        <Button type="submit" disabled={loading}>{loading ? "Saving..." : (initialData ? "Update Product" : "Save Product")}</Button>
       </div>
     </form>
   );
 }
 
-function ProductsSection() {
+function ProductsSection({ search }: { search?: string }) {
   const [open, setOpen] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<any>(null);
   const { data: products, loading, error, retry } = useApiData<ShopProduct[]>(shopApi.getProducts);
+
+  const filteredProducts = products?.filter((p) => {
+    if (!search) return true;
+    const s = search.toLowerCase();
+    return p.name.toLowerCase().includes(s) || 
+           p.sku?.toLowerCase().includes(s) || 
+           p.brand?.toLowerCase().includes(s) || 
+           p.category?.toLowerCase().includes(s);
+  }) || [];
+
+  const handleEdit = (p: any) => {
+    setEditingProduct(p);
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+    setTimeout(() => setEditingProduct(null), 300);
+  };
 
   return (
     <div className="space-y-5">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Products</h1>
-        <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger asChild><Button><Plus className="h-4 w-4 mr-2" />Add Product</Button></DialogTrigger>
-          <DialogContent className="max-w-2xl"><DialogHeader><DialogTitle>Add product</DialogTitle></DialogHeader><ProductForm onClose={() => setOpen(false)} onSuccess={() => retry()} /></DialogContent>
+        <Dialog open={open} onOpenChange={(v) => { if (!v) handleClose(); else setOpen(true); }}>
+          <DialogTrigger asChild><Button onClick={() => setEditingProduct(null)}><Plus className="h-4 w-4 mr-2" />Add Product</Button></DialogTrigger>
+          <DialogContent className="max-w-2xl"><DialogHeader><DialogTitle>{editingProduct ? "Edit Product" : "Add product"}</DialogTitle></DialogHeader><ProductForm initialData={editingProduct} onClose={handleClose} onSuccess={() => retry()} /></DialogContent>
         </Dialog>
       </div>
-      {loading ? <LoadingSpinner label="Loading products..." /> : error ? <ErrorBanner onRetry={retry} /> : !products?.length ? <EmptyBanner label="No products yet. Add your first product!" /> : (
+      {loading ? <LoadingSpinner label="Loading products..." /> : error ? <ErrorBanner onRetry={retry} /> : !filteredProducts.length ? <EmptyBanner label={search ? "No products found matching your search." : "No products yet. Add your first product!"} /> : (
         <Card className="overflow-hidden">
           <Table>
             <TableHeader>
@@ -311,7 +350,7 @@ function ProductsSection() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {products.map((p) => (
+              {filteredProducts.map((p) => (
                 <TableRow key={p._id}>
                   <TableCell className="flex items-center gap-3 min-w-[220px]">
                     {p.imageUrl && <img src={p.imageUrl} alt="" className="h-9 w-9 rounded object-cover" />}
@@ -322,7 +361,7 @@ function ProductsSection() {
                   <TableCell>₹{p.price.toFixed(2)}</TableCell>
                   <TableCell>{p.stock}</TableCell>
                   <TableCell className="text-right">
-                    <Button size="sm" variant="ghost" onClick={() => toast.message("Open edit form")}>
+                    <Button size="sm" variant="ghost" onClick={() => handleEdit(p)}>
                       <Edit className="h-4 w-4 mr-2" />
                       Edit
                     </Button>
@@ -353,13 +392,19 @@ function ProductsSection() {
 
 // ─── PAGE 3: Inventory ──────────────────────────────────────────────────────
 
-function InventorySection() {
+function InventorySection({ search }: { search?: string }) {
   const { data: inventory, loading, error, retry } = useApiData<ShopInventoryItem[]>(shopApi.getInventory);
+
+  const filteredInventory = inventory?.filter((p) => {
+    if (!search) return true;
+    const s = search.toLowerCase();
+    return p.productName.toLowerCase().includes(s) || p.sku?.toLowerCase().includes(s);
+  }) || [];
 
   return (
     <div className="space-y-5">
       <h1 className="text-2xl font-bold">Inventory</h1>
-      {loading ? <LoadingSpinner label="Loading inventory..." /> : error ? <ErrorBanner onRetry={retry} /> : !inventory?.length ? <EmptyBanner label="No inventory data available" /> : (
+      {loading ? <LoadingSpinner label="Loading inventory..." /> : error ? <ErrorBanner onRetry={retry} /> : !filteredInventory.length ? <EmptyBanner label={search ? "No inventory items found matching your search." : "No inventory data available"} /> : (
         <Card className="overflow-hidden">
           <Table>
             <TableHeader>
@@ -369,7 +414,7 @@ function InventorySection() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {inventory.map((p) => (
+              {filteredInventory.map((p) => (
                 <TableRow key={p._id}>
                   <TableCell className="font-mono text-xs">{p.sku}</TableCell>
                   <TableCell className="font-medium">{p.productName}</TableCell>
@@ -392,13 +437,21 @@ function InventorySection() {
 
 // ─── PAGE 4: Orders ─────────────────────────────────────────────────────────
 
-function OrdersSection() {
+function OrdersSection({ search }: { search?: string }) {
   const { data: orders, loading, error, retry } = useApiData<ShopOrder[]>(shopApi.getOrders);
+
+  const filteredOrders = orders?.filter((o) => {
+    if (!search) return true;
+    const s = search.toLowerCase();
+    return o.orderId.toLowerCase().includes(s) || 
+           o.customerName.toLowerCase().includes(s) || 
+           o.customerEmail.toLowerCase().includes(s);
+  }) || [];
 
   return (
     <div className="space-y-5">
       <h1 className="text-2xl font-bold">Orders</h1>
-      {loading ? <LoadingSpinner label="Loading orders..." /> : error ? <ErrorBanner onRetry={retry} /> : !orders?.length ? <EmptyBanner label="No orders yet" /> : (
+      {loading ? <LoadingSpinner label="Loading orders..." /> : error ? <ErrorBanner onRetry={retry} /> : !filteredOrders.length ? <EmptyBanner label={search ? "No orders found matching your search." : "No orders yet"} /> : (
         <Card className="overflow-hidden">
           <Table>
             <TableHeader>
@@ -408,7 +461,7 @@ function OrdersSection() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {orders.map((o) => (
+              {filteredOrders.map((o) => (
                 <TableRow key={o._id}>
                   <TableCell className="font-mono">{o.orderId}</TableCell>
                   <TableCell>{o.customerName}</TableCell>
@@ -437,7 +490,20 @@ function OrdersSection() {
 
 // ─── Customers (unchanged) ──────────────────────────────────────────────────
 
-function CustomersSection() {
+function CustomersSection({ search }: { search?: string }) {
+  const customers = Array.from({ length: 8 }).map((_, i) => ({
+    name: ["Dr. A. Khan", "Dr. R. Mehta", "Dr. P. Sharma"][i % 3],
+    email: `customer${i + 1}@dental.io`,
+    orders: 12 + i * 3,
+    spent: (420 + i * 137).toFixed(2),
+  }));
+
+  const filteredCustomers = customers.filter(c => {
+    if (!search) return true;
+    const s = search.toLowerCase();
+    return c.name.toLowerCase().includes(s) || c.email.toLowerCase().includes(s);
+  });
+
   return (
     <div className="space-y-5">
       <h1 className="text-2xl font-bold">Customers</h1>
@@ -447,12 +513,14 @@ function CustomersSection() {
             <TableRow><TableHead>Name</TableHead><TableHead>Email</TableHead><TableHead>Orders</TableHead><TableHead>Spent</TableHead></TableRow>
           </TableHeader>
           <TableBody>
-            {Array.from({ length: 8 }).map((_, i) => (
+            {filteredCustomers.length === 0 ? (
+              <TableRow><TableCell colSpan={4} className="text-center py-6 text-muted-foreground">No customers found matching your search.</TableCell></TableRow>
+            ) : filteredCustomers.map((c, i) => (
               <TableRow key={i}>
-                <TableCell className="font-medium">{["Dr. A. Khan", "Dr. R. Mehta", "Dr. P. Sharma"][i % 3]}</TableCell>
-                <TableCell className="text-muted-foreground">customer{i + 1}@dental.io</TableCell>
-                <TableCell>{12 + i * 3}</TableCell>
-                <TableCell>₹{(420 + i * 137).toFixed(2)}</TableCell>
+                <TableCell className="font-medium">{c.name}</TableCell>
+                <TableCell className="text-muted-foreground">{c.email}</TableCell>
+                <TableCell>{c.orders}</TableCell>
+                <TableCell>₹{c.spent}</TableCell>
               </TableRow>
             ))}
           </TableBody>

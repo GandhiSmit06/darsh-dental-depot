@@ -10,6 +10,7 @@ router.use(authenticate, authorize('doctor'));
 
 // Profile & Stats
 router.get('/profile', doctorCtrl.getProfile);
+router.put('/profile', doctorCtrl.updateProfile);
 router.get('/stats', doctorCtrl.getStats);
 
 // Cart
@@ -27,5 +28,6 @@ router.delete('/wishlist/:id', doctorCtrl.removeFromWishlist);
 router.get('/orders/active', doctorCtrl.getActiveOrder);
 router.get('/orders/history', doctorCtrl.getOrderHistory);
 router.post('/orders', doctorCtrl.placeOrder);
+router.post('/orders/:id/cancel', doctorCtrl.cancelOrder);
 
 export default router;

@@ -55,23 +55,17 @@ function ContactPage() {
             </form>
           </Card>
           <Card className="overflow-hidden">
-            <div className="h-full min-h-[400px] bg-accent grid place-items-center text-muted-foreground relative">
-              <div
-                className="absolute inset-0 opacity-20"
-                style={{
-                  backgroundImage:
-                    "linear-gradient(var(--color-border) 1px, transparent 1px), linear-gradient(90deg, var(--color-border) 1px, transparent 1px)",
-                  backgroundSize: "32px 32px",
-                }}
+            <div className="h-full min-h-[400px] relative">
+              <iframe
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3691.6!2d73.1979845!3d22.2941654!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x395fc50752550793%3A0xff8cbe3bb9f64be5!2sDarsh%20Dental%20Depot!5e0!3m2!1sen!2sin!4v1700000000000!5m2!1sen!2sin"
+                width="100%"
+                height="100%"
+                style={{ border: 0, position: "absolute", inset: 0 }}
+                allowFullScreen
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                title="Darsh Dental Depot Location - Vadodara, Gujarat"
               />
-              <div className="relative text-center">
-                <a href="https://maps.app.goo.gl/T6URzoYFGa8462Fn7" target="_blank" rel="noreferrer" className="hover:opacity-80 transition-opacity block">
-                  <MapPin className="h-10 w-10 mx-auto text-primary" />
-                  <div className="font-semibold mt-2">Darsh Dental Depot</div>
-                  <div className="text-xs text-primary underline mt-1">View on Google Maps</div>
-                  <div className="text-xs mt-1">Vadodara, Gujarat</div>
-                </a>
-              </div>
             </div>
           </Card>
         </div>

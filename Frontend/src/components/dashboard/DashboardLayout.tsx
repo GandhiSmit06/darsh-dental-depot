@@ -20,13 +20,15 @@ import { useTheme } from "@/components/theme-provider";
 export type NavItem = { key: string; label: string; icon: LucideIcon };
 
 export function DashboardLayout({
-  title, role, items, active, onChange, children,
+  title, role, items, active, onChange, search, onSearchChange, children,
 }: {
   title: string;
   role: string;
   items: NavItem[];
   active: string;
   onChange: (key: string) => void;
+  search?: string;
+  onSearchChange?: (val: string) => void;
   children: ReactNode;
 }) {
   const { theme, toggle } = useTheme();
@@ -89,7 +91,12 @@ export function DashboardLayout({
             <div className="ml-auto flex items-center gap-2">
               <div className="relative hidden md:block">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input placeholder="Search..." className="pl-9 w-64 h-9" />
+                <Input 
+                  placeholder="Search..." 
+                  className="pl-9 w-64 h-9" 
+                  value={search ?? ""}
+                  onChange={(e) => onSearchChange?.(e.target.value)}
+                />
               </div>
               <Button variant="ghost" size="icon" onClick={toggle}>
                 {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}

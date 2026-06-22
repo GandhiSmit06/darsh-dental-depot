@@ -5,6 +5,7 @@ import { Cart } from '../models/Cart';
 import { Wishlist } from '../models/Wishlist';
 import { Product } from '../models/Product';
 import { ApiError } from '../utils/ApiError';
+import { paymentService } from './payment.service';
 
 export class DoctorService {
   // ── Profile ──────────────────────────────────────────────────────────────
@@ -16,6 +17,24 @@ export class DoctorService {
       email: user.email,
       clinicName: user.clinicName || '',
       phone: user.phone || '',
+      address: user.address || '',
+    };
+  }
+
+  async updateProfile(doctorId: string, updateData: { address?: string }) {
+    const user = await User.findByIdAndUpdate(
+      doctorId,
+      { $set: updateData },
+      { new: true, runValidators: true }
+    ).lean();
+
+    if (!user) throw ApiError.notFound('Doctor not found.');
+    return {
+      name: user.fullName,
+      email: user.email,
+      clinicName: user.clinicName || '',
+      phone: user.phone || '',
+      address: user.address || '',
     };
   }
 
@@ -203,6 +222,7 @@ export class DoctorService {
     if (!order) return null;
 
     return {
+      id: order._id.toString(),
       orderId: `ORD-${order._id.toString().slice(-6).toUpperCase()}`,
       itemCount: order.products.reduce((sum, item) => sum + item.quantity, 0),
       total: order.totalPrice,
@@ -216,6 +236,7 @@ export class DoctorService {
       .lean();
 
     return orders.map((o) => ({
+      id: o._id.toString(),
       orderId: `ORD-${o._id.toString().slice(-6).toUpperCase()}`,
       itemCount: o.products.reduce((sum, item) => sum + item.quantity, 0),
       total: o.totalPrice,
@@ -265,17 +286,36 @@ export class DoctorService {
       totalPrice,
       orderStatus: 'pending',
       paymentStatus: 'pending',
-      paymentMethod: 'cod', // Defaulting to COD for now as it's from cart direct
+      paymentMethod: 'razorpay',
       address: {
-        street: user?.address || 'Unknown Street',
-        city: 'Unknown City',
-        state: 'Unknown State',
-        pincode: '000000',
+        street: user?.address || 'Not provided',
+        city: 'Vadodara',
+        state: 'Gujarat',
+        pincode: '390001',
         country: 'India',
       },
     });
 
     await order.save();
+
+    // Create Razorpay order (graceful fallback if test keys are invalid)
+    let razorpayOrderId = `sim_${order._id.toString()}`;
+    let useSimulation = false;
+    try {
+      const razorpayOrder = await paymentService.createRazorpayOrder(
+        totalPrice,
+        'INR',
+        `receipt_${order._id.toString().slice(-8)}`
+      );
+      razorpayOrderId = razorpayOrder.id;
+    } catch (err: any) {
+      console.warn('Razorpay order creation failed, using simulation mode:', err?.message || err);
+      useSimulation = true;
+      // Mark order as paid immediately in simulation mode
+      order.paymentStatus = 'paid';
+      order.orderStatus = 'processing';
+      await order.save();
+    }
 
     // Clear cart
     cart.items = [];
@@ -283,8 +323,36 @@ export class DoctorService {
 
     return {
       orderId: `ORD-${order._id.toString().slice(-6).toUpperCase()}`,
+      dbOrderId: order._id.toString(),
+      razorpayOrderId,
       total: order.totalPrice,
+      simulation: useSimulation,
     };
+  }
+
+  async cancelOrder(doctorId: string, orderId: string) {
+    const order = await Order.findOne({
+      _id: new Types.ObjectId(orderId),
+      customerId: new Types.ObjectId(doctorId)
+    });
+
+    if (!order) {
+      throw ApiError.notFound('Order not found.');
+    }
+
+    if (order.orderStatus !== 'pending' && order.orderStatus !== 'processing') {
+      throw ApiError.badRequest('Order cannot be cancelled at this stage.');
+    }
+
+    // Restore stock
+    for (const item of order.products) {
+      await Product.findByIdAndUpdate(item.productId, { $inc: { stock: item.quantity } });
+    }
+
+    order.orderStatus = 'cancelled';
+    await order.save();
+
+    return { success: true };
   }
 }
 

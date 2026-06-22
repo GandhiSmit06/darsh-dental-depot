@@ -13,11 +13,13 @@ import { Route as ShopRouteImport } from './routes/shop'
 import { Route as RegisterRouteImport } from './routes/register'
 import { Route as ProductsRouteImport } from './routes/products'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as DoctorRouteImport } from './routes/doctor'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ResetPasswordTokenRouteImport } from './routes/reset-password.$token'
 import { Route as ProductsIdRouteImport } from './routes/products.$id'
 
 const ShopRoute = ShopRouteImport.update({
@@ -38,6 +40,11 @@ const ProductsRoute = ProductsRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
+  id: '/forgot-password',
+  path: '/forgot-password',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DoctorRoute = DoctorRouteImport.update({
@@ -65,6 +72,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ResetPasswordTokenRoute = ResetPasswordTokenRouteImport.update({
+  id: '/reset-password/$token',
+  path: '/reset-password/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ProductsIdRoute = ProductsIdRouteImport.update({
   id: '/$id',
   path: '/$id',
@@ -77,11 +89,13 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminRoute
   '/contact': typeof ContactRoute
   '/doctor': typeof DoctorRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
   '/products': typeof ProductsRouteWithChildren
   '/register': typeof RegisterRoute
   '/shop': typeof ShopRoute
   '/products/$id': typeof ProductsIdRoute
+  '/reset-password/$token': typeof ResetPasswordTokenRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -89,11 +103,13 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminRoute
   '/contact': typeof ContactRoute
   '/doctor': typeof DoctorRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
   '/products': typeof ProductsRouteWithChildren
   '/register': typeof RegisterRoute
   '/shop': typeof ShopRoute
   '/products/$id': typeof ProductsIdRoute
+  '/reset-password/$token': typeof ResetPasswordTokenRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -102,11 +118,13 @@ export interface FileRoutesById {
   '/admin': typeof AdminRoute
   '/contact': typeof ContactRoute
   '/doctor': typeof DoctorRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
   '/products': typeof ProductsRouteWithChildren
   '/register': typeof RegisterRoute
   '/shop': typeof ShopRoute
   '/products/$id': typeof ProductsIdRoute
+  '/reset-password/$token': typeof ResetPasswordTokenRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -116,11 +134,13 @@ export interface FileRouteTypes {
     | '/admin'
     | '/contact'
     | '/doctor'
+    | '/forgot-password'
     | '/login'
     | '/products'
     | '/register'
     | '/shop'
     | '/products/$id'
+    | '/reset-password/$token'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -128,11 +148,13 @@ export interface FileRouteTypes {
     | '/admin'
     | '/contact'
     | '/doctor'
+    | '/forgot-password'
     | '/login'
     | '/products'
     | '/register'
     | '/shop'
     | '/products/$id'
+    | '/reset-password/$token'
   id:
     | '__root__'
     | '/'
@@ -140,11 +162,13 @@ export interface FileRouteTypes {
     | '/admin'
     | '/contact'
     | '/doctor'
+    | '/forgot-password'
     | '/login'
     | '/products'
     | '/register'
     | '/shop'
     | '/products/$id'
+    | '/reset-password/$token'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -153,10 +177,12 @@ export interface RootRouteChildren {
   AdminRoute: typeof AdminRoute
   ContactRoute: typeof ContactRoute
   DoctorRoute: typeof DoctorRoute
+  ForgotPasswordRoute: typeof ForgotPasswordRoute
   LoginRoute: typeof LoginRoute
   ProductsRoute: typeof ProductsRouteWithChildren
   RegisterRoute: typeof RegisterRoute
   ShopRoute: typeof ShopRoute
+  ResetPasswordTokenRoute: typeof ResetPasswordTokenRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -187,6 +213,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/forgot-password': {
+      id: '/forgot-password'
+      path: '/forgot-password'
+      fullPath: '/forgot-password'
+      preLoaderRoute: typeof ForgotPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/doctor': {
@@ -224,6 +257,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/reset-password/$token': {
+      id: '/reset-password/$token'
+      path: '/reset-password/$token'
+      fullPath: '/reset-password/$token'
+      preLoaderRoute: typeof ResetPasswordTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/products/$id': {
       id: '/products/$id'
       path: '/$id'
@@ -252,10 +292,12 @@ const rootRouteChildren: RootRouteChildren = {
   AdminRoute: AdminRoute,
   ContactRoute: ContactRoute,
   DoctorRoute: DoctorRoute,
+  ForgotPasswordRoute: ForgotPasswordRoute,
   LoginRoute: LoginRoute,
   ProductsRoute: ProductsRouteWithChildren,
   RegisterRoute: RegisterRoute,
   ShopRoute: ShopRoute,
+  ResetPasswordTokenRoute: ResetPasswordTokenRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

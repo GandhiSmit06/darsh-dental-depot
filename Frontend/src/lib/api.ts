@@ -160,6 +160,18 @@ export const authApi = {
 
   getMe: () =>
     apiFetch<MeResponse>("/auth/me"),
+
+  forgotPassword: (email: string) =>
+    apiFetch<{ success: boolean; message: string }>("/auth/forgot-password", {
+      method: "POST",
+      body: JSON.stringify({ email }),
+    }),
+
+  resetPassword: (token: string, password: string, confirmPassword: string) =>
+    apiFetch<{ success: boolean; message: string }>(`/auth/reset-password/${token}`, {
+      method: "POST",
+      body: JSON.stringify({ password, confirmPassword }),
+    }),
 };
 
 // ─── Shop-specific API calls ────────────────────────────────────────────────
@@ -263,6 +275,7 @@ export const shopApi = {
   getCategoryShare: () => apiFetch<ApiOk<CategoryShareItem[]>>("/shop/analytics/category-share"),
   getProductPerformance: () => apiFetch<ApiOk<ProductPerformanceItem[]>>("/shop/analytics/product-performance"),
   createProduct: (data: CreateProductPayload) => apiFetch<ApiOk<ShopProduct>>("/products", { method: "POST", body: JSON.stringify(data) }),
+  updateProduct: (id: string, data: Partial<CreateProductPayload>) => apiFetch<ApiOk<ShopProduct>>(`/products/${id}`, { method: "PUT", body: JSON.stringify(data) }),
   deleteProduct: (id: string) => apiFetch<ApiOk<null>>(`/products/${id}`, { method: "DELETE" }),
 };
 
@@ -273,6 +286,7 @@ export interface DoctorProfile {
   email: string;
   clinicName: string;
   phone: string;
+  address?: string;
 }
 
 export interface DoctorStats {
@@ -306,6 +320,7 @@ export interface DoctorWishlistItem {
 }
 
 export interface DoctorActiveOrder {
+  id: string;
   orderId: string;
   itemCount: number;
   total: number;
@@ -349,7 +364,10 @@ export const doctorApi = {
     apiFetch<ApiOk<DoctorWishlistItem[]>>(`/doctor/wishlist/${id}`, { method: "DELETE" }),
   getActiveOrder: () => apiFetch<ApiOk<DoctorActiveOrder | null>>("/doctor/orders/active"),
   getOrderHistory: () => apiFetch<ApiOk<DoctorOrderHistoryItem[]>>("/doctor/orders/history"),
-  placeOrder: () => apiFetch<ApiOk<{ orderId: string, total: number }>>("/doctor/orders", { method: "POST" }),
+  placeOrder: () => apiFetch<ApiOk<{ orderId: string, razorpayOrderId: string, total: number }>>("/doctor/orders", { method: "POST" }),
+  cancelOrder: (id: string) => apiFetch<ApiOk<unknown>>(`/doctor/orders/${id}/cancel`, { method: "POST" }),
+  updateProfile: (data: { address: string }) => apiFetch<ApiOk<unknown>>("/doctor/profile", { method: "PUT", body: JSON.stringify(data) }),
+  verifyRazorpayPayment: (data: { razorpayOrderId: string, razorpayPaymentId: string, razorpaySignature: string, orderId: string }) => apiFetch<ApiOk<unknown>>("/payments/razorpay/verify", { method: "POST", body: JSON.stringify(data) }),
 };
 
 export const productsApi = {

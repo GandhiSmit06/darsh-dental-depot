@@ -65,7 +65,7 @@ export class ShopService {
   // ── Products list ──────────────────────────────────────────────────────────
   async getProducts(shopOwnerId: string) {
     const products = await Product.find({ createdBy: shopOwnerId })
-      .select('name category brand sellingPrice stock images SKU status')
+      .select('name category brand sellingPrice purchasePrice stock images SKU status hsnCode gstPercentage batchNumber description')
       .sort({ createdAt: -1 })
       .lean();
 
@@ -76,9 +76,15 @@ export class ShopService {
       category: p.category,
       brand: p.brand || '',
       price: p.sellingPrice,
+      sellingPrice: p.sellingPrice,
+      purchasePrice: p.purchasePrice,
       stock: p.stock,
       imageUrl: p.images?.[0] || '',
       status: p.status,
+      hsnCode: p.hsnCode,
+      gstPercentage: p.gstPercentage,
+      batchNumber: p.batchNumber,
+      description: p.description,
     }));
   }
 

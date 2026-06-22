@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import {
   LayoutDashboard, ShoppingCart, Heart, ShoppingBag, Bell, Settings, Package,
   CheckCircle2, Truck, Plus, Minus, Trash2, Loader2
@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { ProductCard } from "@/components/site/ProductCard";
 import { toast } from "sonner";
 import {
@@ -71,18 +72,23 @@ function useApiData<T>(fetcher: () => Promise<{ data: T } | { products: T }>) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
+  const fetcherRef = useRef(fetcher);
+  useEffect(() => {
+    fetcherRef.current = fetcher;
+  }, [fetcher]);
+
   const load = useCallback(async () => {
     setLoading(true);
     setError(false);
     try {
-      const res = await fetcher();
-      setData('data' in res ? res.data : res.products);
+      const res = await fetcherRef.current();
+      setData('data' in res ? res.data : (res as any).products);
     } catch {
       setError(true);
     } finally {
       setLoading(false);
     }
-  }, [fetcher]);
+  }, []);
 
   useEffect(() => { load(); }, [load]);
 
@@ -240,16 +246,94 @@ function CartSection() {
     }
   };
 
+  const profileData = useApiData<DoctorProfile>(doctorApi.getProfile);
+  const [showAddressModal, setShowAddressModal] = useState(false);
+  const [addressInput, setAddressInput] = useState("");
+  const [isSavingAddress, setIsSavingAddress] = useState(false);
+
+  useEffect(() => {
+    if (profileData.data?.address) {
+      setAddressInput(profileData.data.address);
+    }
+  }, [profileData.data]);
+
   const handleCheckout = async () => {
+    if (!profileData.data?.address) {
+      setShowAddressModal(true);
+      return;
+    }
+
     setIsCheckingOut(true);
     try {
-      await doctorApi.placeOrder();
-      toast.success("Order placed successfully!");
-      mutate([]);
+      const res = await doctorApi.placeOrder();
+      
+      // If backend returned simulation mode (Razorpay keys not configured),
+      // the order is already marked as paid — just show success
+      if ((res.data as any).simulation) {
+        toast.success(`Order ${res.data.orderId} placed successfully! (Payment simulated)`);
+        mutate([]);
+        return;
+      }
+
+      const options = {
+        key: "rzp_test_RvTaFgHR4Y5TPv",
+        amount: res.data.total * 100,
+        currency: "INR",
+        name: "Darsh Dental Depot",
+        description: "Order Payment",
+        order_id: res.data.razorpayOrderId,
+        handler: async function (response: any) {
+          try {
+            await doctorApi.verifyRazorpayPayment({
+              razorpayOrderId: response.razorpay_order_id,
+              razorpayPaymentId: response.razorpay_payment_id,
+              razorpaySignature: response.razorpay_signature,
+              orderId: res.data.orderId
+            });
+            toast.success("Payment successful! Order placed.");
+            mutate([]);
+          } catch {
+            toast.error("Payment verification failed.");
+          }
+        },
+        prefill: {
+          name: profileData.data?.name,
+          email: profileData.data?.email,
+          contact: profileData.data?.phone
+        },
+        theme: {
+          color: "#2563eb"
+        }
+      };
+      
+      const rzp = new (window as any).Razorpay(options);
+      rzp.on('payment.failed', function (response: any){
+          toast.error("Payment failed. Please try again.");
+      });
+      rzp.open();
+
     } catch {
-      toast.error("Failed to place order");
+      toast.error("Failed to initiate checkout");
     } finally {
       setIsCheckingOut(false);
+    }
+  };
+
+  const handleSaveAddress = async () => {
+    if (!addressInput.trim()) {
+      toast.error("Please enter an address");
+      return;
+    }
+    setIsSavingAddress(true);
+    try {
+      await doctorApi.updateProfile({ address: addressInput });
+      await profileData.retry();
+      setShowAddressModal(false);
+      handleCheckout(); // Automatically continue to checkout
+    } catch {
+      toast.error("Failed to save address");
+    } finally {
+      setIsSavingAddress(false);
     }
   };
 
@@ -287,12 +371,37 @@ function CartSection() {
               <div className="flex justify-between text-muted-foreground"><span>Shipping</span><span>Free</span></div>
               <div className="flex justify-between font-bold border-t pt-3 mt-3"><span>Total</span><span>₹{total.toFixed(2)}</span></div>
             </div>
-            <Button className="w-full mt-4" disabled={isCheckingOut} onClick={handleCheckout}>
-              {isCheckingOut ? "Processing..." : "Checkout"}
+            <Button className="w-full mt-4" disabled={isCheckingOut || profileData.loading} onClick={handleCheckout}>
+              {isCheckingOut ? "Processing..." : "Checkout securely"}
             </Button>
           </Card>
         </div>
       )}
+
+      <Dialog open={showAddressModal} onOpenChange={setShowAddressModal}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delivery Address Required</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label>Please enter your complete delivery address before checking out.</Label>
+              <Input 
+                value={addressInput} 
+                onChange={e => setAddressInput(e.target.value)} 
+                placeholder="Clinic name, Street, City, State, Pincode"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowAddressModal(false)}>Cancel</Button>
+            <Button disabled={isSavingAddress} onClick={handleSaveAddress}>
+              {isSavingAddress ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+              Save and Continue
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
@@ -337,6 +446,22 @@ function Wishlist() {
 function OrdersSection() {
   const activeOrder = useApiData<DoctorActiveOrder | null>(doctorApi.getActiveOrder);
   const history = useApiData<DoctorOrderHistoryItem[]>(doctorApi.getOrderHistory);
+  const [isCanceling, setIsCanceling] = useState(false);
+
+  const handleCancelOrder = async (id: string) => {
+    if (!confirm("Are you sure you want to cancel this order?")) return;
+    setIsCanceling(true);
+    try {
+      await doctorApi.cancelOrder(id);
+      toast.success("Order cancelled successfully");
+      activeOrder.retry();
+      history.retry();
+    } catch {
+      toast.error("Failed to cancel order");
+    } finally {
+      setIsCanceling(false);
+    }
+  };
 
   const stages = [
     { label: "Ordered", icon: CheckCircle2 },
@@ -372,7 +497,19 @@ function OrdersSection() {
               <div className="text-sm text-muted-foreground">Order #{activeOrder.data.orderId}</div>
               <div className="font-semibold">{activeOrder.data.itemCount} items · ₹{activeOrder.data.total.toFixed(2)}</div>
             </div>
-            <Badge>{activeOrder.data.status}</Badge>
+            <div className="flex items-center gap-3">
+              <Badge>{activeOrder.data.status}</Badge>
+              {(activeOrder.data.status === "pending" || activeOrder.data.status === "processing") && (
+                <Button 
+                  variant="destructive" 
+                  size="sm" 
+                  disabled={isCanceling} 
+                  onClick={() => handleCancelOrder(activeOrder.data!.id)}
+                >
+                  {isCanceling ? <Loader2 className="h-4 w-4 animate-spin" /> : "Cancel Order"}
+                </Button>
+              )}
+            </div>
           </div>
           <div className="relative flex items-center justify-between">
             <div className="absolute top-4 left-4 right-4 h-0.5 bg-border" />

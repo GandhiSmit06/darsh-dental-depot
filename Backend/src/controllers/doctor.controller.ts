@@ -8,6 +8,11 @@ export const getProfile = asyncHandler(async (req: Request, res: Response) => {
   res.json(ApiResponse.ok('Doctor profile', profile));
 });
 
+export const updateProfile = asyncHandler(async (req: Request, res: Response) => {
+  const profile = await doctorService.updateProfile(req.user!._id.toString(), req.body);
+  res.json(ApiResponse.ok('Profile updated', profile));
+});
+
 export const getStats = asyncHandler(async (req: Request, res: Response) => {
   const stats = await doctorService.getStats(req.user!._id.toString());
   res.json(ApiResponse.ok('Doctor stats', stats));
@@ -62,6 +67,11 @@ export const getOrderHistory = asyncHandler(async (req: Request, res: Response) 
 });
 
 export const placeOrder = asyncHandler(async (req: Request, res: Response) => {
-  const order = await doctorService.placeOrderFromCart(req.user!._id.toString());
-  res.json(ApiResponse.created('Order placed successfully', order));
+  const result = await doctorService.placeOrderFromCart(req.user!._id.toString());
+  res.json(ApiResponse.ok('Order placed successfully', result));
+});
+
+export const cancelOrder = asyncHandler(async (req: Request, res: Response) => {
+  const result = await doctorService.cancelOrder(req.user!._id.toString(), req.params.id as string);
+  res.json(ApiResponse.ok('Order cancelled successfully', result));
 });

@@ -13,6 +13,7 @@ import paymentRoutes from './payment.routes';
 import uploadRoutes from './upload.routes';
 import shopRoutes from './shop.routes';
 import doctorRoutes from './doctor.routes';
+import adminRoutes from './admin.routes';
 
 const router = Router();
 
@@ -30,5 +31,6 @@ router.use('/payments', paymentRoutes);
 router.use('/upload', uploadRoutes);
 router.use('/shop', shopRoutes);
 router.use('/doctor', doctorRoutes);
+router.use('/admin', adminRoutes);
 
 export default router;

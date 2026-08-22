@@ -9,6 +9,9 @@ export class PaymentService {
   // ─── Razorpay ───────────────────────────────────────────────────────────────
 
   async createRazorpayOrder(amount: number, currency = 'INR', receipt: string) {
+    if (!razorpay) {
+      throw ApiError.badRequest('Razorpay is not configured. Please use Cash on Delivery or contact support.');
+    }
     const order = await razorpay.orders.create({
       amount: Math.round(amount * 100), // paise
       currency,

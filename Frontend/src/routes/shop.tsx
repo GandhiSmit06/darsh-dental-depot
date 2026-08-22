@@ -1,16 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect } from "react";
 import {
   LayoutDashboard, Package, Warehouse, ShoppingBag, Users, BarChart3, Bell, Settings,
-  DollarSign, TrendingUp, Plus, FileText, Loader2, Trash2, Edit, UploadCloud, Image as ImageIcon, X,
+  Plus, FileText, Loader2, Trash2, Edit, UploadCloud, Image as ImageIcon, X,
   CheckCircle2, XCircle
 } from "lucide-react";
 import {
-  Bar, BarChart, CartesianGrid, Cell, Legend, Line, LineChart, Pie, PieChart,
-  ResponsiveContainer, Tooltip, XAxis, YAxis,
+  Bar, BarChart, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis,
 } from "recharts";
 import { DashboardLayout, type NavItem } from "@/components/dashboard/DashboardLayout";
-import { StatCard, StatusBadge, EmptyState } from "@/components/dashboard/widgets";
+import { StatCard, StatusBadge } from "@/components/dashboard/widgets";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,23 +19,21 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
-import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import {
   shopApi,
   uploadApi,
-  type ShopStats,
   type ShopProduct,
   type ShopInventoryItem,
   type ShopOrder,
   type ShopCustomer,
-  type WeeklySalesItem,
   type MonthlyTrendItem,
   type CategoryShareItem,
   type ProductPerformanceItem,
 } from "@/lib/api";
+
 
 // Categories & brands for the Add Product form
 const formCategories = [

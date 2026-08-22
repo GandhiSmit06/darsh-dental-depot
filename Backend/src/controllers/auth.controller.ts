@@ -69,7 +69,7 @@ export const refreshToken = asyncHandler(async (req: Request, res: Response) => 
   const { accessToken, refreshToken: newRefresh, user } = await authService.refreshTokens(token as string);
 
   res.cookie('refreshToken', newRefresh, COOKIE_OPTIONS);
-  res.status(200).json(ApiResponse.ok('Tokens refreshed', { user, accessToken }));
+  res.status(200).json(ApiResponse.ok('Tokens refreshed', { user, accessToken, refreshToken: newRefresh }));
 });
 
 export const verifyEmail = asyncHandler(async (req: Request, res: Response) => {

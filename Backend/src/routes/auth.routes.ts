@@ -16,7 +16,7 @@ router.post('/register', authRateLimiter, registerValidator, validate, authContr
 router.post('/register-otp/send', authRateLimiter, registerValidator, validate, authController.sendRegisterOtp);
 router.post('/register-otp/verify', authRateLimiter, authController.verifyRegisterOtp);
 
-router.post('/login', authRateLimiter, authController.login);
+router.post('/login', authRateLimiter, loginValidator, validate, authController.login);
 router.post('/login-otp/send', authRateLimiter, authController.sendLoginOtp);
 router.post('/login-otp/verify', authRateLimiter, authController.verifyLoginOtp);
 

@@ -53,6 +53,44 @@ const baseTemplate = (content: string) => `
 </html>
 `;
 
+export const sendOtpEmail = async (
+  to: string,
+  name: string,
+  otp: string,
+  purpose: 'register' | 'login'
+) => {
+  const isRegister = purpose === 'register';
+  const title = isRegister
+    ? 'Verify Your Clinic Registration'
+    : 'Doctor Portal Login Code';
+  const actionText = isRegister
+    ? 'Use the 6-digit verification code below to activate your doctor account for Darsh Dental Depot.'
+    : 'Use the 6-digit one-time password below to securely sign in to your Darsh Dental Depot portal.';
+
+  await sendMail({
+    to,
+    subject: `🔐 Your Verification Code: ${otp} — Darsh Dental Depot`,
+    html: baseTemplate(`
+      <div style="text-align: center;">
+        <h2 style="color: #1e293b; margin-bottom: 8px;">${title}</h2>
+        <p style="color: #64748b; font-size: 15px;">Hello Dr. ${name || 'Doctor'},</p>
+        <p style="color: #475569; font-size: 14px; margin-bottom: 24px;">${actionText}</p>
+        
+        <div style="background: #f1f5f9; border: 2px dashed #0284c7; border-radius: 12px; padding: 20px; margin: 24px auto; max-width: 280px;">
+          <span style="font-size: 36px; font-weight: 800; letter-spacing: 8px; color: #0284c7; font-family: monospace;">${otp}</span>
+        </div>
+
+        <p style="font-size: 13px; color: #64748b; margin-top: 16px;">
+          ⏱️ This code is valid for <strong>10 minutes</strong>. Do not share this code with anyone.
+        </p>
+        <p style="font-size: 12px; color: #94a3b8; margin-top: 24px; border-top: 1px solid #e2e8f0; pt: 16px;">
+          📍 Exclusively Serving Dental Clinics in Vadodara, Gujarat
+        </p>
+      </div>
+    `),
+  });
+};
+
 export const sendWelcomeEmail = async (to: string, name: string, verifyUrl: string) => {
   await sendMail({
     to,

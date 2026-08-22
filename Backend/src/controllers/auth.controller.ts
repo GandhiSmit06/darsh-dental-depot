@@ -12,13 +12,45 @@ const COOKIE_OPTIONS = {
 };
 
 export const register = asyncHandler(async (req: Request, res: Response) => {
-  const result = await authService.register(req.body);
-  res.status(201).json(ApiResponse.created(result.message));
+  const result = await authService.sendRegisterOtp(req.body);
+  res.status(200).json(ApiResponse.ok(result.message, result));
+});
+
+export const sendRegisterOtp = asyncHandler(async (req: Request, res: Response) => {
+  const result = await authService.sendRegisterOtp(req.body);
+  res.status(200).json(ApiResponse.ok(result.message, result));
+});
+
+export const verifyRegisterOtp = asyncHandler(async (req: Request, res: Response) => {
+  const { email, otp } = req.body;
+  const { accessToken, refreshToken, user } = await authService.verifyRegisterOtp(email, otp);
+
+  res.cookie('refreshToken', refreshToken, COOKIE_OPTIONS);
+  res.status(201).json(
+    ApiResponse.created('Registration verified and login successful', { user, accessToken, refreshToken }),
+  );
+});
+
+export const sendLoginOtp = asyncHandler(async (req: Request, res: Response) => {
+  const { identifier } = req.body;
+  const result = await authService.sendLoginOtp(identifier);
+  res.status(200).json(ApiResponse.ok(result.message, result));
+});
+
+export const verifyLoginOtp = asyncHandler(async (req: Request, res: Response) => {
+  const { identifier, otp } = req.body;
+  const { accessToken, refreshToken, user } = await authService.verifyLoginOtp(identifier, otp);
+
+  res.cookie('refreshToken', refreshToken, COOKIE_OPTIONS);
+  res.status(200).json(
+    ApiResponse.ok('Login successful', { user, accessToken, refreshToken }),
+  );
 });
 
 export const login = asyncHandler(async (req: Request, res: Response) => {
-  const { email, password } = req.body;
-  const { accessToken, refreshToken, user } = await authService.login(email, password);
+  const identifier = req.body.email || req.body.phone || req.body.identifier;
+  const { password } = req.body;
+  const { accessToken, refreshToken, user } = await authService.login(identifier, password);
 
   res.cookie('refreshToken', refreshToken, COOKIE_OPTIONS);
   res.status(200).json(

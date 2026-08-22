@@ -142,13 +142,37 @@ interface MeResponse {
 
 export const authApi = {
   register: (data: RegisterPayload) =>
-    apiFetch<RegisterResponse>("/auth/register", {
+    apiFetch<RegisterResponse>("/auth/register-otp/send", {
       method: "POST",
       body: JSON.stringify(data),
     }),
 
-  login: (data: LoginPayload) =>
+  sendRegisterOtp: (data: RegisterPayload) =>
+    apiFetch<{ success: boolean; message: string; data?: { devOtp?: string } }>("/auth/register-otp/send", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+
+  verifyRegisterOtp: (data: { email: string; otp: string }) =>
+    apiFetch<LoginResponse>("/auth/register-otp/verify", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+
+  login: (data: { email?: string; phone?: string; identifier?: string; password?: string }) =>
     apiFetch<LoginResponse>("/auth/login", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+
+  sendLoginOtp: (data: { identifier: string }) =>
+    apiFetch<{ success: boolean; message: string; data?: { devOtp?: string } }>("/auth/login-otp/send", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+
+  verifyLoginOtp: (data: { identifier: string; otp: string }) =>
+    apiFetch<LoginResponse>("/auth/login-otp/verify", {
       method: "POST",
       body: JSON.stringify(data),
     }),

@@ -1,11 +1,12 @@
 import { Link } from "@tanstack/react-router";
 import { motion } from "framer-motion";
-import { Heart, ShoppingCart, Star, CheckCircle, Zap } from "lucide-react";
+import { Heart, ShoppingCart, Star, CheckCircle, Zap, Package, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 import { useState } from "react";
+import { useAuth } from "@/lib/auth-context";
 
 export interface ProductCardProps {
   product: any;
@@ -14,6 +15,11 @@ export interface ProductCardProps {
 }
 
 export function ProductCard({ product, onAdd, onWishlist }: ProductCardProps) {
+  const { user } = useAuth();
+  const isShopOwner = user?.role === "shop_owner";
+  const isAdmin = user?.role === "admin";
+  const isManager = isShopOwner || isAdmin;
+
   const [isLiked, setIsLiked] = useState(false);
   const inStock = (product.stock ?? 1) > 0;
   const price = product.price ?? product.sellingPrice ?? 0;
@@ -88,19 +94,21 @@ export function ProductCard({ product, onAdd, onWishlist }: ProductCardProps) {
             </Badge>
           </div>
 
-          {/* Wishlist Button */}
-          <motion.button
-            whileTap={{ scale: 0.8 }}
-            onClick={handleWishlist}
-            className={`absolute top-3 right-3 h-8 w-8 rounded-full grid place-items-center backdrop-blur-md transition-all z-10 ${
-              isLiked
-                ? "bg-red-500 text-white shadow-md shadow-red-500/30"
-                : "bg-background/80 text-muted-foreground hover:text-red-500 hover:bg-background border border-border/40"
-            }`}
-            aria-label="Add to Wishlist"
-          >
-            <Heart className={`h-4 w-4 ${isLiked ? "fill-current" : ""}`} />
-          </motion.button>
+          {/* Wishlist Button (Only for doctors / guest clinic buyers) */}
+          {!isManager && (
+            <motion.button
+              whileTap={{ scale: 0.8 }}
+              onClick={handleWishlist}
+              className={`absolute top-3 right-3 h-8 w-8 rounded-full grid place-items-center backdrop-blur-md transition-all z-10 ${
+                isLiked
+                  ? "bg-red-500 text-white shadow-md shadow-red-500/30"
+                  : "bg-background/80 text-muted-foreground hover:text-red-500 hover:bg-background border border-border/40"
+              }`}
+              aria-label="Add to Wishlist"
+            >
+              <Heart className={`h-4 w-4 ${isLiked ? "fill-current" : ""}`} />
+            </motion.button>
+          )}
 
           {/* Quick Category overlay tag */}
           {product.category && (
@@ -140,7 +148,7 @@ export function ProductCard({ product, onAdd, onWishlist }: ProductCardProps) {
             </span>
           </div>
 
-          {/* Price and Add to Cart */}
+          {/* Price and Add to Cart / Manage */}
           <div className="mt-auto pt-3 border-t border-border/40 flex items-center justify-between gap-2">
             <div>
               <div className="text-[10px] text-muted-foreground line-through">
@@ -151,14 +159,38 @@ export function ProductCard({ product, onAdd, onWishlist }: ProductCardProps) {
               </div>
             </div>
 
-            <Button
-              size="sm"
-              disabled={!inStock}
-              onClick={handleAddToCart}
-              className="rounded-xl px-3.5 h-8 text-xs font-medium bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm hover:shadow-md transition-all active:scale-95"
-            >
-              <ShoppingCart className="h-3.5 w-3.5 mr-1" /> Add
-            </Button>
+            {isShopOwner ? (
+              <Button
+                size="sm"
+                variant="outline"
+                asChild
+                className="rounded-xl px-3 h-8 text-xs font-semibold border-primary/40 text-primary hover:bg-primary/10 transition-all"
+              >
+                <Link to="/shop">
+                  <Package className="h-3.5 w-3.5 mr-1" /> Depot Stock
+                </Link>
+              </Button>
+            ) : isAdmin ? (
+              <Button
+                size="sm"
+                variant="outline"
+                asChild
+                className="rounded-xl px-3 h-8 text-xs font-semibold border-primary/40 text-primary hover:bg-primary/10 transition-all"
+              >
+                <Link to="/admin">
+                  <Settings className="h-3.5 w-3.5 mr-1" /> Admin
+                </Link>
+              </Button>
+            ) : (
+              <Button
+                size="sm"
+                disabled={!inStock}
+                onClick={handleAddToCart}
+                className="rounded-xl px-3.5 h-8 text-xs font-medium bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm hover:shadow-md transition-all active:scale-95"
+              >
+                <ShoppingCart className="h-3.5 w-3.5 mr-1" /> Add
+              </Button>
+            )}
           </div>
         </div>
       </Card>

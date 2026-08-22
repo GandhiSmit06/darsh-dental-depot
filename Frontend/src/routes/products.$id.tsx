@@ -22,6 +22,8 @@ import {
   Zap,
   ArrowLeft,
   Share2,
+  Package,
+  Settings,
 } from "lucide-react";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
@@ -47,7 +49,7 @@ export const Route = createFileRoute("/products/$id")({
 
 function ProductDetail() {
   const { id } = Route.useParams();
-  const { isAuthenticated, isLoading: authLoading } = useAuth();
+  const { user, isAuthenticated, isLoading: authLoading } = useAuth();
 
   const [qty, setQty] = useState(1);
   const [activeImg, setActiveImg] = useState(0);
@@ -253,44 +255,74 @@ function ProductDetail() {
 
             {/* Quantity and Actions */}
             <div className="space-y-4 pt-2">
-              <div className="flex flex-wrap items-center gap-3">
-                <div className="flex items-center border border-border/70 rounded-2xl bg-background p-1 shadow-sm">
-                  <button
-                    className="p-2 text-muted-foreground hover:text-foreground hover:bg-secondary rounded-xl transition-colors"
-                    onClick={() => setQty((q) => Math.max(1, q - 1))}
-                  >
-                    <Minus className="h-4 w-4" />
-                  </button>
-                  <span className="w-12 text-center font-bold font-heading text-sm">{qty}</span>
-                  <button
-                    className="p-2 text-muted-foreground hover:text-foreground hover:bg-secondary rounded-xl transition-colors"
-                    onClick={() => setQty((q) => q + 1)}
-                  >
-                    <Plus className="h-4 w-4" />
-                  </button>
+              {user?.role === "shop_owner" ? (
+                <div className="p-4 rounded-2xl bg-primary/10 border border-primary/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                  <div>
+                    <div className="font-bold text-sm text-foreground flex items-center gap-1.5">
+                      <Package className="h-4 w-4 text-primary" /> Store Inventory Item
+                    </div>
+                    <div className="text-xs text-muted-foreground mt-0.5">
+                      You are logged in as the Shop Owner. Manage pricing, batches & stock in your portal.
+                    </div>
+                  </div>
+                  <Button asChild className="rounded-xl font-bold bg-primary text-white text-xs h-9 shadow-sm">
+                    <Link to="/shop">Open Shop Inventory</Link>
+                  </Button>
                 </div>
+              ) : user?.role === "admin" ? (
+                <div className="p-4 rounded-2xl bg-primary/10 border border-primary/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                  <div>
+                    <div className="font-bold text-sm text-foreground flex items-center gap-1.5">
+                      <Settings className="h-4 w-4 text-primary" /> Admin Control
+                    </div>
+                    <div className="text-xs text-muted-foreground mt-0.5">
+                      You are logged in as Admin. Manage all catalog items in Admin Hub.
+                    </div>
+                  </div>
+                  <Button asChild className="rounded-xl font-bold bg-primary text-white text-xs h-9 shadow-sm">
+                    <Link to="/admin">Open Admin Hub</Link>
+                  </Button>
+                </div>
+              ) : (
+                <div className="flex flex-wrap items-center gap-3">
+                  <div className="flex items-center border border-border/70 rounded-2xl bg-background p-1 shadow-sm">
+                    <button
+                      className="p-2 text-muted-foreground hover:text-foreground hover:bg-secondary rounded-xl transition-colors"
+                      onClick={() => setQty((q) => Math.max(1, q - 1))}
+                    >
+                      <Minus className="h-4 w-4" />
+                    </button>
+                    <span className="w-12 text-center font-bold font-heading text-sm">{qty}</span>
+                    <button
+                      className="p-2 text-muted-foreground hover:text-foreground hover:bg-secondary rounded-xl transition-colors"
+                      onClick={() => setQty((q) => q + 1)}
+                    >
+                      <Plus className="h-4 w-4" />
+                    </button>
+                  </div>
 
-                <Button
-                  size="lg"
-                  onClick={handleAddToCart}
-                  disabled={!inStock || addingToCart}
-                  className="flex-1 rounded-2xl h-12 text-sm font-bold bg-gradient-to-r from-primary via-sky-600 to-indigo-600 hover:opacity-95 text-white shadow-lg shadow-primary/20 btn-shine"
-                >
-                  <ShoppingCart className="h-4 w-4 mr-2" />
-                  {addingToCart ? "Adding to Cart..." : "Add to Clinic Cart"}
-                </Button>
+                  <Button
+                    size="lg"
+                    onClick={handleAddToCart}
+                    disabled={!inStock || addingToCart}
+                    className="flex-1 rounded-2xl h-12 text-sm font-bold bg-gradient-to-r from-primary via-sky-600 to-indigo-600 hover:opacity-95 text-white shadow-lg shadow-primary/20 btn-shine"
+                  >
+                    <ShoppingCart className="h-4 w-4 mr-2" />
+                    {addingToCart ? "Adding to Cart..." : "Add to Clinic Cart"}
+                  </Button>
 
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={handleWishlistToggle}
-                  className={`h-12 w-12 rounded-2xl border-border/70 ${
-                    isWishlisted ? "text-red-500 border-red-500/40 bg-red-500/10" : "text-muted-foreground"
-                  }`}
-                >
-                  <Heart className={`h-5 w-5 ${isWishlisted ? "fill-current" : ""}`} />
-                </Button>
-              </div>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={handleWishlistToggle}
+                    className={`h-12 w-12 rounded-2xl border-border/70 ${
+                      isWishlisted ? "text-red-500 border-red-500/40 bg-red-500/10" : "text-muted-foreground"
+                    }`}
+                  >
+                    <Heart className={`h-5 w-5 ${isWishlisted ? "fill-current" : ""}`} />
+                  </Button>
+                </div>
+              )}
             </div>
 
             {/* Trust Highlights Grid */}

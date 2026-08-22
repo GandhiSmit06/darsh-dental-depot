@@ -125,17 +125,19 @@ export function Navbar() {
             </AnimatePresence>
           </Button>
 
-          {/* Quick Cart */}
-          <Button
-            variant="ghost"
-            size="icon"
-            asChild
-            className="hidden sm:inline-flex rounded-full h-9 w-9 text-muted-foreground hover:text-foreground hover:bg-secondary/80 relative"
-          >
-            <Link to="/products">
-              <ShoppingCart className="h-4 w-4" />
-            </Link>
-          </Button>
+          {/* Quick Cart (Only for doctors / guest buyers) */}
+          {(!user || user.role === "doctor") && (
+            <Button
+              variant="ghost"
+              size="icon"
+              asChild
+              className="hidden sm:inline-flex rounded-full h-9 w-9 text-muted-foreground hover:text-foreground hover:bg-secondary/80 relative"
+            >
+              <Link to={user ? "/doctor" : "/products"}>
+                <ShoppingCart className="h-4 w-4" />
+              </Link>
+            </Button>
+          )}
 
           {/* Auth State Button */}
           {isAuthenticated && user ? (

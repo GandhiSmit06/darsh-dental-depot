@@ -8,6 +8,7 @@
     "build": "tsc",
     "start": "node dist/src/server.js",
     "seed": "ts-node seeds/seed.ts",
+    "db:clear": "node scripts/clear-db.js",
     "lint": "eslint src --ext .ts"
   },
   "dependencies": {

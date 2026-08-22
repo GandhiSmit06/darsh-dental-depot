@@ -103,7 +103,7 @@ export class ShopService {
       status:
         p.stock === 0
           ? 'Out of Stock'
-          : p.stock <= p.lowStockThreshold
+          : p.stock <= (p.lowStockThreshold && p.lowStockThreshold <= 5 ? p.lowStockThreshold : 3)
             ? 'Low Stock'
             : 'In Stock',
     }));

@@ -33,7 +33,7 @@ const productSchema = new Schema<IProduct>(
       enum: ['active', 'inactive', 'out_of_stock'],
       default: 'active',
     },
-    lowStockThreshold: { type: Number, default: 10 },
+    lowStockThreshold: { type: Number, default: 3 },
     rating: { type: Number, default: 0, min: 0, max: 5 },
     reviewCount: { type: Number, default: 0 },
     createdBy: { type: Schema.Types.ObjectId, ref: 'User', required: true },

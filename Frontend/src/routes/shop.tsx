@@ -763,10 +763,7 @@ function InventorySection({ search }: { search?: string }) {
                   <TableCell className="font-medium">{p.productName}</TableCell>
                   <TableCell>{p.stock}</TableCell>
                   <TableCell>
-                    <StatusBadge status={
-                      p.status === "Out of Stock" ? "Cancelled" :
-                      p.status === "Low Stock" ? "Pending" : "Active"
-                    } />
+                    <StatusBadge status={p.status || (p.stock === 0 ? "Out of Stock" : p.stock <= 3 ? "Low Stock" : "In Stock")} />
                   </TableCell>
                 </TableRow>
               ))}

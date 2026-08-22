@@ -9,10 +9,9 @@ import {
   Sun,
   LayoutDashboard,
   LogOut,
-  User,
   ArrowRight,
-  Shield,
-  Heart,
+  Phone,
+  MessageSquare,
 } from "lucide-react";
 import { useTheme } from "@/components/theme-provider";
 import { useAuth } from "@/lib/auth-context";
@@ -20,9 +19,9 @@ import { motion, AnimatePresence } from "framer-motion";
 
 const links = [
   { to: "/", label: "Home" },
-  { to: "/products", label: "Products & Depot" },
-  { to: "/about", label: "About Us" },
-  { to: "/contact", label: "Support & Contact" },
+  { to: "/products", label: "Dental Catalog" },
+  { to: "/about", label: "About Depot" },
+  { to: "/contact", label: "Vadodara Location & Contact" },
 ];
 
 export function Logo() {
@@ -38,8 +37,8 @@ export function Logo() {
         <span className="font-extrabold text-base tracking-tight font-heading bg-gradient-to-r from-foreground via-foreground to-primary bg-clip-text text-transparent group-hover:to-cyan-500 transition-colors">
           DARSH DENTAL
         </span>
-        <span className="text-[10px] font-bold uppercase tracking-widest text-primary/80 mt-0.5">
-          GLOW & DEPOT
+        <span className="text-[9px] font-extrabold uppercase tracking-widest text-primary mt-0.5">
+          DEPOT • VADODARA
         </span>
       </div>
     </Link>
@@ -69,16 +68,16 @@ export function Navbar() {
         <Logo />
 
         {/* Desktop Navigation */}
-        <nav className="hidden md:flex items-center gap-1.5 p-1 rounded-full bg-secondary/50 border border-border/40 backdrop-blur-md">
+        <nav className="hidden lg:flex items-center gap-1.5 p-1 rounded-full bg-secondary/50 border border-border/40 backdrop-blur-md">
           {links.map((l) => {
             const active = l.to === "/" ? path === "/" : path.startsWith(l.to);
             return (
               <Link
                 key={l.to}
                 to={l.to}
-                className={`relative px-4 py-2 text-sm font-medium rounded-full transition-all duration-200 ${
+                className={`relative px-4 py-2 text-xs font-semibold rounded-full transition-all duration-200 ${
                   active
-                    ? "text-primary font-semibold shadow-sm"
+                    ? "text-primary font-bold shadow-sm"
                     : "text-muted-foreground hover:text-foreground hover:bg-background/60"
                 }`}
               >
@@ -96,8 +95,16 @@ export function Navbar() {
         </nav>
 
         {/* Right side actions */}
-        <div className="flex items-center gap-2.5">
-          {/* Theme Toggle with smooth rotation */}
+        <div className="flex items-center gap-2">
+          {/* Quick Call Button */}
+          <a
+            href="tel:+919727076119"
+            className="hidden xl:flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold text-primary bg-primary/10 hover:bg-primary/20 transition-colors border border-primary/20"
+          >
+            <Phone className="h-3.5 w-3.5 text-primary" /> +91 97270 76119
+          </a>
+
+          {/* Theme Toggle */}
           <Button
             variant="ghost"
             size="icon"
@@ -162,10 +169,10 @@ export function Navbar() {
               <Button
                 size="sm"
                 asChild
-                className="rounded-full text-xs font-semibold px-5 h-9 bg-gradient-to-r from-primary via-sky-600 to-indigo-600 hover:opacity-95 shadow-md shadow-primary/20 btn-shine"
+                className="rounded-full text-xs font-semibold px-4 h-9 bg-gradient-to-r from-primary via-sky-600 to-indigo-600 hover:opacity-95 shadow-md shadow-primary/20 btn-shine"
               >
                 <Link to="/register">
-                  Get Started <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
+                  Doctor Register <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
                 </Link>
               </Button>
             </div>
@@ -174,7 +181,7 @@ export function Navbar() {
           {/* Mobile Navigation Sheet */}
           <Sheet>
             <SheetTrigger asChild>
-              <Button size="icon" variant="ghost" className="md:hidden rounded-full h-9 w-9">
+              <Button size="icon" variant="ghost" className="lg:hidden rounded-full h-9 w-9">
                 <Menu className="h-5 w-5" />
               </Button>
             </SheetTrigger>
@@ -193,12 +200,25 @@ export function Navbar() {
                   ))}
                 </div>
 
+                <div className="p-3.5 rounded-2xl bg-secondary/50 border border-border/50 space-y-2">
+                  <div className="text-xs font-bold text-foreground">Darsh Dental Depot</div>
+                  <div className="text-[11px] text-muted-foreground leading-tight">
+                    FF-10/11, Vraj Vihar Complex, Shiyabaug, Vadodara
+                  </div>
+                  <a
+                    href="tel:+919727076119"
+                    className="text-xs text-primary font-bold flex items-center gap-1.5 pt-1"
+                  >
+                    <Phone className="h-3.5 w-3.5" /> +91 97270 76119
+                  </a>
+                </div>
+
                 <div className="h-px bg-border/60 my-1" />
 
                 {isAuthenticated && user ? (
                   <div className="flex flex-col gap-2">
                     <div className="text-xs text-muted-foreground px-4">
-                      Signed in as <span className="font-semibold text-foreground">{user.fullName}</span> ({user.role})
+                      Signed in as <span className="font-semibold text-foreground">{user.fullName}</span>
                     </div>
                     <Button asChild className="rounded-xl justify-start bg-primary text-white">
                       <Link to={getDashboardPath()}>
@@ -215,7 +235,7 @@ export function Navbar() {
                       <Link to="/login">Sign In</Link>
                     </Button>
                     <Button asChild className="rounded-xl justify-center bg-gradient-to-r from-primary to-indigo-600 text-white shadow-md">
-                      <Link to="/register">Create Account</Link>
+                      <Link to="/register">Doctor Registration</Link>
                     </Button>
                   </div>
                 )}

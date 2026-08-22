@@ -6,6 +6,13 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { toast } from "sonner";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -13,29 +20,64 @@ import { z } from "zod";
 import { useState } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { ApiError } from "@/lib/api";
-import { Sparkles, ShieldCheck, UserCheck, Stethoscope, Store, ArrowRight } from "lucide-react";
+import {
+  Sparkles,
+  ShieldCheck,
+  Stethoscope,
+  ArrowRight,
+  MapPin,
+  Phone,
+  AlertCircle,
+} from "lucide-react";
 import { motion } from "framer-motion";
+
+const VADODARA_AREAS = [
+  "Alkapuri / RC Dutt Road",
+  "Akota / Productivity Road",
+  "Gotri / New Alkapuri",
+  "Old Padra Road",
+  "Karelibaug / Amit Nagar",
+  "Manjalpur / Makarpura",
+  "Fatehgunj / Sayajigunj",
+  "Shiyabaug / Kevdabaug / Mandvi",
+  "Waghodia Road / Dabhoi Road",
+  "Vasna / Bhayli / TP 13",
+  "Nizampura / Sama / Chhani",
+  "Subhanpura / Ellora Park",
+  "Atladra / Kalali / Sun Pharma Road",
+  "Harni / Airport Road",
+  "Other Vadodara Locality",
+];
 
 const registerSchema = z
   .object({
-    fullName: z.string().min(1, "Full name is required").max(100, "Name must be under 100 characters"),
-    clinicName: z.string().min(1, "Clinic name is required"),
+    fullName: z
+      .string()
+      .min(1, "Doctor full name is required")
+      .max(100, "Name must be under 100 characters"),
+    clinicName: z.string().min(1, "Dental clinic name is required"),
+    vadodaraArea: z.string().min(1, "Please select your Vadodara clinic locality"),
     email: z.string().min(1, "Email is required").email("Invalid email address"),
     phone: z
       .string()
       .min(1, "Phone is required")
-      .regex(/^[6-9]\d{9}$/, "Enter a valid 10-digit Indian phone number"),
-    role: z.enum(["doctor", "shop_owner"], {
-      required_error: "Please select a role",
-    }),
-    medicalRegistrationNumber: z.string().min(1, "Medical registration number is required"),
-    address: z.string().min(1, "Address is required"),
+      .regex(/^[6-9]\d{9}$/, "Enter a valid 10-digit Indian mobile number"),
+    role: z.literal("doctor"),
+    medicalRegistrationNumber: z
+      .string()
+      .min(1, "DCI / State Dental Council registration number is required"),
+    address: z.string().min(1, "Clinic street address in Vadodara is required"),
+    pincode: z
+      .string()
+      .min(6, "Enter 6-digit Vadodara PIN code")
+      .max(6, "PIN code must be 6 digits")
+      .regex(/^3900\d{2}$/, "Must be a valid Vadodara PIN code (3900xx)"),
     password: z
       .string()
       .min(8, "Password must be at least 8 characters")
       .regex(
         /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
-        "Must contain uppercase, lowercase, and a number",
+        "Must contain uppercase, lowercase, and a number"
       ),
     confirmPassword: z.string().min(1, "Please confirm your password"),
   })
@@ -47,7 +89,16 @@ const registerSchema = z
 type RegisterFormData = z.infer<typeof registerSchema>;
 
 export const Route = createFileRoute("/register")({
-  head: () => ({ meta: [{ title: "Doctor & Clinic Registration — Darsh Dental Depot" }] }),
+  head: () => ({
+    meta: [
+      { title: "Vadodara Doctor & Clinic Registration — Darsh Dental Depot" },
+      {
+        name: "description",
+        content:
+          "Exclusive portal registration for dental surgeons and clinics practicing in Vadodara, Gujarat.",
+      },
+    ],
+  }),
   component: RegisterPage,
 });
 
@@ -61,49 +112,46 @@ function RegisterPage() {
     handleSubmit,
     setError,
     control,
-    setValue,
-    watch,
     formState: { errors },
   } = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
       role: "doctor",
+      pincode: "3900",
     },
   });
-
-  const selectedRole = watch("role");
 
   const onSubmit = async (data: RegisterFormData) => {
     setIsSubmitting(true);
     try {
-      const message = await registerUser(data);
-      toast.success(message);
+      // Append Vadodara area and pin code into full address payload for backend
+      const fullAddress = `${data.address}, ${data.vadodaraArea}, Vadodara, Gujarat - ${data.pincode}`;
+      const payload = {
+        fullName: data.fullName,
+        clinicName: data.clinicName,
+        email: data.email,
+        phone: data.phone,
+        role: "doctor" as const,
+        medicalRegistrationNumber: data.medicalRegistrationNumber,
+        address: fullAddress,
+        password: data.password,
+        confirmPassword: data.confirmPassword,
+      };
+
+      const message = await registerUser(payload);
+      toast.success(message || "Registration successful! Welcome to Darsh Dental Depot.");
       nav({ to: "/login" });
     } catch (err) {
       if (err instanceof ApiError) {
         if (err.errors && err.errors.length > 0) {
-          const validFields: Array<keyof RegisterFormData> = [
-            "fullName",
-            "clinicName",
-            "email",
-            "phone",
-            "role",
-            "medicalRegistrationNumber",
-            "address",
-            "password",
-            "confirmPassword",
-          ];
           err.errors.forEach((e) => {
-            const field = e.field as keyof RegisterFormData;
-            if (validFields.includes(field)) {
-              setError(field, { message: e.message });
-            }
+            setError((e.field as any) || "email", { message: e.message });
           });
         } else {
           toast.error(err.message);
         }
       } else {
-        toast.error("Something went wrong. Please try again.");
+        toast.error("Something went wrong. Please check your details or call our Vadodara depot.");
       }
     } finally {
       setIsSubmitting(false);
@@ -118,58 +166,40 @@ function RegisterPage() {
 
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
           <Card className="p-8 sm:p-10 glass-card border border-border/70 rounded-3xl shadow-xl backdrop-blur-xl">
+            {/* Vadodara Restriction Notice */}
+            <div className="p-4 rounded-2xl bg-primary/10 border border-primary/20 mb-6 flex items-start gap-3">
+              <MapPin className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+              <div className="text-xs">
+                <span className="font-extrabold text-primary block">
+                  📍 Exclusively For Doctors & Clinics in Vadodara, Gujarat
+                </span>
+                <p className="text-muted-foreground mt-0.5 leading-relaxed">
+                  This portal is dedicated strictly to dental surgeons with clinics located in Vadodara for same-day local depot fulfillment from Darsh Dental Depot.
+                </p>
+              </div>
+            </div>
+
             {/* Header */}
-            <div className="text-center mb-8 space-y-2">
+            <div className="text-center mb-8 space-y-1.5">
               <div className="mx-auto h-12 w-12 rounded-2xl bg-gradient-to-br from-primary via-sky-600 to-indigo-600 text-white grid place-items-center mb-3 shadow-md">
-                <Sparkles className="h-6 w-6" />
+                <Stethoscope className="h-6 w-6" />
               </div>
               <h1 className="text-2xl sm:text-3xl font-extrabold font-heading tracking-tight text-foreground">
-                Register Your Practice
+                Doctor Account Registration
               </h1>
               <p className="text-xs text-muted-foreground">
-                Join 5,000+ certified dental practitioners across India unlocking wholesale pricing
+                Unlock direct depot wholesale prices & priority 2-hour local dispatch
               </p>
             </div>
 
-            {/* Role Switcher Pill */}
-            <div className="mb-6">
-              <Label className="text-xs font-semibold mb-2 block text-muted-foreground uppercase tracking-wider">
-                Select Account Type
-              </Label>
-              <div className="grid grid-cols-2 gap-3 p-1 rounded-2xl bg-secondary/60 border border-border/50">
-                <button
-                  type="button"
-                  onClick={() => setValue("role", "doctor")}
-                  className={`flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-xs font-bold transition-all ${
-                    selectedRole === "doctor"
-                      ? "bg-background text-primary shadow-sm border border-primary/20"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  <Stethoscope className="h-4 w-4" /> Doctor / Clinic
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setValue("role", "shop_owner")}
-                  className={`flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-xs font-bold transition-all ${
-                    selectedRole === "shop_owner"
-                      ? "bg-background text-primary shadow-sm border border-primary/20"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  <Store className="h-4 w-4" /> Dental Shop Owner
-                </button>
-              </div>
-            </div>
-
             <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
+              {/* Doctor & Clinic Name */}
               <div className="grid sm:grid-cols-2 gap-4">
                 <div>
-                  <Label className="text-xs font-semibold mb-1.5 block">Full Name *</Label>
+                  <Label className="text-xs font-semibold mb-1.5 block">Doctor Full Name *</Label>
                   <Input
                     {...register("fullName")}
-                    placeholder="Dr. John Doe"
+                    placeholder="Dr. Rajesh Patel"
                     className="rounded-xl bg-background/80 border-border/60 text-sm h-11 focus:border-primary"
                   />
                   {errors.fullName && (
@@ -178,10 +208,10 @@ function RegisterPage() {
                 </div>
 
                 <div>
-                  <Label className="text-xs font-semibold mb-1.5 block">Clinic / Store Name *</Label>
+                  <Label className="text-xs font-semibold mb-1.5 block">Dental Clinic / Hospital Name *</Label>
                   <Input
                     {...register("clinicName")}
-                    placeholder="SmileCare Dental Center"
+                    placeholder="Smile Dental Clinic"
                     className="rounded-xl bg-background/80 border-border/60 text-sm h-11 focus:border-primary"
                   />
                   {errors.clinicName && (
@@ -190,13 +220,14 @@ function RegisterPage() {
                 </div>
               </div>
 
+              {/* Email & Phone */}
               <div className="grid sm:grid-cols-2 gap-4">
                 <div>
                   <Label className="text-xs font-semibold mb-1.5 block">Email Address *</Label>
                   <Input
                     type="email"
                     {...register("email")}
-                    placeholder="doctor@example.com"
+                    placeholder="doctor@vadodaraclinic.com"
                     className="rounded-xl bg-background/80 border-border/60 text-sm h-11 focus:border-primary"
                   />
                   {errors.email && (
@@ -218,13 +249,55 @@ function RegisterPage() {
                 </div>
               </div>
 
+              {/* Vadodara Locality Dropdown & Pin Code */}
+              <div className="grid sm:grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-xs font-semibold mb-1.5 block">Vadodara Clinic Locality *</Label>
+                  <Controller
+                    control={control}
+                    name="vadodaraArea"
+                    render={({ field }) => (
+                      <Select value={field.value} onValueChange={field.onChange}>
+                        <SelectTrigger className="w-full rounded-xl bg-background/80 border-border/60 text-sm h-11">
+                          <SelectValue placeholder="Select Vadodara Area" />
+                        </SelectTrigger>
+                        <SelectContent className="glass-card max-h-56">
+                          {VADODARA_AREAS.map((area) => (
+                            <SelectItem key={area} value={area} className="text-xs">
+                              {area}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
+                  />
+                  {errors.vadodaraArea && (
+                    <p className="text-xs text-destructive mt-1">{errors.vadodaraArea.message}</p>
+                  )}
+                </div>
+
+                <div>
+                  <Label className="text-xs font-semibold mb-1.5 block">Vadodara PIN Code (3900xx) *</Label>
+                  <Input
+                    {...register("pincode")}
+                    placeholder="390001"
+                    maxLength={6}
+                    className="rounded-xl bg-background/80 border-border/60 text-sm h-11 focus:border-primary"
+                  />
+                  {errors.pincode && (
+                    <p className="text-xs text-destructive mt-1">{errors.pincode.message}</p>
+                  )}
+                </div>
+              </div>
+
+              {/* DCI Number */}
               <div>
                 <Label className="text-xs font-semibold mb-1.5 block">
-                  Dental Registration / License Number *
+                  Dental Council Registration / License No. *
                 </Label>
                 <Input
                   {...register("medicalRegistrationNumber")}
-                  placeholder="e.g. GDC-12345 / DCI Registration"
+                  placeholder="e.g. GDC-A-12345 / DCI Registration"
                   className="rounded-xl bg-background/80 border-border/60 text-sm h-11 focus:border-primary"
                 />
                 {errors.medicalRegistrationNumber && (
@@ -234,12 +307,15 @@ function RegisterPage() {
                 )}
               </div>
 
+              {/* Clinic Street Address */}
               <div>
-                <Label className="text-xs font-semibold mb-1.5 block">Clinic Delivery Address *</Label>
+                <Label className="text-xs font-semibold mb-1.5 block">
+                  Clinic Street Address (Vadodara) *
+                </Label>
                 <Textarea
                   rows={2}
                   {...register("address")}
-                  placeholder="Complete clinical address with city & PIN code"
+                  placeholder="Shop/Flat No., Building Name, Opposite Landmark, Road Name"
                   className="rounded-xl bg-background/80 border-border/60 text-sm focus:border-primary"
                 />
                 {errors.address && (
@@ -247,6 +323,7 @@ function RegisterPage() {
                 )}
               </div>
 
+              {/* Passwords */}
               <div className="grid sm:grid-cols-2 gap-4">
                 <div>
                   <Label className="text-xs font-semibold mb-1.5 block">Password (min 8 chars) *</Label>
@@ -280,22 +357,30 @@ function RegisterPage() {
                 className="w-full rounded-2xl h-12 text-sm font-bold bg-gradient-to-r from-primary via-sky-600 to-indigo-600 hover:opacity-95 text-white shadow-lg btn-shine mt-4"
                 disabled={isSubmitting}
               >
-                {isSubmitting ? "Creating Account..." : "Complete Clinic Registration"}{" "}
+                {isSubmitting ? "Registering Clinic..." : "Register Vadodara Clinic Account"}{" "}
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </form>
 
             <div className="mt-8 pt-6 border-t border-border/40 text-center space-y-3">
               <p className="text-xs text-muted-foreground">
-                Already registered with us?{" "}
+                Already registered?{" "}
                 <Link to="/login" className="text-primary font-bold hover:underline">
-                  Sign in to portal
+                  Sign in to Doctor Portal
                 </Link>
               </p>
 
-              <div className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground">
-                <ShieldCheck className="h-3.5 w-3.5 text-emerald-500" />
-                <span>Encrypted Data • Instant Verification For Practicing Doctors</span>
+              <div className="p-3 rounded-2xl bg-secondary/50 border border-border/40 flex items-center justify-between text-xs">
+                <div className="flex items-center gap-2">
+                  <Phone className="h-4 w-4 text-primary" />
+                  <span className="text-muted-foreground">Need direct phone assistance?</span>
+                </div>
+                <a
+                  href="tel:+919727076119"
+                  className="font-extrabold text-primary hover:underline"
+                >
+                  +91 97270 76119
+                </a>
               </div>
             </div>
           </Card>

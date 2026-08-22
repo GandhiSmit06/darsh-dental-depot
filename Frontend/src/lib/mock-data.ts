@@ -71,39 +71,48 @@ export const featuredProducts = products.slice(0, 8);
 
 export const testimonials = [
   {
-    name: "Dr. Aisha Khan",
-    role: "Endodontist, Mumbai",
+    name: "Dr. Rajesh Patel",
+    clinic: "Alkapuri Dental Care",
+    role: "Endodontist, Alkapuri, Vadodara",
     quote:
-      "Darsh Dental Depot has been my go-to supplier for three years. Always on time, always genuine.",
+      "Darsh Dental Depot has been our clinic's primary material partner in Vadodara. Whenever we need emergency composites or files, they deliver within 2 hours.",
   },
   {
-    name: "Dr. Rohit Mehta",
-    role: "Clinic Owner, Pune",
-    quote: "Their inventory and pricing are unmatched. The platform makes reordering effortless.",
+    name: "Dr. Sneha Shah",
+    clinic: "Akota Implant Center",
+    role: "Oral Surgeon, Akota, Vadodara",
+    quote:
+      "Having a physical depot at Shiyabaug with authentic 3M and GC supplies gives complete peace of mind. Transparent wholesale rates for practicing doctors.",
   },
   {
-    name: "Dr. Priya Sharma",
-    role: "Orthodontist, Delhi",
-    quote: "Premium brands at fair prices, with fast doorstep delivery. Highly recommended.",
+    name: "Dr. Parth Joshi",
+    clinic: "Gotri Multi-Speciality Clinic",
+    role: "Prosthodontist, Gotri, Vadodara",
+    quote:
+      "Direct owner support from Darsh Dental Depot (+91 97270 76119) is unmatched. Always verified batch numbers and prompt same-day clinic delivery.",
   },
 ];
 
 export const faqs = [
   {
-    q: "Are all products genuine and certified?",
-    a: "Yes. Every product is sourced directly from authorized distributors and ships with manufacturer certification.",
+    q: "Where is Darsh Dental Depot physically located in Vadodara?",
+    a: "Our physical showroom and depot is located at FF-10/11, Vraj Vihar Complex, Char Rasta, Opp. Kachhia Patel Wadi, Mahavir Colony, Shiyabaug, Kevdabaug, Vadodara, Gujarat 390001.",
   },
   {
-    q: "What is your typical delivery time?",
-    a: "Orders ship within 24 hours. Most metros receive delivery in 1–3 business days.",
+    q: "What are your store working hours and operating days?",
+    a: "We are open Monday to Saturday from 10:00 AM to 8:30 PM. On Sundays, the store is closed, but emergency clinical delivery is available on call at +91 97270 76119.",
   },
   {
-    q: "Do you offer bulk pricing for clinics?",
-    a: "Absolutely. Registered clinics and shops get tiered pricing automatically at checkout.",
+    q: "How fast is delivery to dental clinics in Vadodara?",
+    a: "We provide same-day local delivery (typically within 2–4 hours) across all Vadodara areas including Alkapuri, Akota, Gotri, Old Padra Road, Karelibaug, Manjalpur, Fatehgunj, and Vasna.",
   },
   {
-    q: "What is the return policy?",
-    a: "Unopened products may be returned within 7 days. Defective items are replaced free of charge.",
+    q: "Can only doctors and clinics in Vadodara order from this portal?",
+    a: "Yes. This portal is exclusively tailored for dental doctors and clinics practicing in Vadodara to receive direct depot pricing and expedited local clinic fulfillment.",
+  },
+  {
+    q: "Are all dental materials authentic with manufacturer warranty?",
+    a: "Yes. Every product is 100% genuine, sourced directly from authorized manufacturers (3M, Ivoclar, GC, Mani, Dentsply Sirona, Septodont) with valid lot batch numbers and GST invoices.",
   },
 ];
 

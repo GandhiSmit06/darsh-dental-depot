@@ -1,6 +1,18 @@
 import { Link } from "@tanstack/react-router";
 import { Logo } from "./Navbar";
-import { ShieldCheck, Truck, Clock, Sparkles, Send, Phone, Mail, MapPin, CheckCircle2 } from "lucide-react";
+import {
+  ShieldCheck,
+  Truck,
+  Clock,
+  Sparkles,
+  Send,
+  Phone,
+  Mail,
+  MapPin,
+  CheckCircle2,
+  ExternalLink,
+  MessageSquare,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
@@ -12,7 +24,7 @@ export function Footer() {
   const handleSubscribe = (e: React.FormEvent) => {
     e.preventDefault();
     if (!email) return;
-    toast.success("Thank you for subscribing to Darsh Dental Depot updates!");
+    toast.success("Thank you! You will receive daily Vadodara depot stock updates.");
     setEmail("");
   };
 
@@ -30,7 +42,7 @@ export function Footer() {
             </div>
             <div>
               <div className="font-bold text-xs uppercase tracking-wider">100% Genuine Guaranteed</div>
-              <div className="text-xs text-muted-foreground">Direct manufacturer warranty</div>
+              <div className="text-xs text-muted-foreground">Direct manufacturer authentic batch</div>
             </div>
           </div>
 
@@ -39,8 +51,8 @@ export function Footer() {
               <Truck className="h-5 w-5" />
             </div>
             <div>
-              <div className="font-bold text-xs uppercase tracking-wider">Priority Express Shipping</div>
-              <div className="text-xs text-muted-foreground">Pan-India clinic delivery</div>
+              <div className="font-bold text-xs uppercase tracking-wider">Same-Day Vadodara Delivery</div>
+              <div className="text-xs text-muted-foreground">Direct to your dental clinic</div>
             </div>
           </div>
 
@@ -49,8 +61,8 @@ export function Footer() {
               <Clock className="h-5 w-5" />
             </div>
             <div>
-              <div className="font-bold text-xs uppercase tracking-wider">24/7 Dental Support</div>
-              <div className="text-xs text-muted-foreground">Expert clinical assistance</div>
+              <div className="font-bold text-xs uppercase tracking-wider">Mon–Sat: 10AM – 8:30PM</div>
+              <div className="text-xs text-muted-foreground">Sunday: Emergency on call</div>
             </div>
           </div>
 
@@ -59,8 +71,8 @@ export function Footer() {
               <CheckCircle2 className="h-5 w-5" />
             </div>
             <div>
-              <div className="font-bold text-xs uppercase tracking-wider">Doctor Wholesale Rates</div>
-              <div className="text-xs text-muted-foreground">Tiered bulk clinic savings</div>
+              <div className="font-bold text-xs uppercase tracking-wider">Direct Depot Wholesale Rates</div>
+              <div className="text-xs text-muted-foreground">Special pricing for Vadodara doctors</div>
             </div>
           </div>
         </div>
@@ -71,9 +83,9 @@ export function Footer() {
         <div className="lg:col-span-2 space-y-4">
           <Logo />
           <p className="text-sm text-muted-foreground leading-relaxed max-w-sm">
-            Darsh Dental Depot is India's leading digital platform for verified dental consumables, advanced equipment, and clinical inventory management.
+            Darsh Dental Depot is Vadodara's premier physical & digital dental supply depot, providing local dentists with factory-certified composites, instruments, and consumables with prompt local clinic delivery.
           </p>
-          
+
           <div className="pt-2">
             <form onSubmit={handleSubscribe} className="flex gap-2 max-w-sm">
               <Input
@@ -89,7 +101,7 @@ export function Footer() {
               </Button>
             </form>
             <span className="text-[11px] text-muted-foreground mt-1.5 block">
-              Subscribe for exclusive doctor discounts & batch expiry alerts.
+              Subscribe for Vadodara clinic offers & fresh material batch arrivals.
             </span>
           </div>
         </div>
@@ -102,43 +114,71 @@ export function Footer() {
           <ul className="space-y-2.5 text-sm text-muted-foreground">
             <li><Link to="/products" className="hover:text-primary transition-colors flex items-center gap-1.5">All Products</Link></li>
             <li><Link to="/products" className="hover:text-primary transition-colors flex items-center gap-1.5">Composite & Restorative</Link></li>
-            <li><Link to="/products" className="hover:text-primary transition-colors flex items-center gap-1.5">Endodontic Files & Motors</Link></li>
+            <li><Link to="/products" className="hover:text-primary transition-colors flex items-center gap-1.5">Endodontic Rotary Files</Link></li>
             <li><Link to="/products" className="hover:text-primary transition-colors flex items-center gap-1.5">Impression Materials</Link></li>
-            <li><Link to="/products" className="hover:text-primary transition-colors flex items-center gap-1.5">Sterilization & PPE</Link></li>
+            <li><Link to="/products" className="hover:text-primary transition-colors flex items-center gap-1.5">Sterilization & Disposables</Link></li>
           </ul>
         </div>
 
         {/* Quick Links */}
         <div>
           <h4 className="font-heading font-bold text-sm mb-4 tracking-wide text-foreground uppercase text-[11px]">
-            Portal & Info
+            Vadodara Doctor Portal
           </h4>
           <ul className="space-y-2.5 text-sm text-muted-foreground">
-            <li><Link to="/about" className="hover:text-primary transition-colors">About Our Story</Link></li>
-            <li><Link to="/contact" className="hover:text-primary transition-colors">Clinic Support</Link></li>
+            <li><Link to="/about" className="hover:text-primary transition-colors">Our Vadodara Store</Link></li>
+            <li><Link to="/contact" className="hover:text-primary transition-colors">Depot Location & Hours</Link></li>
             <li><Link to="/login" className="hover:text-primary transition-colors">Doctor Portal Login</Link></li>
-            <li><Link to="/register" className="hover:text-primary transition-colors">Register Clinic</Link></li>
-            <li><Link to="/shop" className="hover:text-primary transition-colors">Distributor Center</Link></li>
+            <li><Link to="/register" className="hover:text-primary transition-colors">Register Clinic (Vadodara)</Link></li>
           </ul>
         </div>
 
-        {/* Contact info */}
+        {/* Store Location & Timings */}
         <div>
           <h4 className="font-heading font-bold text-sm mb-4 tracking-wide text-foreground uppercase text-[11px]">
-            Direct Contact
+            Store & Contact Info
           </h4>
-          <ul className="space-y-3 text-sm text-muted-foreground">
-            <li className="flex items-center gap-2.5">
+          <ul className="space-y-3 text-xs text-muted-foreground">
+            <li className="flex items-center gap-2">
               <Phone className="h-4 w-4 text-primary shrink-0" />
-              <span>+91 98765 43210</span>
+              <a href="tel:+919727076119" className="font-bold text-foreground hover:text-primary transition-colors">
+                +91 97270 76119
+              </a>
             </li>
-            <li className="flex items-center gap-2.5">
-              <Mail className="h-4 w-4 text-primary shrink-0" />
-              <span>orders@darshdental.com</span>
+            <li className="flex items-center gap-2">
+              <MessageSquare className="h-4 w-4 text-emerald-500 shrink-0" />
+              <a
+                href="https://wa.me/919727076119"
+                target="_blank"
+                rel="noreferrer"
+                className="font-semibold text-emerald-600 dark:text-emerald-400 hover:underline"
+              >
+                Chat on WhatsApp
+              </a>
             </li>
-            <li className="flex items-start gap-2.5">
+            <li className="flex items-start gap-2">
+              <Clock className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+              <div>
+                <span className="font-bold text-foreground">Mon – Sat:</span> 10:00 AM – 8:30 PM
+                <div className="text-[11px] text-muted-foreground">Sunday: Closed (Surgeries on Call)</div>
+              </div>
+            </li>
+            <li className="flex items-start gap-2 pt-1 border-t border-border/40">
               <MapPin className="h-4 w-4 text-primary shrink-0 mt-0.5" />
-              <span>Vadodara & Mumbai, India</span>
+              <div>
+                <span className="font-bold text-foreground">Darsh Dental Depot:</span>
+                <p className="text-[11px] leading-tight text-muted-foreground mt-0.5">
+                  FF-10/11, Vraj Vihar Complex, Char Rasta, Opp. Kachhia Patel Wadi, Shiyabaug, Kevdabaug, Vadodara, Gujarat 390001
+                </p>
+                <a
+                  href="https://maps.app.goo.gl/7czn6gwYUgdSm8b46"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-1 text-[11px] text-primary font-bold hover:underline mt-1.5"
+                >
+                  View on Google Maps <ExternalLink className="h-3 w-3" />
+                </a>
+              </div>
             </li>
           </ul>
         </div>
@@ -146,14 +186,16 @@ export function Footer() {
 
       <div className="border-t border-border/40 py-6 text-center text-xs text-muted-foreground flex flex-col sm:flex-row items-center justify-between container mx-auto px-4 gap-3">
         <div>
-          © {new Date().getFullYear()} <span className="font-semibold text-foreground">Darsh Dental Depot & Glow</span>. All rights reserved.
+          © {new Date().getFullYear()} <span className="font-semibold text-foreground">Darsh Dental Depot</span>. Exclusively serving dentists across Vadodara, Gujarat.
         </div>
         <div className="flex items-center gap-4 text-[11px]">
-          <span className="hover:text-primary cursor-pointer">Privacy Policy</span>
+          <a href="https://maps.app.goo.gl/7czn6gwYUgdSm8b46" target="_blank" rel="noreferrer" className="hover:text-primary cursor-pointer">
+            Google Maps Location
+          </a>
           <span>•</span>
-          <span className="hover:text-primary cursor-pointer">Terms of Service</span>
+          <span className="hover:text-primary cursor-pointer">GST Invoicing</span>
           <span>•</span>
-          <span className="hover:text-primary cursor-pointer">Quality Certifications</span>
+          <span className="hover:text-primary cursor-pointer">100% Authentic Materials</span>
         </div>
       </div>
     </footer>

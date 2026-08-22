@@ -3,21 +3,19 @@ import { motion } from "framer-motion";
 import {
   ShieldCheck,
   Truck,
-  Headphones,
-  Award,
   ArrowRight,
   Star,
   CheckCircle2,
   Sparkles,
   Zap,
-  Package,
-  Layers,
-  Activity,
-  FileCheck,
-  Search,
-  ChevronRight,
-  TrendingUp,
+  Award,
   Clock,
+  MapPin,
+  Phone,
+  MessageSquare,
+  ExternalLink,
+  ChevronRight,
+  FileCheck,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -28,16 +26,36 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { Input } from "@/components/ui/input";
 import { PublicLayout } from "@/components/site/PublicLayout";
 import { ProductCard } from "@/components/site/ProductCard";
 import { productsApi } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
 import { useQuery } from "@tanstack/react-query";
-import { brands, categories, faqs, testimonials, mockProducts } from "@/lib/mock-data";
+import { categories, faqs, testimonials, mockProducts } from "@/lib/mock-data";
 import { useState } from "react";
 
 export const Route = createFileRoute("/")({ component: HomePage });
+
+const MAPS_URL = "https://maps.app.goo.gl/7czn6gwYUgdSm8b46";
+const PHONE_NUMBER = "+91 97270 76119";
+const PHONE_RAW = "+919727076119";
+const WHATSAPP_URL =
+  "https://wa.me/919727076119?text=Hello%20Darsh%20Dental%20Depot,%20I%20am%20a%20doctor%20in%20Vadodara%20inquiring%20about%20dental%20materials.";
+
+const vadodaraAreas = [
+  "Alkapuri",
+  "Akota",
+  "Gotri",
+  "Old Padra Road",
+  "Karelibaug",
+  "Manjalpur",
+  "Fatehgunj",
+  "Shiyabaug",
+  "Waghodia Road",
+  "Vasna-Bhayli",
+  "Nizampura",
+  "Subhanpura",
+];
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -57,7 +75,6 @@ const itemFade = {
 function HomePage() {
   const { isAuthenticated } = useAuth();
   const [selectedCategory, setSelectedCategory] = useState("All");
-  const [searchQuery, setSearchQuery] = useState("");
 
   const { data: featuredResponse } = useQuery({
     queryKey: ["featured-products"],
@@ -72,11 +89,7 @@ function HomePage() {
     const matchesCategory =
       selectedCategory === "All" ||
       (p.category && p.category.toLowerCase().includes(selectedCategory.toLowerCase()));
-    const matchesSearch =
-      !searchQuery ||
-      p.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.brand?.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesCategory && matchesSearch;
+    return matchesCategory;
   });
 
   return (
@@ -96,8 +109,8 @@ function HomePage() {
                 transition={{ duration: 0.5 }}
                 className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-semibold backdrop-blur-md"
               >
-                <Sparkles className="h-3.5 w-3.5 text-amber-500 animate-spin" style={{ animationDuration: '6s' }} />
-                <span>India's Premier Digital Dental Material Depot</span>
+                <MapPin className="h-3.5 w-3.5 text-amber-500" />
+                <span>Exclusively for Dentists & Dental Clinics in Vadodara</span>
                 <span className="h-1.5 w-1.5 rounded-full bg-primary animate-ping" />
               </motion.div>
 
@@ -107,8 +120,7 @@ function HomePage() {
                 transition={{ duration: 0.6, delay: 0.1 }}
                 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight font-heading leading-[1.08] text-foreground"
               >
-                Precision Dental Supplies For{" "}
-                <span className="text-gradient block sm:inline">Modern Practices</span>
+                Vadodara's Trusted <span className="text-gradient block sm:inline">Dental Depot</span>
               </motion.h1>
 
               <motion.p
@@ -117,7 +129,7 @@ function HomePage() {
                 transition={{ duration: 0.6, delay: 0.2 }}
                 className="text-base sm:text-lg text-muted-foreground max-w-2xl leading-relaxed"
               >
-                Direct access to authentic composites, endodontic equipment, surgical instruments, and daily consumables from global dental manufacturers — delivered straight to your clinic in 24–48 hours.
+                Direct procurement from <strong>Darsh Dental Depot</strong> (Shiyabaug / Kevdabaug, Vadodara). Genuine composites, endodontic rotary files, impression materials, and clinic consumables with <strong>same-day 2-hour clinic delivery</strong> across Vadodara.
               </motion.p>
 
               {/* Action Buttons */}
@@ -143,37 +155,48 @@ function HomePage() {
                   asChild
                   className="rounded-2xl h-13 px-7 text-base font-semibold glass-card border-border/80 hover:bg-secondary"
                 >
-                  <Link to="/register">Doctor Registration</Link>
+                  <Link to="/register">Register Vadodara Clinic</Link>
                 </Button>
               </motion.div>
 
-              {/* Trust Badges Bar */}
+              {/* Direct Support & Trust Row */}
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.8, delay: 0.4 }}
-                className="pt-6 border-t border-border/40 grid grid-cols-3 gap-3 text-xs sm:text-sm font-medium text-muted-foreground"
+                className="pt-6 border-t border-border/40 flex flex-wrap items-center gap-4 sm:gap-6 text-xs sm:text-sm font-medium text-muted-foreground"
               >
-                <div className="flex items-center gap-2">
-                  <div className="h-7 w-7 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 grid place-items-center shrink-0">
-                    <ShieldCheck className="h-4 w-4" />
+                <a
+                  href={`tel:${PHONE_RAW}`}
+                  className="flex items-center gap-2 text-foreground font-bold hover:text-primary transition-colors"
+                >
+                  <div className="h-7 w-7 rounded-lg bg-primary/10 text-primary grid place-items-center shrink-0">
+                    <Phone className="h-4 w-4" />
                   </div>
-                  <span>100% Genuine Certified</span>
-                </div>
+                  <span>{PHONE_NUMBER}</span>
+                </a>
 
-                <div className="flex items-center gap-2">
-                  <div className="h-7 w-7 rounded-lg bg-sky-500/10 text-sky-600 dark:text-sky-400 grid place-items-center shrink-0">
-                    <Truck className="h-4 w-4" />
+                <a
+                  href={WHATSAPP_URL}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 font-bold hover:underline"
+                >
+                  <div className="h-7 w-7 rounded-lg bg-emerald-500/10 grid place-items-center shrink-0">
+                    <MessageSquare className="h-4 w-4" />
                   </div>
-                  <span>Express Dispatch</span>
-                </div>
+                  <span>WhatsApp Quick Order</span>
+                </a>
 
-                <div className="flex items-center gap-2">
-                  <div className="h-7 w-7 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 grid place-items-center shrink-0">
-                    <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
-                  </div>
-                  <span>4.9/5 Doctor Rating</span>
-                </div>
+                <a
+                  href={MAPS_URL}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex items-center gap-1.5 text-xs text-primary font-bold hover:underline"
+                >
+                  <span>Shiyabaug Store</span>
+                  <ExternalLink className="h-3.5 w-3.5" />
+                </a>
               </motion.div>
             </div>
 
@@ -193,26 +216,26 @@ function HomePage() {
                   <div className="relative rounded-2xl overflow-hidden aspect-[4/3]">
                     <img
                       src="https://images.unsplash.com/photo-1629909613654-28e377c37b09?auto=format&fit=crop&w=1000&q=80"
-                      alt="Modern dental clinic equipment"
+                      alt="Darsh Dental Depot Vadodara"
                       className="w-full h-full object-cover"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
 
                     <div className="absolute bottom-4 left-4 right-4 text-white">
-                      <Badge className="bg-primary/90 text-white text-[10px] uppercase font-bold tracking-wider mb-1">
-                        Featured Batch
+                      <Badge className="bg-primary text-white text-[10px] uppercase font-bold tracking-wider mb-1">
+                        Vadodara Central Depot
                       </Badge>
                       <div className="font-heading font-bold text-lg leading-tight">
-                        3M™ Filtek™ Universal Restorative
+                        Darsh Dental Depot • Shiyabaug
                       </div>
                       <div className="text-xs text-slate-300 mt-0.5">
-                        In-stock with verified lot temperature tracking
+                        Open Mon–Sat: 10:00 AM – 8:30 PM • Same-Day Clinic Dispatch
                       </div>
                     </div>
                   </div>
                 </div>
 
-                {/* Floating Widget 1: Live Order Notification */}
+                {/* Floating Widget 1: Local Order Notification */}
                 <motion.div
                   animate={{ y: [0, -8, 0] }}
                   transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
@@ -222,9 +245,11 @@ function HomePage() {
                     <CheckCircle2 className="h-5 w-5" />
                   </div>
                   <div className="leading-tight">
-                    <div className="text-xs font-bold text-foreground">Dr. Mehta (Mumbai)</div>
-                    <div className="text-[11px] text-muted-foreground mt-0.5">Ordered Endo Rotary Kit</div>
-                    <span className="text-[9px] text-emerald-600 dark:text-emerald-400 font-semibold">Just now • Dispatched</span>
+                    <div className="text-xs font-bold text-foreground">Dr. Patel (Alkapuri)</div>
+                    <div className="text-[11px] text-muted-foreground mt-0.5">3M Composite Kit</div>
+                    <span className="text-[9px] text-emerald-600 dark:text-emerald-400 font-semibold">
+                      Dispatched • 2-Hour Delivery
+                    </span>
                   </div>
                 </motion.div>
 
@@ -238,8 +263,8 @@ function HomePage() {
                     <Zap className="h-5 w-5" />
                   </div>
                   <div>
-                    <div className="text-xs font-bold text-foreground">Clinic Savings Tier</div>
-                    <div className="text-[11px] text-primary font-bold">Up to 30% Wholesale OFF</div>
+                    <div className="text-xs font-bold text-foreground">Direct Depot Pricing</div>
+                    <div className="text-[11px] text-primary font-bold">Wholesale Rates for Doctors</div>
                   </div>
                 </motion.div>
               </motion.div>
@@ -248,45 +273,106 @@ function HomePage() {
         </div>
       </section>
 
-      {/* ─── Live Stats Strip ────────────────────────────────────────────── */}
-      <section className="border-y border-border/50 bg-secondary/40 py-10 relative">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
-            <motion.div initial={{ opacity: 0, y: 15 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="space-y-1">
-              <div className="text-3xl sm:text-4xl font-extrabold font-heading text-primary">5,000+</div>
-              <div className="text-xs sm:text-sm font-medium text-muted-foreground">Clinics & Doctors Served</div>
-            </motion.div>
+      {/* ─── Store Location & Operational Timings Bar ────────────────────────────── */}
+      <section className="container mx-auto px-4 py-8 -mt-10 relative z-20">
+        <Card className="p-6 glass-card rounded-3xl border border-border/80 shadow-xl bg-card/90">
+          <div className="grid md:grid-cols-3 gap-6 items-center">
+            <div className="flex items-start gap-3.5">
+              <div className="h-11 w-11 rounded-2xl bg-primary/10 text-primary grid place-items-center shrink-0">
+                <MapPin className="h-5 w-5" />
+              </div>
+              <div className="text-xs">
+                <span className="font-bold text-foreground block text-sm">Physical Store in Vadodara:</span>
+                <p className="text-muted-foreground mt-0.5 leading-snug">
+                  FF-10/11, Vraj Vihar Complex, Shiyabaug, Kevdabaug, Vadodara 390001
+                </p>
+                <a
+                  href={MAPS_URL}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-primary font-bold inline-flex items-center gap-1 mt-1 hover:underline text-[11px]"
+                >
+                  Open in Google Maps <ExternalLink className="h-3 w-3" />
+                </a>
+              </div>
+            </div>
 
-            <motion.div initial={{ opacity: 0, y: 15 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.1 }} className="space-y-1">
-              <div className="text-3xl sm:text-4xl font-extrabold font-heading text-sky-500">25,000+</div>
-              <div className="text-xs sm:text-sm font-medium text-muted-foreground">Orders Delivered Safely</div>
-            </motion.div>
+            <div className="flex items-start gap-3.5 md:border-x md:border-border/40 md:px-6">
+              <div className="h-11 w-11 rounded-2xl bg-sky-500/10 text-sky-600 dark:text-sky-400 grid place-items-center shrink-0">
+                <Clock className="h-5 w-5" />
+              </div>
+              <div className="text-xs">
+                <span className="font-bold text-foreground block text-sm">Depot Working Hours:</span>
+                <p className="text-foreground font-semibold mt-0.5">Mon – Sat: 10:00 AM – 8:30 PM</p>
+                <p className="text-muted-foreground text-[11px]">Sunday: Closed (Surgeries on Call)</p>
+              </div>
+            </div>
 
-            <motion.div initial={{ opacity: 0, y: 15 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.2 }} className="space-y-1">
-              <div className="text-3xl sm:text-4xl font-extrabold font-heading text-indigo-500">500+</div>
-              <div className="text-xs sm:text-sm font-medium text-muted-foreground">Verified Dental Brands</div>
-            </motion.div>
+            <div className="flex items-center justify-between gap-3">
+              <div className="text-xs">
+                <span className="font-bold text-foreground block text-sm">Direct Owner Contact:</span>
+                <a
+                  href={`tel:${PHONE_RAW}`}
+                  className="text-primary font-extrabold text-sm hover:underline block mt-0.5"
+                >
+                  {PHONE_NUMBER}
+                </a>
+                <span className="text-[11px] text-muted-foreground">Direct call / WhatsApp ordering</span>
+              </div>
 
-            <motion.div initial={{ opacity: 0, y: 15 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.3 }} className="space-y-1">
-              <div className="text-3xl sm:text-4xl font-extrabold font-heading text-emerald-500">99.8%</div>
-              <div className="text-xs sm:text-sm font-medium text-muted-foreground">On-Time Clinic Delivery</div>
-            </motion.div>
+              <a
+                href={WHATSAPP_URL}
+                target="_blank"
+                rel="noreferrer"
+                className="h-10 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs flex items-center gap-1.5 shadow-md shrink-0 transition-colors"
+              >
+                <MessageSquare className="h-4 w-4" /> WhatsApp
+              </a>
+            </div>
+          </div>
+        </Card>
+      </section>
+
+      {/* ─── Vadodara Clinic Delivery Coverage ────────────────────────────── */}
+      <section className="container mx-auto px-4 py-12">
+        <div className="p-6 rounded-3xl bg-secondary/40 border border-border/50">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-4">
+            <div className="flex items-center gap-2.5">
+              <Truck className="h-5 w-5 text-primary" />
+              <span className="font-heading font-bold text-base text-foreground">
+                Same-Day Delivery Across All Vadodara Dental Clinics:
+              </span>
+            </div>
+            <Badge variant="secondary" className="text-xs font-semibold">
+              ⚡ 2-Hour Emergency Dispatch Available
+            </Badge>
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            {vadodaraAreas.map((area) => (
+              <span
+                key={area}
+                className="px-3 py-1 rounded-full bg-background border border-border/60 text-xs font-medium text-foreground"
+              >
+                📍 {area}
+              </span>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* ─── Shop By Category ────────────────────────────────────────────── */}
-      <section className="container mx-auto px-4 py-20">
+      {/* ─── Shop By Specialty ────────────────────────────────────────────── */}
+      <section className="container mx-auto px-4 py-16">
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4">
           <div>
             <Badge variant="outline" className="mb-2 text-primary border-primary/30">
               Structured Catalog
             </Badge>
             <h2 className="text-3xl sm:text-4xl font-bold font-heading tracking-tight">
-              Explore by Specialty
+              Explore by Clinical Specialty
             </h2>
             <p className="text-muted-foreground mt-1.5 text-sm sm:text-base">
-              Everything your practice requires, sorted by dental specialization.
+              Original dental materials and equipment organized for clinical precision.
             </p>
           </div>
           <Button variant="ghost" asChild className="rounded-full hover:text-primary font-semibold text-sm">
@@ -303,7 +389,7 @@ function HomePage() {
           viewport={{ once: true }}
           className="grid gap-4 sm:gap-6 grid-cols-2 md:grid-cols-4"
         >
-          {categories.slice(0, 8).map((cat, i) => (
+          {categories.slice(0, 8).map((cat) => (
             <motion.div key={cat} variants={itemFade}>
               <Link to="/products" className="block group">
                 <Card className="p-5 glass-card glass-card-hover border border-border/60 hover:border-primary/50 rounded-2xl transition-all duration-300">
@@ -314,7 +400,7 @@ function HomePage() {
                     {cat}
                   </div>
                   <div className="flex items-center justify-between text-xs text-muted-foreground mt-2">
-                    <span>150+ Products</span>
+                    <span>In-Stock Depot</span>
                     <ChevronRight className="h-4 w-4 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
                   </div>
                 </Card>
@@ -332,10 +418,10 @@ function HomePage() {
               Verified Depot
             </Badge>
             <h2 className="text-3xl sm:text-4xl font-bold font-heading tracking-tight">
-              Featured Clinical Supplies
+              Featured Dental Materials
             </h2>
             <p className="text-muted-foreground mt-1.5 text-sm">
-              Hand-picked materials and instruments trusted by top clinics across India.
+              Factory-certified composites, files, and adhesives ready for immediate Vadodara dispatch.
             </p>
           </div>
 
@@ -365,9 +451,13 @@ function HomePage() {
         </div>
 
         <div className="mt-12 text-center">
-          <Button size="lg" asChild className="rounded-full px-8 h-12 bg-secondary hover:bg-secondary/80 text-foreground border border-border/80 font-bold text-sm">
+          <Button
+            size="lg"
+            asChild
+            className="rounded-full px-8 h-12 bg-secondary hover:bg-secondary/80 text-foreground border border-border/80 font-bold text-sm"
+          >
             <Link to="/products">
-              Browse All {displayProducts.length}+ Dental Materials <ArrowRight className="ml-2 h-4 w-4" />
+              Browse All Dental Supplies <ArrowRight className="ml-2 h-4 w-4" />
             </Link>
           </Button>
         </div>
@@ -378,13 +468,13 @@ function HomePage() {
         <div className="container mx-auto px-4">
           <div className="text-center max-w-2xl mx-auto mb-16 space-y-3">
             <Badge variant="outline" className="text-primary border-primary/30">
-              Why Darsh Dental Depot
+              Why Vadodara Doctors Choose Us
             </Badge>
             <h2 className="text-3xl sm:text-4xl font-bold font-heading tracking-tight">
-              Engineered For Dental Clinics
+              Local Excellence & Authentic Sourcing
             </h2>
             <p className="text-muted-foreground text-sm sm:text-base">
-              We eliminate counterfeit risks, delayed deliveries, and inflated retail pricing for dental professionals.
+              Direct physical store in Vadodara with fast same-day clinic deliveries.
             </p>
           </div>
 
@@ -393,19 +483,19 @@ function HomePage() {
               <div className="h-12 w-12 rounded-2xl bg-primary/10 text-primary grid place-items-center mb-5">
                 <ShieldCheck className="h-6 w-6" />
               </div>
-              <h3 className="font-heading font-bold text-lg text-foreground">Direct OEM Sourcing</h3>
+              <h3 className="font-heading font-bold text-lg text-foreground">100% Genuine Batches</h3>
               <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
-                Zero third-party middlemen. Every composite, bur, and resin carries valid batch verification from authorized manufacturers.
+                Direct manufacturer authorization from 3M, Ivoclar, GC, Mani, Dentsply Sirona, and Septodont.
               </p>
             </Card>
 
             <Card className="p-6 glass-card glass-card-hover rounded-2xl border border-border/60">
               <div className="h-12 w-12 rounded-2xl bg-sky-500/10 text-sky-500 grid place-items-center mb-5">
-                <Zap className="h-6 w-6" />
+                <Truck className="h-6 w-6" />
               </div>
-              <h3 className="font-heading font-bold text-lg text-foreground">Doctor Wholesale Rates</h3>
+              <h3 className="font-heading font-bold text-lg text-foreground">Same-Day Local Transit</h3>
               <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
-                Verified clinics unlock wholesale pricing tiers with additional volume discounts on monthly clinic consumables.
+                Immediate delivery directly to your dental clinic across Alkapuri, Akota, Gotri, Karelibaug and all Vadodara areas.
               </p>
             </Card>
 
@@ -413,9 +503,9 @@ function HomePage() {
               <div className="h-12 w-12 rounded-2xl bg-indigo-500/10 text-indigo-500 grid place-items-center mb-5">
                 <Clock className="h-6 w-6" />
               </div>
-              <h3 className="font-heading font-bold text-lg text-foreground">Temperature Controlled</h3>
+              <h3 className="font-heading font-bold text-lg text-foreground">Depot Timings (Mon–Sat)</h3>
               <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
-                Specialized insulated packaging for heat-sensitive bonding agents, cements, and anesthetic cartridges.
+                Open Monday to Saturday, 10:00 AM to 8:30 PM. Available on call for emergency Sunday clinical procedures.
               </p>
             </Card>
 
@@ -423,9 +513,9 @@ function HomePage() {
               <div className="h-12 w-12 rounded-2xl bg-emerald-500/10 text-emerald-500 grid place-items-center mb-5">
                 <FileCheck className="h-6 w-6" />
               </div>
-              <h3 className="font-heading font-bold text-lg text-foreground">Automated GST Invoices</h3>
+              <h3 className="font-heading font-bold text-lg text-foreground">GST Invoicing</h3>
               <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
-                Instant digital invoices with full GST compliance, ready for clinic tax filing and seamless expense tracking.
+                Instant digital and printed tax invoices with GST input credit for clinic accounts.
               </p>
             </Card>
           </div>
@@ -436,18 +526,18 @@ function HomePage() {
       <section className="container mx-auto px-4 py-20">
         <div className="text-center max-w-2xl mx-auto mb-14 space-y-3">
           <Badge variant="outline" className="text-primary border-primary/30">
-            Dentist Testimonials
+            Vadodara Dentist Feedback
           </Badge>
           <h2 className="text-3xl sm:text-4xl font-bold font-heading tracking-tight">
-            Trusted by Top Dental Surgeons
+            Trusted by Practicing Dental Surgeons
           </h2>
           <p className="text-muted-foreground text-sm">
-            Read what practitioners across Gujarat and India have to say about our service.
+            Read what doctors across Vadodara have to say about Darsh Dental Depot.
           </p>
         </div>
 
         <div className="grid md:grid-cols-3 gap-6">
-          {testimonials.map((t, i) => (
+          {testimonials.map((t) => (
             <Card key={t.name} className="p-6 glass-card rounded-2xl border border-border/60 flex flex-col justify-between">
               <div>
                 <div className="flex text-amber-400 mb-4">
@@ -466,7 +556,7 @@ function HomePage() {
                 </div>
                 <div>
                   <div className="font-bold text-sm text-foreground">{t.name}</div>
-                  <div className="text-xs text-primary font-medium">{t.clinic}</div>
+                  <div className="text-xs text-primary font-medium">{t.clinic} (Vadodara)</div>
                 </div>
               </div>
             </Card>
@@ -481,7 +571,7 @@ function HomePage() {
             Frequently Asked Questions
           </h2>
           <p className="text-muted-foreground text-sm">
-            Everything you need to know about clinic ordering, delivery, and authenticity.
+            Depot location, opening hours, Vadodara clinic delivery, and ordering.
           </p>
         </div>
 
@@ -503,7 +593,7 @@ function HomePage() {
         </Accordion>
       </section>
 
-      {/* ─── Bottom High-Impact CTA Banner ───────────────────────────────── */}
+      {/* ─── Bottom CTA Banner ───────────────────────────────── */}
       <section className="container mx-auto px-4 pb-20">
         <div className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-primary via-sky-600 to-indigo-700 p-8 sm:p-14 text-white shadow-2xl">
           {/* Decorative floating blur orb */}
@@ -511,15 +601,15 @@ function HomePage() {
 
           <div className="relative z-10 max-w-2xl space-y-6">
             <Badge className="bg-white/20 text-white backdrop-blur-md border-0 text-xs font-semibold px-3 py-1">
-              ⚡ Instant Clinic Verification
+              📍 Vadodara Doctor Network
             </Badge>
 
             <h2 className="text-3xl sm:text-5xl font-extrabold font-heading tracking-tight leading-tight">
-              Ready to Upgrade Your Clinic's Supply Chain?
+              Need Urgent Dental Supplies For Your Clinic Today?
             </h2>
 
             <p className="text-sky-100 text-sm sm:text-base leading-relaxed">
-              Join thousands of dental surgeons across India saving time and money on verified clinical materials.
+              Call or WhatsApp Darsh Dental Depot directly at <strong>{PHONE_NUMBER}</strong> for instant clinic dispatch across Vadodara.
             </p>
 
             <div className="flex flex-wrap gap-4 pt-2">
@@ -528,9 +618,9 @@ function HomePage() {
                 asChild
                 className="rounded-2xl h-12 px-7 bg-white text-primary hover:bg-sky-50 font-bold text-sm shadow-lg btn-shine"
               >
-                <Link to="/register">
-                  Register Your Clinic <ArrowRight className="ml-2 h-4 w-4" />
-                </Link>
+                <a href={WHATSAPP_URL} target="_blank" rel="noreferrer">
+                  <MessageSquare className="mr-2 h-4 w-4" /> Order on WhatsApp
+                </a>
               </Button>
 
               <Button
@@ -539,7 +629,9 @@ function HomePage() {
                 asChild
                 className="rounded-2xl h-12 px-6 border-white/40 text-white hover:bg-white/10 font-semibold text-sm backdrop-blur-sm"
               >
-                <Link to="/contact">Talk to Dental Specialist</Link>
+                <a href={MAPS_URL} target="_blank" rel="noreferrer">
+                  <MapPin className="mr-2 h-4 w-4" /> View Store on Google Maps
+                </a>
               </Button>
             </div>
           </div>

@@ -4,30 +4,70 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { PublicLayout } from "@/components/site/PublicLayout";
-import { Target, Eye, Heart, Award, ShieldCheck, Sparkles, Building2, Users, ArrowRight } from "lucide-react";
+import {
+  Target,
+  Eye,
+  Heart,
+  ShieldCheck,
+  Sparkles,
+  MapPin,
+  Clock,
+  Phone,
+  ArrowRight,
+  ExternalLink,
+  CheckCircle2,
+} from "lucide-react";
 
 export const Route = createFileRoute("/about")({
   head: () => ({
     meta: [
-      { title: "About Us — Darsh Dental Depot & Glow" },
-      { name: "description", content: "Our journey, mission, and dedication to dental excellence across India." },
+      { title: "About Us — Darsh Dental Depot Vadodara" },
+      {
+        name: "description",
+        content:
+          "The story and clinical commitment of Darsh Dental Depot, Vadodara's dedicated dental supply store.",
+      },
     ],
   }),
   component: AboutPage,
 });
 
-const team = [
-  { name: "Darsh Patel", role: "Founder & Managing Director", img: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80", bio: "15+ years in dental supply chain & material science." },
-  { name: "Dr. Anjali Rao", role: "Chief Clinical Officer", img: "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&w=400&q=80", bio: "Endodontist & Quality Assurance Lead." },
-  { name: "Vikram Singh", role: "Head of Logistics & Cold Chain", img: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80", bio: "Specialist in time-critical medical freight." },
-  { name: "Meera Iyer", role: "VP of Customer & Doctor Relations", img: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=400&q=80", bio: "Dedicated to rapid clinic support and queries." },
-];
+const MAPS_URL = "https://maps.app.goo.gl/7czn6gwYUgdSm8b46";
+const PHONE_NUMBER = "+91 97270 76119";
+const PHONE_RAW = "+919727076119";
 
 const milestones = [
-  { year: "2014", title: "Inception in Vadodara", desc: "Started as a specialized dental outlet serving local dentists." },
-  { year: "2018", title: "Pan-Gujarat Expansion", desc: "Direct distribution network to over 1,200 private practices." },
-  { year: "2022", title: "Digital Depot Platform", desc: "Launched automated 24/7 ordering and cold-chain parcel tracking." },
-  { year: "2026", title: "National Depot & Glow", desc: "Serving 5,000+ certified clinics nationwide with instant GST compliance." },
+  {
+    year: "2014",
+    title: "Store Founded at Shiyabaug",
+    desc: "Established at Vraj Vihar Complex to provide authentic materials directly to Vadodara dentists.",
+  },
+  {
+    year: "2018",
+    title: "All Major Brand Partnerships",
+    desc: "Authorized distribution for 3M, Ivoclar, GC, Dentsply Sirona, Mani, and Septodont.",
+  },
+  {
+    year: "2022",
+    title: "2-Hour Clinic Express Delivery",
+    desc: "Implemented same-day clinic delivery network across all areas of Vadodara.",
+  },
+  {
+    year: "2026",
+    title: "Digital Depot Platform",
+    desc: "Seamless 24/7 digital material ordering and automated GST invoicing for Vadodara doctors.",
+  },
+];
+
+const vadodaraZones = [
+  "Alkapuri & RC Dutt Road",
+  "Akota & Old Padra Road",
+  "Gotri, Sevasi & Vasna",
+  "Karelibaug & VIP Road",
+  "Manjalpur & Makarpura",
+  "Fatehgunj & Sayajigunj",
+  "Shiyabaug & Kevdabaug",
+  "Waghodia Road & Ajwa Road",
 ];
 
 function AboutPage() {
@@ -38,26 +78,38 @@ function AboutPage() {
         <div className="container mx-auto px-4 max-w-4xl space-y-6">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
             <Badge variant="outline" className="text-primary border-primary/30 mb-3 px-3 py-1">
-              <Sparkles className="h-3.5 w-3.5 mr-1.5 text-amber-500" /> Dedicated To Dental Excellence
+              <Sparkles className="h-3.5 w-3.5 mr-1.5 text-amber-500" /> Vadodara's Exclusive Dental Supply Depot
             </Badge>
             <h1 className="text-4xl sm:text-6xl font-extrabold font-heading tracking-tight text-foreground">
-              Empowering India's Dentists With <span className="text-gradient">Authentic Supplies</span>
+              Dedicated Solely To <span className="text-gradient">Vadodara's Dentists</span>
             </h1>
             <p className="mt-6 text-base sm:text-lg text-muted-foreground leading-relaxed max-w-2xl mx-auto">
-              Founded in 2014 in Vadodara, Darsh Dental Depot has evolved into India's most trusted digital dental material ecosystem — ensuring that every doctor receives factory-certified materials at wholesale rates.
+              Founded and managed in Vadodara, Darsh Dental Depot provides local dental doctors with 100% genuine consumables, instruments, and materials with instant local delivery.
             </p>
           </motion.div>
         </div>
       </section>
 
-      {/* ─── Core Values Cards ───────────────────────────────────────────── */}
+      {/* ─── Store Highlights Cards ───────────────────────────────────────────── */}
       <section className="container mx-auto px-4 py-12">
         <div className="grid md:grid-cols-3 gap-6">
           {[
-            { icon: Target, title: "Our Mission", desc: "Equip dental professionals with reliable, 100% genuine supplies without logistics friction or hidden costs." },
-            { icon: Eye, title: "Our Vision", desc: "To set the national benchmark for verified dental e-commerce, precision cold-chain transit, and clinic satisfaction." },
-            { icon: Heart, title: "Our Core Values", desc: "Integrity in sourcing, speed in delivery, and unconditional respect for the clinical precision of dental practitioners." },
-          ].map((v, i) => (
+            {
+              icon: Target,
+              title: "Our Purpose",
+              desc: "Ensure no dentist in Vadodara has to delay a clinical procedure due to supply shortages or unauthentic materials.",
+            },
+            {
+              icon: Eye,
+              title: "Local Excellence",
+              desc: "Building lasting clinical relationships with dental practices through honest pricing, fast delivery, and authentic batches.",
+            },
+            {
+              icon: Heart,
+              title: "Clinical Trust",
+              desc: "Every composite, file, and cement comes with original batch numbers and manufacturer warranty support.",
+            },
+          ].map((v) => (
             <Card key={v.title} className="p-7 glass-card glass-card-hover rounded-2xl border border-border/60">
               <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-primary/15 to-sky-500/10 text-primary grid place-items-center mb-5 shadow-sm">
                 <v.icon className="h-6 w-6" />
@@ -73,9 +125,11 @@ function AboutPage() {
       <section className="bg-secondary/30 border-y border-border/50 py-20">
         <div className="container mx-auto px-4 max-w-4xl">
           <div className="text-center mb-14 space-y-2">
-            <Badge variant="outline" className="text-primary border-primary/30">Milestones</Badge>
-            <h2 className="text-3xl font-bold font-heading">Our Decade of Growth</h2>
-            <p className="text-sm text-muted-foreground">From a single storefront to a nationwide digital dental supply leader.</p>
+            <Badge variant="outline" className="text-primary border-primary/30">
+              Our Journey
+            </Badge>
+            <h2 className="text-3xl font-bold font-heading">Growing With Vadodara's Dental Community</h2>
+            <p className="text-sm text-muted-foreground">Serving local clinics with dedication and precision.</p>
           </div>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -90,33 +144,86 @@ function AboutPage() {
         </div>
       </section>
 
-      {/* ─── Meet the Leadership Team ─────────────────────────────────────── */}
+      {/* ─── Physical Store & Delivery Coverage ─────────────────────────────────────── */}
       <section className="container mx-auto px-4 py-20">
-        <div className="text-center max-w-2xl mx-auto mb-14 space-y-2">
-          <Badge variant="outline" className="text-primary border-primary/30">Leadership</Badge>
-          <h2 className="text-3xl sm:text-4xl font-bold font-heading">Meet Our Team</h2>
-          <p className="text-sm text-muted-foreground">The clinical experts and supply chain veterans behind Darsh Dental Depot.</p>
-        </div>
+        <div className="grid lg:grid-cols-12 gap-10 items-center">
+          <div className="lg:col-span-6 space-y-6">
+            <Badge variant="outline" className="text-primary border-primary/30">
+              Physical Depot Location
+            </Badge>
+            <h2 className="text-3xl sm:text-4xl font-extrabold font-heading text-foreground">
+              Visit Us at Shiyabaug, Vadodara
+            </h2>
+            <p className="text-muted-foreground text-sm leading-relaxed">
+              Our full-service dental materials showroom is centrally located in Vadodara. Doctors and clinical staff are always welcome to inspect materials, test dental instruments, or collect urgent supplies directly.
+            </p>
 
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {team.map((m) => (
-            <Card key={m.name} className="p-5 glass-card glass-card-hover rounded-2xl border border-border/60 text-center">
-              <div className="relative mx-auto w-24 h-24 mb-4 rounded-full overflow-hidden border-2 border-primary/20 shadow-md">
-                <img src={m.img} alt={m.name} className="w-full h-full object-cover" />
+            <div className="p-5 rounded-2xl bg-secondary/50 border border-border/60 space-y-3 text-xs">
+              <div className="flex items-start gap-2.5">
+                <MapPin className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+                <div>
+                  <span className="font-bold text-foreground">Depot Address:</span>
+                  <p className="text-muted-foreground mt-0.5 leading-relaxed">
+                    FF-10/11, Vraj Vihar Complex, Char Rasta, Opp. Kachhia Patel Wadi, Mahavir Colony, Shiyabaug, Kevdabaug, Vadodara, Gujarat 390001
+                  </p>
+                </div>
               </div>
-              <div className="font-bold text-base text-foreground font-heading">{m.name}</div>
-              <div className="text-xs font-semibold text-primary mt-0.5">{m.role}</div>
-              <p className="text-xs text-muted-foreground mt-2 leading-relaxed">{m.bio}</p>
-            </Card>
-          ))}
-        </div>
 
-        <div className="mt-16 text-center">
-          <Button size="lg" asChild className="rounded-full px-8 h-12 bg-primary hover:bg-primary/90 text-white shadow-lg btn-shine">
-            <Link to="/products">
-              Explore Our Product Catalog <ArrowRight className="ml-2 h-4 w-4" />
-            </Link>
-          </Button>
+              <div className="flex items-center gap-2.5 pt-2 border-t border-border/40">
+                <Clock className="h-4 w-4 text-primary shrink-0" />
+                <div>
+                  <span className="font-bold text-foreground">Operating Hours:</span>
+                  <span className="text-muted-foreground ml-1">Mon – Sat: 10:00 AM – 8:30 PM (Sun: Closed)</span>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2.5 pt-2 border-t border-border/40">
+                <Phone className="h-4 w-4 text-primary shrink-0" />
+                <div>
+                  <span className="font-bold text-foreground">Direct Call & WhatsApp:</span>
+                  <a href={`tel:${PHONE_RAW}`} className="text-primary font-bold ml-1 hover:underline">
+                    {PHONE_NUMBER}
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-3">
+              <Button asChild className="rounded-full px-6 h-11 bg-primary text-white shadow-md btn-shine">
+                <a href={MAPS_URL} target="_blank" rel="noreferrer">
+                  Open Google Maps <ExternalLink className="ml-2 h-4 w-4" />
+                </a>
+              </Button>
+              <Button variant="outline" asChild className="rounded-full px-6 h-11 border-border/60">
+                <Link to="/products">
+                  Explore Products <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+              </Button>
+            </div>
+          </div>
+
+          <div className="lg:col-span-6">
+            <Card className="p-6 glass-card rounded-3xl border border-border/60 space-y-4">
+              <h3 className="font-heading font-bold text-lg text-foreground flex items-center gap-2">
+                <CheckCircle2 className="h-5 w-5 text-emerald-500" /> Same-Day Delivery Across Vadodara
+              </h3>
+              <p className="text-xs text-muted-foreground">
+                We deliver directly to dental clinics across all major Vadodara sectors:
+              </p>
+
+              <div className="grid grid-cols-2 gap-2.5 pt-2">
+                {vadodaraZones.map((z) => (
+                  <div
+                    key={z}
+                    className="p-2.5 rounded-xl bg-background/80 border border-border/40 text-xs font-semibold text-foreground flex items-center gap-2"
+                  >
+                    <div className="h-2 w-2 rounded-full bg-primary" />
+                    <span>{z}</span>
+                  </div>
+                ))}
+              </div>
+            </Card>
+          </div>
         </div>
       </section>
     </PublicLayout>

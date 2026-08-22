@@ -159,7 +159,16 @@ function LoginPage() {
 
               <div className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground">
                 <ShieldCheck className="h-3.5 w-3.5 text-emerald-500" />
-                <span>256-Bit Encrypted Secure Dental Portal</span>
+                <span>Darsh Dental Depot • Exclusively Serving Vadodara Clinics</span>
+              </div>
+
+              <div className="pt-2">
+                <a
+                  href="tel:+919727076119"
+                  className="text-xs text-primary font-bold hover:underline"
+                >
+                  Direct Depot Helpline: +91 97270 76119
+                </a>
               </div>
             </div>
           </Card>

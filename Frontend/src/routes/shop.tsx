@@ -1,12 +1,34 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import {
-  LayoutDashboard, Package, Warehouse, ShoppingBag, Users, BarChart3, Bell, Settings,
-  Plus, FileText, Loader2, Trash2, Edit, UploadCloud, Image as ImageIcon, X,
-  CheckCircle2, XCircle
+  LayoutDashboard,
+  Package,
+  Warehouse,
+  ShoppingBag,
+  Users,
+  BarChart3,
+  Bell,
+  Settings,
+  Plus,
+  FileText,
+  Loader2,
+  Trash2,
+  Edit,
+  UploadCloud,
+  Image as ImageIcon,
+  X,
+  CheckCircle2,
+  XCircle,
 } from "lucide-react";
 import {
-  Bar, BarChart, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis,
+  Bar,
+  BarChart,
+  Line,
+  LineChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
 } from "recharts";
 import { DashboardLayout, type NavItem } from "@/components/dashboard/DashboardLayout";
 import { StatCard, StatusBadge } from "@/components/dashboard/widgets";
@@ -16,9 +38,20 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
@@ -34,14 +67,27 @@ import {
   type ProductPerformanceItem,
 } from "@/lib/api";
 
-
 // Categories & brands for the Add Product form
 const formCategories = [
-  "Composites", "Impression Materials", "Endodontics", "Orthodontics",
-  "Instruments", "Disposables", "Cements & Adhesives", "Whitening", "Other",
+  "Composites",
+  "Impression Materials",
+  "Endodontics",
+  "Orthodontics",
+  "Instruments",
+  "Disposables",
+  "Cements & Adhesives",
+  "Whitening",
+  "Other",
 ];
 const formBrands = [
-  "3M ESPE", "Ivoclar", "Dentsply Sirona", "GC", "Kerr", "Septodont", "VOCO", "Other",
+  "3M ESPE",
+  "Ivoclar",
+  "Dentsply Sirona",
+  "GC",
+  "Kerr",
+  "Septodont",
+  "VOCO",
+  "Other",
 ];
 
 export const Route = createFileRoute("/shop")({
@@ -60,7 +106,13 @@ const items: NavItem[] = [
   { key: "settings", label: "Settings", icon: Settings },
 ];
 
-const CHART_COLORS = ["var(--color-chart-1)", "var(--color-chart-2)", "var(--color-chart-3)", "var(--color-chart-4)", "var(--color-chart-5)"];
+const CHART_COLORS = [
+  "var(--color-chart-1)",
+  "var(--color-chart-2)",
+  "var(--color-chart-3)",
+  "var(--color-chart-4)",
+  "var(--color-chart-5)",
+];
 
 // ─── Shared loading / error / empty helpers ─────────────────────────────────
 
@@ -77,7 +129,9 @@ function ErrorBanner({ onRetry }: { onRetry: () => void }) {
   return (
     <div className="flex flex-col items-center justify-center py-16 gap-3 text-muted-foreground">
       <p className="text-sm">Failed to load data. Please try again.</p>
-      <Button variant="outline" size="sm" onClick={onRetry}>Retry</Button>
+      <Button variant="outline" size="sm" onClick={onRetry}>
+        Retry
+      </Button>
     </div>
   );
 }
@@ -115,7 +169,9 @@ function useApiData<T>(fetcher: () => Promise<{ data: T }>) {
     }
   }, []);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => {
+    load();
+  }, [load]);
 
   return { data, loading, error, retry: load };
 }
@@ -127,11 +183,11 @@ function ShopDashboard() {
   const [search, setSearch] = useState("");
 
   return (
-    <DashboardLayout 
-      title="Shop Owner" 
-      role="Shop Owner" 
-      items={items} 
-      active={active} 
+    <DashboardLayout
+      title="Shop Owner"
+      role="Shop Owner"
+      items={items}
+      active={active}
       onChange={setActive}
       search={search}
       onSearchChange={setSearch}
@@ -164,27 +220,66 @@ function DashboardSection() {
       </div>
 
       {/* Stat Cards */}
-      {stats.loading ? <LoadingSpinner /> : stats.error ? <ErrorBanner onRetry={stats.retry} /> : stats.data && (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <StatCard label="Total Sales" value={stats.data.totalSales.toLocaleString()} prefix="₹" change={stats.data.weeklyChanges.sales} icon={DollarSign} />
-          <StatCard label="Revenue" value={stats.data.revenue.toLocaleString()} prefix="₹" change={stats.data.weeklyChanges.revenue} icon={TrendingUp} />
-          <StatCard label="Orders" value={String(stats.data.orders)} change={stats.data.weeklyChanges.orders} icon={ShoppingBag} />
-          <StatCard label="Customers" value={String(stats.data.customers)} change={stats.data.weeklyChanges.customers} icon={Users} />
-        </div>
+      {stats.loading ? (
+        <LoadingSpinner />
+      ) : stats.error ? (
+        <ErrorBanner onRetry={stats.retry} />
+      ) : (
+        stats.data && (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <StatCard
+              label="Total Sales"
+              value={stats.data.totalSales.toLocaleString()}
+              prefix="₹"
+              change={stats.data.weeklyChanges.sales}
+              icon={DollarSign}
+            />
+            <StatCard
+              label="Revenue"
+              value={stats.data.revenue.toLocaleString()}
+              prefix="₹"
+              change={stats.data.weeklyChanges.revenue}
+              icon={TrendingUp}
+            />
+            <StatCard
+              label="Orders"
+              value={String(stats.data.orders)}
+              change={stats.data.weeklyChanges.orders}
+              icon={ShoppingBag}
+            />
+            <StatCard
+              label="Customers"
+              value={String(stats.data.customers)}
+              change={stats.data.weeklyChanges.customers}
+              icon={Users}
+            />
+          </div>
+        )
       )}
 
       {/* Charts row */}
       <div className="grid gap-4 lg:grid-cols-3">
         <Card className="p-5 lg:col-span-2">
           <h3 className="font-semibold mb-4">Weekly sales</h3>
-          {weekly.loading ? <LoadingSpinner /> : weekly.error ? <ErrorBanner onRetry={weekly.retry} /> : !weekly.data?.length ? <EmptyBanner label="No sales data yet" /> : (
+          {weekly.loading ? (
+            <LoadingSpinner />
+          ) : weekly.error ? (
+            <ErrorBanner onRetry={weekly.retry} />
+          ) : !weekly.data?.length ? (
+            <EmptyBanner label="No sales data yet" />
+          ) : (
             <div className="h-72">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={weekly.data}>
                   <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
                   <XAxis dataKey="day" stroke="var(--color-muted-foreground)" fontSize={12} />
                   <YAxis stroke="var(--color-muted-foreground)" fontSize={12} />
-                  <Tooltip contentStyle={{ background: "var(--color-card)", border: "1px solid var(--color-border)" }} />
+                  <Tooltip
+                    contentStyle={{
+                      background: "var(--color-card)",
+                      border: "1px solid var(--color-border)",
+                    }}
+                  />
                   <Bar dataKey="sales" fill="var(--color-primary)" radius={[6, 6, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
@@ -193,12 +288,26 @@ function DashboardSection() {
         </Card>
         <Card className="p-5">
           <h3 className="font-semibold mb-4">Category share</h3>
-          {catShare.loading ? <LoadingSpinner /> : catShare.error ? <ErrorBanner onRetry={catShare.retry} /> : !catShare.data?.length ? <EmptyBanner label="No products yet" /> : (
+          {catShare.loading ? (
+            <LoadingSpinner />
+          ) : catShare.error ? (
+            <ErrorBanner onRetry={catShare.retry} />
+          ) : !catShare.data?.length ? (
+            <EmptyBanner label="No products yet" />
+          ) : (
             <div className="h-72">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
-                  <Pie data={catShare.data} dataKey="value" nameKey="name" innerRadius={50} outerRadius={90}>
-                    {catShare.data.map((_, i) => <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />)}
+                  <Pie
+                    data={catShare.data}
+                    dataKey="value"
+                    nameKey="name"
+                    innerRadius={50}
+                    outerRadius={90}
+                  >
+                    {catShare.data.map((_, i) => (
+                      <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
+                    ))}
                   </Pie>
                   <Legend wrapperStyle={{ fontSize: 12 }} />
                 </PieChart>
@@ -211,17 +320,38 @@ function DashboardSection() {
       {/* Monthly trend */}
       <Card className="p-5">
         <h3 className="font-semibold mb-4">Monthly sales trend</h3>
-        {monthly.loading ? <LoadingSpinner /> : monthly.error ? <ErrorBanner onRetry={monthly.retry} /> : !monthly.data?.length ? <EmptyBanner label="No sales data yet" /> : (
+        {monthly.loading ? (
+          <LoadingSpinner />
+        ) : monthly.error ? (
+          <ErrorBanner onRetry={monthly.retry} />
+        ) : !monthly.data?.length ? (
+          <EmptyBanner label="No sales data yet" />
+        ) : (
           <div className="h-72">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={monthly.data}>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
                 <XAxis dataKey="month" stroke="var(--color-muted-foreground)" fontSize={12} />
                 <YAxis stroke="var(--color-muted-foreground)" fontSize={12} />
-                <Tooltip contentStyle={{ background: "var(--color-card)", border: "1px solid var(--color-border)" }} />
+                <Tooltip
+                  contentStyle={{
+                    background: "var(--color-card)",
+                    border: "1px solid var(--color-border)",
+                  }}
+                />
                 <Legend wrapperStyle={{ fontSize: 12 }} />
-                <Line type="monotone" dataKey="sales" stroke="var(--color-chart-1)" strokeWidth={2} />
-                <Line type="monotone" dataKey="orders" stroke="var(--color-chart-2)" strokeWidth={2} />
+                <Line
+                  type="monotone"
+                  dataKey="sales"
+                  stroke="var(--color-chart-1)"
+                  strokeWidth={2}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="orders"
+                  stroke="var(--color-chart-2)"
+                  strokeWidth={2}
+                />
               </LineChart>
             </ResponsiveContainer>
           </div>
@@ -233,37 +363,53 @@ function DashboardSection() {
 
 // ─── PAGE 2: Products ───────────────────────────────────────────────────────
 
-function ProductForm({ onClose, onSuccess, initialData }: { onClose: () => void, onSuccess: () => void, initialData?: any }) {
+function ProductForm({
+  onClose,
+  onSuccess,
+  initialData,
+}: {
+  onClose: () => void;
+  onSuccess: () => void;
+  initialData?: ShopProduct | null;
+}) {
   const [loading, setLoading] = useState(false);
 
   // Check if initialData has a category/brand in predefined lists or custom
-  const isPredefinedCategory = initialData?.category ? formCategories.slice(0, -1).includes(initialData.category) : true;
+  const isPredefinedCategory = initialData?.category
+    ? formCategories.slice(0, -1).includes(initialData.category)
+    : true;
   const initialCategoryVal = initialData?.category
-    ? (isPredefinedCategory ? initialData.category : "Other")
+    ? isPredefinedCategory
+      ? initialData.category
+      : "Other"
     : formCategories[0];
   const [category, setCategory] = useState<string>(initialCategoryVal);
   const [customCategory, setCustomCategory] = useState<string>(
-    initialData?.category && !isPredefinedCategory ? initialData.category : ""
+    initialData?.category && !isPredefinedCategory ? initialData.category : "",
   );
 
-  const isPredefinedBrand = initialData?.brand ? formBrands.slice(0, -1).includes(initialData.brand) : true;
+  const isPredefinedBrand = initialData?.brand
+    ? formBrands.slice(0, -1).includes(initialData.brand)
+    : true;
   const initialBrandVal = initialData?.brand
-    ? (isPredefinedBrand ? initialData.brand : "Other")
+    ? isPredefinedBrand
+      ? initialData.brand
+      : "Other"
     : formBrands[0];
   const [brand, setBrand] = useState<string>(initialBrandVal);
   const [customBrand, setCustomBrand] = useState<string>(
-    initialData?.brand && !isPredefinedBrand ? initialData.brand : ""
+    initialData?.brand && !isPredefinedBrand ? initialData.brand : "",
   );
 
   // Auto-calculation state for Purchase Price, GST & Selling Price
   const [purchasePrice, setPurchasePrice] = useState<number | string>(
-    initialData?.purchasePrice || initialData?.price || ""
+    initialData?.purchasePrice || initialData?.price || "",
   );
   const [gstPercentage, setGstPercentage] = useState<number | string>(
-    initialData?.gstPercentage ?? 12
+    initialData?.gstPercentage ?? 12,
   );
   const [manualSellingPrice, setManualSellingPrice] = useState<string | null>(
-    initialData?.sellingPrice ? String(initialData.sellingPrice) : null
+    initialData?.sellingPrice ? String(initialData.sellingPrice) : null,
   );
 
   // Compute calculated selling price: Purchase Price + (Purchase Price * GST%)
@@ -271,17 +417,18 @@ function ProductForm({ onClose, onSuccess, initialData }: { onClose: () => void,
   const numGst = Number(gstPercentage) || 0;
   const gstAmount = (numPurchase * numGst) / 100;
   const autoSellingPrice = numPurchase > 0 ? Math.round((numPurchase + gstAmount) * 100) / 100 : 0;
-  const finalSellingPrice = manualSellingPrice !== null && manualSellingPrice !== "" 
-    ? Number(manualSellingPrice) 
-    : autoSellingPrice;
+  const finalSellingPrice =
+    manualSellingPrice !== null && manualSellingPrice !== ""
+      ? Number(manualSellingPrice)
+      : autoSellingPrice;
 
   // Product Images state
   const [images, setImages] = useState<string[]>(
     initialData?.images && initialData.images.length > 0
       ? initialData.images
       : initialData?.imageUrl
-      ? [initialData.imageUrl]
-      : []
+        ? [initialData.imageUrl]
+        : [],
   );
   const [uploadingImage, setUploadingImage] = useState(false);
   const [imageUrlInput, setImageUrlInput] = useState("");
@@ -297,8 +444,8 @@ function ProductForm({ onClose, onSuccess, initialData }: { onClose: () => void,
       const uploadedUrls = await uploadApi.uploadMultiple(fileList, "products");
       setImages((prev) => [...prev, ...uploadedUrls]);
       toast.success(`${uploadedUrls.length} image(s) uploaded successfully!`);
-    } catch (err: any) {
-      toast.error(err.message || "Failed to upload image");
+    } catch (err: unknown) {
+      toast.error((err as Error).message || "Failed to upload image");
     } finally {
       setUploadingImage(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
@@ -323,20 +470,16 @@ function ProductForm({ onClose, onSuccess, initialData }: { onClose: () => void,
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
-    
+
     // Resolve final category and brand
-    const finalCategory = category === "Other" 
-      ? customCategory.trim() 
-      : category;
+    const finalCategory = category === "Other" ? customCategory.trim() : category;
 
     if (!finalCategory) {
       toast.error("Please enter a category name");
       return;
     }
 
-    const finalBrand = brand === "Other" 
-      ? customBrand.trim() 
-      : (brand || "");
+    const finalBrand = brand === "Other" ? customBrand.trim() : brand || "";
 
     const computedPrice = finalSellingPrice || numPurchase;
 
@@ -367,21 +510,37 @@ function ProductForm({ onClose, onSuccess, initialData }: { onClose: () => void,
       }
       onSuccess();
       onClose();
-    } catch (err: any) {
-      toast.error(err.message || (initialData ? "Failed to update product" : "Failed to create product"));
+    } catch (err: unknown) {
+      toast.error(
+        (err as Error).message ||
+          (initialData ? "Failed to update product" : "Failed to create product"),
+      );
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <form className="grid grid-cols-2 gap-3 max-h-[70vh] overflow-y-auto px-1 pb-1" onSubmit={handleSubmit}>
-      <div className="col-span-2"><Label className="mb-1.5 font-semibold text-xs">Product Name *</Label><Input name="name" defaultValue={initialData?.name} placeholder="e.g. Zhermack Tropicalgin Alginate 450g" required /></div>
-      
+    <form
+      className="grid grid-cols-2 gap-3 max-h-[70vh] overflow-y-auto px-1 pb-1"
+      onSubmit={handleSubmit}
+    >
+      <div className="col-span-2">
+        <Label className="mb-1.5 font-semibold text-xs">Product Name *</Label>
+        <Input
+          name="name"
+          defaultValue={initialData?.name}
+          placeholder="e.g. Zhermack Tropicalgin Alginate 450g"
+          required
+        />
+      </div>
+
       <div>
         <Label className="mb-1.5 font-semibold text-xs">Category *</Label>
         <Select value={category} onValueChange={(val) => setCategory(val)}>
-          <SelectTrigger><SelectValue placeholder="Select Category" /></SelectTrigger>
+          <SelectTrigger>
+            <SelectValue placeholder="Select Category" />
+          </SelectTrigger>
           <SelectContent>
             {formCategories.map((c) => (
               <SelectItem key={c} value={c}>
@@ -395,7 +554,9 @@ function ProductForm({ onClose, onSuccess, initialData }: { onClose: () => void,
       <div>
         <Label className="mb-1.5 font-semibold text-xs">Brand</Label>
         <Select value={brand} onValueChange={(val) => setBrand(val)}>
-          <SelectTrigger><SelectValue placeholder="Select Brand" /></SelectTrigger>
+          <SelectTrigger>
+            <SelectValue placeholder="Select Brand" />
+          </SelectTrigger>
           <SelectContent>
             {formBrands.map((b) => (
               <SelectItem key={b} value={b}>
@@ -409,7 +570,9 @@ function ProductForm({ onClose, onSuccess, initialData }: { onClose: () => void,
       {/* Conditionally rendered Custom Category Input */}
       {category === "Other" && (
         <div className="col-span-2 sm:col-span-1 bg-primary/5 p-2.5 rounded-xl border border-primary/20">
-          <Label className="mb-1.5 text-primary font-semibold block text-xs">Enter Custom Category Name *</Label>
+          <Label className="mb-1.5 text-primary font-semibold block text-xs">
+            Enter Custom Category Name *
+          </Label>
           <Input
             value={customCategory}
             onChange={(e) => setCustomCategory(e.target.value)}
@@ -424,7 +587,9 @@ function ProductForm({ onClose, onSuccess, initialData }: { onClose: () => void,
       {/* Conditionally rendered Custom Brand Input */}
       {brand === "Other" && (
         <div className="col-span-2 sm:col-span-1 bg-primary/5 p-2.5 rounded-xl border border-primary/20">
-          <Label className="mb-1.5 text-primary font-semibold block text-xs">Enter Custom Brand Name *</Label>
+          <Label className="mb-1.5 text-primary font-semibold block text-xs">
+            Enter Custom Brand Name *
+          </Label>
           <Input
             value={customBrand}
             onChange={(e) => setCustomBrand(e.target.value)}
@@ -438,7 +603,14 @@ function ProductForm({ onClose, onSuccess, initialData }: { onClose: () => void,
 
       <div className="col-span-2 sm:col-span-1">
         <Label className="mb-1.5 font-semibold text-xs">Stock Available *</Label>
-        <Input name="stock" defaultValue={initialData?.stock ?? 1} type="number" required min="0" placeholder="e.g. 10" />
+        <Input
+          name="stock"
+          defaultValue={initialData?.stock ?? 1}
+          type="number"
+          required
+          min="0"
+          placeholder="e.g. 10"
+        />
       </div>
 
       {/* Purchase Price & GST inputs */}
@@ -472,8 +644,8 @@ function ProductForm({ onClose, onSuccess, initialData }: { onClose: () => void,
                   setManualSellingPrice(null);
                 }}
                 className={`text-[10px] px-1.5 py-0.5 rounded font-medium border transition-colors ${
-                  Number(gstPercentage) === g 
-                    ? "bg-primary text-white border-primary" 
+                  Number(gstPercentage) === g
+                    ? "bg-primary text-white border-primary"
                     : "bg-secondary text-muted-foreground border-border/60 hover:bg-muted"
                 }`}
               >
@@ -514,7 +686,9 @@ function ProductForm({ onClose, onSuccess, initialData }: { onClose: () => void,
         </div>
 
         <div className="pt-1.5 border-t border-primary/15 flex items-center justify-between text-xs">
-          <span className="text-muted-foreground text-[11px]">Override Selling Price (optional):</span>
+          <span className="text-muted-foreground text-[11px]">
+            Override Selling Price (optional):
+          </span>
           <div className="w-32">
             <Input
               type="number"
@@ -627,15 +801,45 @@ function ProductForm({ onClose, onSuccess, initialData }: { onClose: () => void,
         )}
       </div>
 
-      <div><Label className="mb-1.5 font-semibold text-xs">HSN Code (optional)</Label><Input name="hsnCode" defaultValue={initialData?.hsnCode} placeholder="e.g. 90184900" /></div>
-      <div><Label className="mb-1.5 font-semibold text-xs">Batch Number (optional)</Label><Input name="batchNumber" defaultValue={initialData?.batchNumber} placeholder="e.g. BATCH-2026-01" /></div>
+      <div>
+        <Label className="mb-1.5 font-semibold text-xs">HSN Code (optional)</Label>
+        <Input name="hsnCode" defaultValue={initialData?.hsnCode} placeholder="e.g. 90184900" />
+      </div>
+      <div>
+        <Label className="mb-1.5 font-semibold text-xs">Batch Number (optional)</Label>
+        <Input
+          name="batchNumber"
+          defaultValue={initialData?.batchNumber}
+          placeholder="e.g. BATCH-2026-01"
+        />
+      </div>
 
-      <div className="col-span-2"><Label className="mb-1.5 font-semibold text-xs">Description *</Label><Textarea name="description" defaultValue={initialData?.description} rows={3} placeholder="Provide details, pack size, usage instructions..." required /></div>
-      
+      <div className="col-span-2">
+        <Label className="mb-1.5 font-semibold text-xs">Description *</Label>
+        <Textarea
+          name="description"
+          defaultValue={initialData?.description}
+          rows={3}
+          placeholder="Provide details, pack size, usage instructions..."
+          required
+        />
+      </div>
+
       <div className="col-span-2 flex justify-end gap-2 mt-2">
-        <Button type="button" variant="outline" onClick={onClose} disabled={loading || uploadingImage}>Cancel</Button>
-        <Button type="submit" disabled={loading || uploadingImage} className="bg-gradient-to-r from-primary to-sky-600 text-white font-semibold">
-          {loading ? "Saving..." : (initialData ? "Update Product" : "Save Product")}
+        <Button
+          type="button"
+          variant="outline"
+          onClick={onClose}
+          disabled={loading || uploadingImage}
+        >
+          Cancel
+        </Button>
+        <Button
+          type="submit"
+          disabled={loading || uploadingImage}
+          className="bg-gradient-to-r from-primary to-sky-600 text-white font-semibold"
+        >
+          {loading ? "Saving..." : initialData ? "Update Product" : "Save Product"}
         </Button>
       </div>
     </form>
@@ -644,19 +848,22 @@ function ProductForm({ onClose, onSuccess, initialData }: { onClose: () => void,
 
 function ProductsSection({ search }: { search?: string }) {
   const [open, setOpen] = useState(false);
-  const [editingProduct, setEditingProduct] = useState<any>(null);
+  const [editingProduct, setEditingProduct] = useState<ShopProduct | null>(null);
   const { data: products, loading, error, retry } = useApiData<ShopProduct[]>(shopApi.getProducts);
 
-  const filteredProducts = products?.filter((p) => {
-    if (!search) return true;
-    const s = search.toLowerCase();
-    return p.name.toLowerCase().includes(s) || 
-           p.sku?.toLowerCase().includes(s) || 
-           p.brand?.toLowerCase().includes(s) || 
-           p.category?.toLowerCase().includes(s);
-  }) || [];
+  const filteredProducts =
+    products?.filter((p) => {
+      if (!search) return true;
+      const s = search.toLowerCase();
+      return (
+        p.name.toLowerCase().includes(s) ||
+        p.sku?.toLowerCase().includes(s) ||
+        p.brand?.toLowerCase().includes(s) ||
+        p.category?.toLowerCase().includes(s)
+      );
+    }) || [];
 
-  const handleEdit = (p: any) => {
+  const handleEdit = (p: ShopProduct) => {
     setEditingProduct(p);
     setOpen(true);
   };
@@ -670,26 +877,66 @@ function ProductsSection({ search }: { search?: string }) {
     <div className="space-y-5">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Products</h1>
-        <Dialog open={open} onOpenChange={(v) => { if (!v) handleClose(); else setOpen(true); }}>
-          <DialogTrigger asChild><Button onClick={() => setEditingProduct(null)}><Plus className="h-4 w-4 mr-2" />Add Product</Button></DialogTrigger>
-          <DialogContent className="max-w-2xl"><DialogHeader><DialogTitle>{editingProduct ? "Edit Product" : "Add product"}</DialogTitle></DialogHeader><ProductForm initialData={editingProduct} onClose={handleClose} onSuccess={() => retry()} /></DialogContent>
+        <Dialog
+          open={open}
+          onOpenChange={(v) => {
+            if (!v) handleClose();
+            else setOpen(true);
+          }}
+        >
+          <DialogTrigger asChild>
+            <Button onClick={() => setEditingProduct(null)}>
+              <Plus className="h-4 w-4 mr-2" />
+              Add Product
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>{editingProduct ? "Edit Product" : "Add product"}</DialogTitle>
+            </DialogHeader>
+            <ProductForm
+              initialData={editingProduct}
+              onClose={handleClose}
+              onSuccess={() => retry()}
+            />
+          </DialogContent>
         </Dialog>
       </div>
-      {loading ? <LoadingSpinner label="Loading products..." /> : error ? <ErrorBanner onRetry={retry} /> : !filteredProducts.length ? <EmptyBanner label={search ? "No products found matching your search." : "No products yet. Add your first product!"} /> : (
+      {loading ? (
+        <LoadingSpinner label="Loading products..." />
+      ) : error ? (
+        <ErrorBanner onRetry={retry} />
+      ) : !filteredProducts.length ? (
+        <EmptyBanner
+          label={
+            search
+              ? "No products found matching your search."
+              : "No products yet. Add your first product!"
+          }
+        />
+      ) : (
         <Card className="overflow-hidden">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Product</TableHead><TableHead>Category</TableHead><TableHead>Brand</TableHead>
-                <TableHead>Price</TableHead><TableHead>Stock</TableHead><TableHead></TableHead>
+                <TableHead>Product</TableHead>
+                <TableHead>Category</TableHead>
+                <TableHead>Brand</TableHead>
+                <TableHead>Price</TableHead>
+                <TableHead>Stock</TableHead>
+                <TableHead></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filteredProducts.map((p) => (
                 <TableRow key={p._id}>
                   <TableCell className="flex items-center gap-3 min-w-[220px]">
-                    {(p.imageUrl || (p.images && p.images[0])) ? (
-                      <img src={p.imageUrl || (p.images && p.images[0])} alt="" className="h-10 w-10 rounded-lg object-cover border shadow-2xs flex-shrink-0" />
+                    {p.imageUrl || (p.images && p.images[0]) ? (
+                      <img
+                        src={p.imageUrl || (p.images && p.images[0])}
+                        alt=""
+                        className="h-10 w-10 rounded-lg object-cover border shadow-2xs flex-shrink-0"
+                      />
                     ) : (
                       <div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center text-muted-foreground border flex-shrink-0">
                         <ImageIcon className="h-5 w-5" />
@@ -706,17 +953,22 @@ function ProductsSection({ search }: { search?: string }) {
                       <Edit className="h-4 w-4 mr-2" />
                       Edit
                     </Button>
-                    <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive" onClick={async () => {
-                      if (confirm("Are you sure you want to delete this product?")) {
-                        try {
-                          await shopApi.deleteProduct(p._id);
-                          toast.success("Product deleted successfully");
-                          retry();
-                        } catch (e: any) {
-                          toast.error(e.message || "Failed to delete product");
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="text-destructive hover:text-destructive"
+                      onClick={async () => {
+                        if (confirm("Are you sure you want to delete this product?")) {
+                          try {
+                            await shopApi.deleteProduct(p._id);
+                            toast.success("Product deleted successfully");
+                            retry();
+                          } catch (e: unknown) {
+                            toast.error((e as Error).message || "Failed to delete product");
+                          }
                         }
-                      }
-                    }}>
+                      }}
+                    >
                       <Trash2 className="h-4 w-4 mr-2" />
                       Delete
                     </Button>
@@ -734,24 +986,44 @@ function ProductsSection({ search }: { search?: string }) {
 // ─── PAGE 3: Inventory ──────────────────────────────────────────────────────
 
 function InventorySection({ search }: { search?: string }) {
-  const { data: inventory, loading, error, retry } = useApiData<ShopInventoryItem[]>(shopApi.getInventory);
+  const {
+    data: inventory,
+    loading,
+    error,
+    retry,
+  } = useApiData<ShopInventoryItem[]>(shopApi.getInventory);
 
-  const filteredInventory = inventory?.filter((p) => {
-    if (!search) return true;
-    const s = search.toLowerCase();
-    return p.productName.toLowerCase().includes(s) || p.sku?.toLowerCase().includes(s);
-  }) || [];
+  const filteredInventory =
+    inventory?.filter((p) => {
+      if (!search) return true;
+      const s = search.toLowerCase();
+      return p.productName.toLowerCase().includes(s) || p.sku?.toLowerCase().includes(s);
+    }) || [];
 
   return (
     <div className="space-y-5">
       <h1 className="text-2xl font-bold">Inventory</h1>
-      {loading ? <LoadingSpinner label="Loading inventory..." /> : error ? <ErrorBanner onRetry={retry} /> : !filteredInventory.length ? <EmptyBanner label={search ? "No inventory items found matching your search." : "No inventory data available"} /> : (
+      {loading ? (
+        <LoadingSpinner label="Loading inventory..." />
+      ) : error ? (
+        <ErrorBanner onRetry={retry} />
+      ) : !filteredInventory.length ? (
+        <EmptyBanner
+          label={
+            search
+              ? "No inventory items found matching your search."
+              : "No inventory data available"
+          }
+        />
+      ) : (
         <Card className="overflow-hidden">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>SKU</TableHead><TableHead>Product</TableHead>
-                <TableHead>Stock</TableHead><TableHead>Status</TableHead>
+                <TableHead>SKU</TableHead>
+                <TableHead>Product</TableHead>
+                <TableHead>Stock</TableHead>
+                <TableHead>Status</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -761,7 +1033,12 @@ function InventorySection({ search }: { search?: string }) {
                   <TableCell className="font-medium">{p.productName}</TableCell>
                   <TableCell>{p.stock}</TableCell>
                   <TableCell>
-                    <StatusBadge status={p.status || (p.stock === 0 ? "Out of Stock" : p.stock <= 3 ? "Low Stock" : "In Stock")} />
+                    <StatusBadge
+                      status={
+                        p.status ||
+                        (p.stock === 0 ? "Out of Stock" : p.stock <= 3 ? "Low Stock" : "In Stock")
+                      }
+                    />
                   </TableCell>
                 </TableRow>
               ))}
@@ -793,20 +1070,23 @@ function OrdersSection({ search }: { search?: string }) {
       await shopApi.updateOrderStatus(orderId, newStatus);
       toast.success(`Order ${orderNumber} is now "${newStatus.toUpperCase()}"!`);
       retry();
-    } catch (err: any) {
-      toast.error(err.message || "Failed to update order status");
+    } catch (err: unknown) {
+      toast.error((err as Error).message || "Failed to update order status");
     } finally {
       setUpdatingId(null);
     }
   };
 
-  const filteredOrders = orders?.filter((o) => {
-    if (!search) return true;
-    const s = search.toLowerCase();
-    return o.orderId.toLowerCase().includes(s) || 
-           o.customerName.toLowerCase().includes(s) || 
-           o.customerEmail.toLowerCase().includes(s);
-  }) || [];
+  const filteredOrders =
+    orders?.filter((o) => {
+      if (!search) return true;
+      const s = search.toLowerCase();
+      return (
+        o.orderId.toLowerCase().includes(s) ||
+        o.customerName.toLowerCase().includes(s) ||
+        o.customerEmail.toLowerCase().includes(s)
+      );
+    }) || [];
 
   return (
     <div className="space-y-5">
@@ -826,7 +1106,13 @@ function OrdersSection({ search }: { search?: string }) {
         </Button>
       </div>
 
-      {loading ? <LoadingSpinner label="Loading orders..." /> : error ? <ErrorBanner onRetry={retry} /> : !filteredOrders.length ? <EmptyBanner label={search ? "No orders found matching your search." : "No orders yet"} /> : (
+      {loading ? (
+        <LoadingSpinner label="Loading orders..." />
+      ) : error ? (
+        <ErrorBanner onRetry={retry} />
+      ) : !filteredOrders.length ? (
+        <EmptyBanner label={search ? "No orders found matching your search." : "No orders yet"} />
+      ) : (
         <Card className="overflow-hidden">
           <Table>
             <TableHeader>
@@ -844,10 +1130,14 @@ function OrdersSection({ search }: { search?: string }) {
             <TableBody>
               {filteredOrders.map((o) => (
                 <TableRow key={o._id} className="hover:bg-muted/40 transition-colors">
-                  <TableCell className="font-mono font-bold text-xs text-primary">{o.orderId}</TableCell>
+                  <TableCell className="font-mono font-bold text-xs text-primary">
+                    {o.orderId}
+                  </TableCell>
                   <TableCell>
                     <div className="font-semibold text-sm">{o.customerName}</div>
-                    {o.customerEmail && <div className="text-[11px] text-muted-foreground">{o.customerEmail}</div>}
+                    {o.customerEmail && (
+                      <div className="text-[11px] text-muted-foreground">{o.customerEmail}</div>
+                    )}
                   </TableCell>
                   <TableCell>{o.itemCount} items</TableCell>
                   <TableCell className="font-bold text-foreground">₹{o.total.toFixed(2)}</TableCell>
@@ -884,12 +1174,19 @@ function OrdersSection({ search }: { search?: string }) {
                   </TableCell>
                   <TableCell className="text-xs text-muted-foreground">{o.date}</TableCell>
                   <TableCell className="text-right">
-                    <Button size="sm" variant="outline" className="h-8 text-xs px-2.5" onClick={() => {
-                      shopApi.getOrderInvoice(o._id)
-                        .then(() => toast.success("Invoice generated successfully"))
-                        .catch(() => toast.error("Failed to generate invoice"));
-                    }}>
-                      <FileText className="h-3.5 w-3.5 mr-1 text-primary" />Invoice
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-8 text-xs px-2.5"
+                      onClick={() => {
+                        shopApi
+                          .getOrderInvoice(o._id)
+                          .then(() => toast.success("Invoice generated successfully"))
+                          .catch(() => toast.error("Failed to generate invoice"));
+                      }}
+                    >
+                      <FileText className="h-3.5 w-3.5 mr-1 text-primary" />
+                      Invoice
                     </Button>
                   </TableCell>
                 </TableRow>
@@ -905,16 +1202,24 @@ function OrdersSection({ search }: { search?: string }) {
 // ─── Customers (Real API Data) ──────────────────────────────────────────────
 
 function CustomersSection({ search }: { search?: string }) {
-  const { data: customers, loading, error, retry } = useApiData<ShopCustomer[]>(shopApi.getCustomers);
+  const {
+    data: customers,
+    loading,
+    error,
+    retry,
+  } = useApiData<ShopCustomer[]>(shopApi.getCustomers);
 
-  const filteredCustomers = customers?.filter((c) => {
-    if (!search) return true;
-    const s = search.toLowerCase();
-    return c.name.toLowerCase().includes(s) || 
-           c.email.toLowerCase().includes(s) || 
-           c.clinicName?.toLowerCase().includes(s) ||
-           c.phone?.includes(s);
-  }) || [];
+  const filteredCustomers =
+    customers?.filter((c) => {
+      if (!search) return true;
+      const s = search.toLowerCase();
+      return (
+        c.name.toLowerCase().includes(s) ||
+        c.email.toLowerCase().includes(s) ||
+        c.clinicName?.toLowerCase().includes(s) ||
+        c.phone?.includes(s)
+      );
+    }) || [];
 
   return (
     <div className="space-y-5">
@@ -930,7 +1235,9 @@ function CustomersSection({ search }: { search?: string }) {
       ) : error ? (
         <ErrorBanner onRetry={retry} />
       ) : !filteredCustomers.length ? (
-        <EmptyBanner label={search ? "No clinics found matching your search." : "No registered doctors yet."} />
+        <EmptyBanner
+          label={search ? "No clinics found matching your search." : "No registered doctors yet."}
+        />
       ) : (
         <Card className="overflow-hidden">
           <Table>
@@ -948,12 +1255,16 @@ function CustomersSection({ search }: { search?: string }) {
                 <TableRow key={c._id}>
                   <TableCell>
                     <div className="font-semibold text-foreground">{c.name || "Doctor"}</div>
-                    <div className="text-xs text-muted-foreground">{c.clinicName || "Dental Practice"}</div>
+                    <div className="text-xs text-muted-foreground">
+                      {c.clinicName || "Dental Practice"}
+                    </div>
                   </TableCell>
                   <TableCell className="text-muted-foreground text-xs">{c.email || "—"}</TableCell>
                   <TableCell className="text-muted-foreground text-xs">{c.phone || "—"}</TableCell>
                   <TableCell className="font-medium">{c.orders ?? 0}</TableCell>
-                  <TableCell className="font-semibold text-primary">₹{(c.spent ?? 0).toFixed(2)}</TableCell>
+                  <TableCell className="font-semibold text-primary">
+                    ₹{(c.spent ?? 0).toFixed(2)}
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
@@ -976,14 +1287,27 @@ function AnalyticsSection() {
       <div className="grid lg:grid-cols-2 gap-4">
         <Card className="p-5">
           <h3 className="font-semibold mb-4">Product performance</h3>
-          {perf.loading ? <LoadingSpinner /> : perf.error ? <ErrorBanner onRetry={perf.retry} /> : !perf.data?.length ? <EmptyBanner label="No sales data yet" /> : (
+          {perf.loading ? (
+            <LoadingSpinner />
+          ) : perf.error ? (
+            <ErrorBanner onRetry={perf.retry} />
+          ) : !perf.data?.length ? (
+            <EmptyBanner label="No sales data yet" />
+          ) : (
             <div className="h-72">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={perf.data.map((p) => ({ name: p.productName, sales: p.unitsSold }))}>
+                <BarChart
+                  data={perf.data.map((p) => ({ name: p.productName, sales: p.unitsSold }))}
+                >
                   <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
                   <XAxis dataKey="name" stroke="var(--color-muted-foreground)" fontSize={11} />
                   <YAxis stroke="var(--color-muted-foreground)" fontSize={11} />
-                  <Tooltip contentStyle={{ background: "var(--color-card)", border: "1px solid var(--color-border)" }} />
+                  <Tooltip
+                    contentStyle={{
+                      background: "var(--color-card)",
+                      border: "1px solid var(--color-border)",
+                    }}
+                  />
                   <Bar dataKey="sales" fill="var(--color-chart-2)" radius={[6, 6, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
@@ -992,15 +1316,31 @@ function AnalyticsSection() {
         </Card>
         <Card className="p-5">
           <h3 className="font-semibold mb-4">Revenue trend</h3>
-          {trend.loading ? <LoadingSpinner /> : trend.error ? <ErrorBanner onRetry={trend.retry} /> : !trend.data?.length ? <EmptyBanner label="No revenue data yet" /> : (
+          {trend.loading ? (
+            <LoadingSpinner />
+          ) : trend.error ? (
+            <ErrorBanner onRetry={trend.retry} />
+          ) : !trend.data?.length ? (
+            <EmptyBanner label="No revenue data yet" />
+          ) : (
             <div className="h-72">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={trend.data}>
                   <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
                   <XAxis dataKey="month" stroke="var(--color-muted-foreground)" fontSize={11} />
                   <YAxis stroke="var(--color-muted-foreground)" fontSize={11} />
-                  <Tooltip contentStyle={{ background: "var(--color-card)", border: "1px solid var(--color-border)" }} />
-                  <Line type="monotone" dataKey="sales" stroke="var(--color-chart-1)" strokeWidth={2} />
+                  <Tooltip
+                    contentStyle={{
+                      background: "var(--color-card)",
+                      border: "1px solid var(--color-border)",
+                    }}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="sales"
+                    stroke="var(--color-chart-1)"
+                    strokeWidth={2}
+                  />
                 </LineChart>
               </ResponsiveContainer>
             </div>
@@ -1023,7 +1363,8 @@ function NotificationsSection() {
         </div>
         <h3 className="font-semibold text-lg">All Systems Operational</h3>
         <p className="text-sm text-muted-foreground max-w-sm mx-auto">
-          You are all caught up! New orders placed by Vadodara dental clinics and low-stock alerts will appear here in real time.
+          You are all caught up! New orders placed by Vadodara dental clinics and low-stock alerts
+          will appear here in real time.
         </p>
       </Card>
     </div>
@@ -1037,12 +1378,30 @@ function SettingsSection() {
     <div className="space-y-5 max-w-2xl">
       <h1 className="text-2xl font-bold">Shop Settings</h1>
       <Card className="p-6 space-y-4">
-        <div><Label className="mb-1.5">Shop Name</Label><Input defaultValue="Darsh Dental Depot" /></div>
-        <div><Label className="mb-1.5">Direct Helpline / WhatsApp</Label><Input defaultValue="+91 97270 76119" /></div>
-        <div><Label className="mb-1.5">Support Email</Label><Input defaultValue="support@darshdental.com" /></div>
-        <div><Label className="mb-1.5">Store Location</Label><Input defaultValue="FF-10/11, Vraj Vihar Complex, Shiyabaug, Vadodara, Gujarat 390001" /></div>
-        <div className="flex items-center justify-between pt-2 border-t"><span className="text-sm">Real-time Order Alerts</span><Switch defaultChecked /></div>
-        <div className="flex items-center justify-between"><span className="text-sm">Low-Stock SMS / WhatsApp Alerts</span><Switch defaultChecked /></div>
+        <div>
+          <Label className="mb-1.5">Shop Name</Label>
+          <Input defaultValue="Darsh Dental Depot" />
+        </div>
+        <div>
+          <Label className="mb-1.5">Direct Helpline / WhatsApp</Label>
+          <Input defaultValue="+91 97270 76119" />
+        </div>
+        <div>
+          <Label className="mb-1.5">Support Email</Label>
+          <Input defaultValue="support@darshdental.com" />
+        </div>
+        <div>
+          <Label className="mb-1.5">Store Location</Label>
+          <Input defaultValue="FF-10/11, Vraj Vihar Complex, Shiyabaug, Vadodara, Gujarat 390001" />
+        </div>
+        <div className="flex items-center justify-between pt-2 border-t">
+          <span className="text-sm">Real-time Order Alerts</span>
+          <Switch defaultChecked />
+        </div>
+        <div className="flex items-center justify-between">
+          <span className="text-sm">Low-Stock SMS / WhatsApp Alerts</span>
+          <Switch defaultChecked />
+        </div>
         <Button onClick={() => toast.success("Settings saved successfully")}>Save Changes</Button>
       </Card>
     </div>

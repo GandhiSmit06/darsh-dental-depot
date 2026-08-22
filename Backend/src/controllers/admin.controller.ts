@@ -125,3 +125,48 @@ export const getDashboardData = asyncHandler(async (_req: Request, res: Response
     })
   );
 });
+
+export const getUsers = asyncHandler(async (_req: Request, res: Response) => {
+  const users = await User.find()
+    .select('-password')
+    .sort({ createdAt: -1 })
+    .lean();
+
+  res.status(200).json(ApiResponse.ok('Users fetched successfully', users));
+});
+
+export const deleteUser = asyncHandler(async (req: Request, res: Response) => {
+  const { id } = req.params;
+
+  // Prevent admin from deleting their own account
+  if (req.user!._id.toString() === id) {
+    res.status(400).json(ApiResponse.error('You cannot delete your own admin account'));
+    return;
+  }
+
+  const user = await User.findByIdAndDelete(id);
+  if (!user) {
+    res.status(404).json(ApiResponse.error('User not found'));
+    return;
+  }
+
+  res.status(200).json(ApiResponse.ok('User deleted successfully', { id }));
+});
+
+export const toggleUserStatus = asyncHandler(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const { isActive, isVerified } = req.body;
+
+  const user = await User.findById(id);
+  if (!user) {
+    res.status(404).json(ApiResponse.error('User not found'));
+    return;
+  }
+
+  if (typeof isActive === 'boolean') user.isActive = isActive;
+  if (typeof isVerified === 'boolean') user.isVerified = isVerified;
+
+  await user.save();
+
+  res.status(200).json(ApiResponse.ok('User updated successfully', user));
+});

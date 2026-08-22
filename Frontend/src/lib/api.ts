@@ -446,13 +446,12 @@ export const userApi = {
     apiFetch<{ success: true; message: string }>(`/users/${id}`, {
       method: "DELETE",
     }),
-
-  exportUsers: () =>
-    apiFetch<{ success: true; message: string }>("/users/export", {
-      method: "GET",
-    }),
 };
 
 export const adminApi = {
   ...userApi,
+  getDashboardData: () => apiFetch<ApiOk<any>>("/admin/dashboard"),
+  getUsers: () => apiFetch<ApiOk<User[]>>("/admin/users"),
+  deleteUser: (id: string) => apiFetch<ApiOk<{ id: string }>>(`/admin/users/${id}`, { method: "DELETE" }),
+  updateUserStatus: (id: string, data: { isActive?: boolean; isVerified?: boolean }) => apiFetch<ApiOk<User>>(`/admin/users/${id}/status`, { method: "PATCH", body: JSON.stringify(data) }),
 };

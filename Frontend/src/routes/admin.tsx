@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import {
   LayoutDashboard, Users, Package, ShoppingBag, BarChart3, FileText, Settings,
-  DollarSign, TrendingUp, Activity, Download,
+  DollarSign, TrendingUp, Activity, Download, Trash2, Loader2,
 } from "lucide-react";
 import {
   Area, AreaChart, Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer,
@@ -15,10 +15,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth-context";
-import { adminApi } from "@/lib/api";
+import { adminApi, type User } from "@/lib/api";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({ meta: [{ title: "Admin Dashboard — Darsh Dental Depot" }] }),
@@ -260,26 +261,193 @@ function AdminDashboard() {
   }
 
   function UsersSection() {
+    const [users, setUsers] = useState<User[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [searchTerm, setSearchTerm] = useState("");
+    const [roleFilter, setRoleFilter] = useState<string>("all");
+    const [deletingId, setDeletingId] = useState<string | null>(null);
+
+    const loadUsers = async () => {
+      setLoading(true);
+      try {
+        const res = await adminApi.getUsers();
+        setUsers(res.data || []);
+      } catch (err: any) {
+        toast.error(err.message || "Failed to load users");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    useEffect(() => {
+      loadUsers();
+    }, []);
+
+    const handleDeleteUser = async (userId: string, userName: string) => {
+      if (!confirm(`Are you sure you want to permanently delete user "${userName}"? This cannot be undone.`)) {
+        return;
+      }
+      setDeletingId(userId);
+      try {
+        await adminApi.deleteUser(userId);
+        toast.success(`User "${userName}" deleted successfully`);
+        setUsers((prev) => prev.filter((u) => u._id !== userId));
+      } catch (err: any) {
+        toast.error(err.message || "Failed to delete user");
+      } finally {
+        setDeletingId(null);
+      }
+    };
+
+    const handleToggleStatus = async (userId: string, currentActive: boolean) => {
+      try {
+        const newStatus = !currentActive;
+        await adminApi.updateUserStatus(userId, { isActive: newStatus });
+        toast.success(`User marked as ${newStatus ? "Active" : "Suspended"}`);
+        setUsers((prev) =>
+          prev.map((u) => (u._id === userId ? { ...u, isActive: newStatus } : u))
+        );
+      } catch (err: any) {
+        toast.error(err.message || "Failed to update user status");
+      }
+    };
+
+    const filteredUsers = users.filter((u) => {
+      const matchSearch =
+        u.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        u.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (u.clinicName && u.clinicName.toLowerCase().includes(searchTerm.toLowerCase()));
+      const matchRole = roleFilter === "all" || u.role === roleFilter;
+      return matchSearch && matchRole;
+    });
+
     return (
       <div className="space-y-5">
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold">Users</h1>
-          <Button variant="outline"><Download className="h-4 w-4 mr-2" />Export</Button>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold">User Management</h1>
+            <p className="text-sm text-muted-foreground">Manage doctors, clinic accounts, and platform roles.</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <Input
+              placeholder="Search by name, email, clinic..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-64 text-sm"
+            />
+            <Button variant="outline" size="sm" onClick={loadUsers} disabled={loading}>
+              Refresh
+            </Button>
+          </div>
         </div>
+
+        <div className="flex items-center gap-2">
+          {["all", "doctor", "shop_owner", "admin"].map((r) => (
+            <Button
+              key={r}
+              size="sm"
+              variant={roleFilter === r ? "default" : "outline"}
+              onClick={() => setRoleFilter(r)}
+              className="capitalize text-xs rounded-xl"
+            >
+              {r === "all" ? "All Users" : r === "shop_owner" ? "Shop Owner" : r}
+            </Button>
+          ))}
+        </div>
+
         <Card className="overflow-hidden">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>ID</TableHead><TableHead>Name</TableHead><TableHead>Email</TableHead>
-                <TableHead>Role</TableHead><TableHead>Status</TableHead><TableHead>Joined</TableHead><TableHead></TableHead>
+                <TableHead>User / Clinic</TableHead>
+                <TableHead>Email</TableHead>
+                <TableHead>Phone</TableHead>
+                <TableHead>Role</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Joined</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {/* TODO: Fetch real user data from API */}
-              {/* Placeholder - replace with actual API call */}
-              <TableRow key="loading">
-                <TableLoader colspan="7" />
-              </TableRow>
+              {loading ? (
+                <TableRow>
+                  <TableCell colSpan={7} className="text-center py-10 text-muted-foreground">
+                    <Loader2 className="h-6 w-6 animate-spin mx-auto mb-2" />
+                    Loading user accounts...
+                  </TableCell>
+                </TableRow>
+              ) : filteredUsers.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={7} className="text-center py-10 text-muted-foreground">
+                    No users found matching your filters.
+                  </TableCell>
+                </TableRow>
+              ) : (
+                filteredUsers.map((u) => (
+                  <TableRow key={u._id}>
+                    <TableCell>
+                      <div className="font-semibold text-foreground">{u.fullName}</div>
+                      {u.clinicName && (
+                        <div className="text-xs text-muted-foreground">{u.clinicName}</div>
+                      )}
+                    </TableCell>
+                    <TableCell className="text-xs text-muted-foreground">{u.email}</TableCell>
+                    <TableCell className="text-xs text-muted-foreground">{u.phone || "—"}</TableCell>
+                    <TableCell>
+                      <Badge
+                        variant="outline"
+                        className={`capitalize text-xs font-semibold ${
+                          u.role === "admin"
+                            ? "bg-purple-500/10 text-purple-400 border-purple-500/30"
+                            : u.role === "shop_owner"
+                            ? "bg-blue-500/10 text-blue-400 border-blue-500/30"
+                            : "bg-emerald-500/10 text-emerald-400 border-emerald-500/30"
+                        }`}
+                      >
+                        {u.role.replace("_", " ")}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        variant="secondary"
+                        className={`text-xs ${
+                          u.isActive
+                            ? "bg-emerald-500/15 text-emerald-400"
+                            : "bg-destructive/15 text-destructive"
+                        }`}
+                      >
+                        {u.isActive ? "Active" : "Suspended"}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-xs text-muted-foreground">
+                      {u.createdAt ? new Date(u.createdAt).toLocaleDateString() : "—"}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex items-center justify-end gap-1">
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="text-xs h-8 px-2"
+                          onClick={() => handleToggleStatus(u._id, u.isActive)}
+                        >
+                          {u.isActive ? "Suspend" : "Activate"}
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="text-destructive hover:text-destructive hover:bg-destructive/10 h-8 px-2"
+                          disabled={deletingId === u._id || u.role === "admin"}
+                          onClick={() => handleDeleteUser(u._id, u.fullName)}
+                          title={u.role === "admin" ? "Admin accounts cannot be deleted" : "Delete user"}
+                        >
+                          <Trash2 className="h-4 w-4 mr-1" />
+                          Delete
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
             </TableBody>
           </Table>
         </Card>
@@ -297,20 +465,47 @@ function AdminDashboard() {
   }
 
   function OrdersSection() {
+    const orders = dashboardData?.recentOrders || [];
+
     return (
       <div className="space-y-5">
-        <h1 className="text-2xl font-bold">All orders</h1>
+        <h1 className="text-2xl font-bold">All Orders</h1>
         <Card className="overflow-hidden">
           <Table>
             <TableHeader>
-              <TableRow><TableHead>Order</TableHead><TableHead>Customer</TableHead><TableHead>Total</TableHead><TableHead>Status</TableHead><TableHead>Date</TableHead></TableRow>
+              <TableRow>
+                <TableHead>Order</TableHead>
+                <TableHead>Customer</TableHead>
+                <TableHead>Total</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Payment</TableHead>
+                <TableHead>Date</TableHead>
+              </TableRow>
             </TableHeader>
             <TableBody>
-              {/* TODO: Fetch real order data from API */}
-              {/* Placeholder - replace with actual API call */}
-              <TableRow key="loading">
-                <TableLoader colspan="6" />
-              </TableRow>
+              {orders.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                    No orders in database yet.
+                  </TableCell>
+                </TableRow>
+              ) : (
+                orders.map((o) => (
+                  <TableRow key={o.id}>
+                    <TableCell className="font-mono text-xs">{o.orderId}</TableCell>
+                    <TableCell>
+                      <div className="font-semibold">{o.customerName}</div>
+                      <div className="text-xs text-muted-foreground">{o.customerEmail}</div>
+                    </TableCell>
+                    <TableCell className="font-medium">₹{o.total.toFixed(2)}</TableCell>
+                    <TableCell><StatusBadge status={o.status as any} /></TableCell>
+                    <TableCell><StatusBadge status={o.paymentStatus as any} /></TableCell>
+                    <TableCell className="text-xs text-muted-foreground">
+                      {new Date(o.date).toLocaleDateString()}
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
             </TableBody>
           </Table>
         </Card>

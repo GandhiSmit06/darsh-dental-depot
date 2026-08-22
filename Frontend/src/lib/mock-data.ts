@@ -65,6 +65,8 @@ export const products: Product[] = Array.from({ length: 24 }).map((_, i) => {
   };
 });
 
+export const mockProducts = products;
+
 export const featuredProducts = products.slice(0, 8);
 
 export const testimonials = [

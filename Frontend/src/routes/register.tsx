@@ -5,13 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -19,6 +13,8 @@ import { z } from "zod";
 import { useState } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { ApiError } from "@/lib/api";
+import { Sparkles, ShieldCheck, UserCheck, Stethoscope, Store, ArrowRight } from "lucide-react";
+import { motion } from "framer-motion";
 
 const registerSchema = z
   .object({
@@ -51,7 +47,7 @@ const registerSchema = z
 type RegisterFormData = z.infer<typeof registerSchema>;
 
 export const Route = createFileRoute("/register")({
-  head: () => ({ meta: [{ title: "Register — Darsh Dental Depot" }] }),
+  head: () => ({ meta: [{ title: "Doctor & Clinic Registration — Darsh Dental Depot" }] }),
   component: RegisterPage,
 });
 
@@ -65,6 +61,8 @@ function RegisterPage() {
     handleSubmit,
     setError,
     control,
+    setValue,
+    watch,
     formState: { errors },
   } = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
@@ -72,6 +70,8 @@ function RegisterPage() {
       role: "doctor",
     },
   });
+
+  const selectedRole = watch("role");
 
   const onSubmit = async (data: RegisterFormData) => {
     setIsSubmitting(true);
@@ -83,8 +83,15 @@ function RegisterPage() {
       if (err instanceof ApiError) {
         if (err.errors && err.errors.length > 0) {
           const validFields: Array<keyof RegisterFormData> = [
-            "fullName", "clinicName", "email", "phone", "role",
-            "medicalRegistrationNumber", "address", "password", "confirmPassword",
+            "fullName",
+            "clinicName",
+            "email",
+            "phone",
+            "role",
+            "medicalRegistrationNumber",
+            "address",
+            "password",
+            "confirmPassword",
           ];
           err.errors.forEach((e) => {
             const field = e.field as keyof RegisterFormData;
@@ -105,113 +112,194 @@ function RegisterPage() {
 
   return (
     <PublicLayout>
-      <div className="container mx-auto px-4 py-16 max-w-2xl">
-        <Card className="p-8">
-          <div className="text-center mb-6">
-            <h1 className="text-2xl font-bold">Create your account</h1>
-            <p className="text-sm text-muted-foreground mt-1">
-              Join 5,000+ trusted dental professionals
-            </p>
-          </div>
-          <form
-            className="grid sm:grid-cols-2 gap-4"
-            onSubmit={handleSubmit(onSubmit)}
-          >
-            <div>
-              <Label className="mb-1.5">Full name</Label>
-              <Input {...register("fullName")} placeholder="Dr. John Doe" />
-              {errors.fullName && (
-                <p className="text-xs text-destructive mt-1">{errors.fullName.message}</p>
-              )}
+      <div className="container mx-auto px-4 py-16 max-w-2xl relative">
+        {/* Background glow */}
+        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-96 h-96 bg-primary/15 rounded-full blur-3xl -z-10 pointer-events-none" />
+
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+          <Card className="p-8 sm:p-10 glass-card border border-border/70 rounded-3xl shadow-xl backdrop-blur-xl">
+            {/* Header */}
+            <div className="text-center mb-8 space-y-2">
+              <div className="mx-auto h-12 w-12 rounded-2xl bg-gradient-to-br from-primary via-sky-600 to-indigo-600 text-white grid place-items-center mb-3 shadow-md">
+                <Sparkles className="h-6 w-6" />
+              </div>
+              <h1 className="text-2xl sm:text-3xl font-extrabold font-heading tracking-tight text-foreground">
+                Register Your Practice
+              </h1>
+              <p className="text-xs text-muted-foreground">
+                Join 5,000+ certified dental practitioners across India unlocking wholesale pricing
+              </p>
             </div>
-            <div>
-              <Label className="mb-1.5">Clinic name</Label>
-              <Input {...register("clinicName")} placeholder="SmileCare Clinic" />
-              {errors.clinicName && (
-                <p className="text-xs text-destructive mt-1">{errors.clinicName.message}</p>
-              )}
+
+            {/* Role Switcher Pill */}
+            <div className="mb-6">
+              <Label className="text-xs font-semibold mb-2 block text-muted-foreground uppercase tracking-wider">
+                Select Account Type
+              </Label>
+              <div className="grid grid-cols-2 gap-3 p-1 rounded-2xl bg-secondary/60 border border-border/50">
+                <button
+                  type="button"
+                  onClick={() => setValue("role", "doctor")}
+                  className={`flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-xs font-bold transition-all ${
+                    selectedRole === "doctor"
+                      ? "bg-background text-primary shadow-sm border border-primary/20"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <Stethoscope className="h-4 w-4" /> Doctor / Clinic
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setValue("role", "shop_owner")}
+                  className={`flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-xs font-bold transition-all ${
+                    selectedRole === "shop_owner"
+                      ? "bg-background text-primary shadow-sm border border-primary/20"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <Store className="h-4 w-4" /> Dental Shop Owner
+                </button>
+              </div>
             </div>
-            <div>
-              <Label className="mb-1.5">Email</Label>
-              <Input type="email" {...register("email")} placeholder="doctor@example.com" />
-              {errors.email && (
-                <p className="text-xs text-destructive mt-1">{errors.email.message}</p>
-              )}
-            </div>
-            <div>
-              <Label className="mb-1.5">Phone</Label>
-              <Input type="tel" {...register("phone")} placeholder="9876543210" />
-              {errors.phone && (
-                <p className="text-xs text-destructive mt-1">{errors.phone.message}</p>
-              )}
-            </div>
-            <div className="sm:col-span-2">
-              <Label className="mb-1.5">I am a</Label>
-              <Controller
-                control={control}
-                name="role"
-                render={({ field }) => (
-                  <Select value={field.value} onValueChange={field.onChange}>
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select your role" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="doctor">Doctor</SelectItem>
-                      <SelectItem value="shop_owner">Shop Owner</SelectItem>
-                    </SelectContent>
-                  </Select>
+
+            <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
+              <div className="grid sm:grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-xs font-semibold mb-1.5 block">Full Name *</Label>
+                  <Input
+                    {...register("fullName")}
+                    placeholder="Dr. John Doe"
+                    className="rounded-xl bg-background/80 border-border/60 text-sm h-11 focus:border-primary"
+                  />
+                  {errors.fullName && (
+                    <p className="text-xs text-destructive mt-1">{errors.fullName.message}</p>
+                  )}
+                </div>
+
+                <div>
+                  <Label className="text-xs font-semibold mb-1.5 block">Clinic / Store Name *</Label>
+                  <Input
+                    {...register("clinicName")}
+                    placeholder="SmileCare Dental Center"
+                    className="rounded-xl bg-background/80 border-border/60 text-sm h-11 focus:border-primary"
+                  />
+                  {errors.clinicName && (
+                    <p className="text-xs text-destructive mt-1">{errors.clinicName.message}</p>
+                  )}
+                </div>
+              </div>
+
+              <div className="grid sm:grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-xs font-semibold mb-1.5 block">Email Address *</Label>
+                  <Input
+                    type="email"
+                    {...register("email")}
+                    placeholder="doctor@example.com"
+                    className="rounded-xl bg-background/80 border-border/60 text-sm h-11 focus:border-primary"
+                  />
+                  {errors.email && (
+                    <p className="text-xs text-destructive mt-1">{errors.email.message}</p>
+                  )}
+                </div>
+
+                <div>
+                  <Label className="text-xs font-semibold mb-1.5 block">Mobile Number (10 digits) *</Label>
+                  <Input
+                    type="tel"
+                    {...register("phone")}
+                    placeholder="9876543210"
+                    className="rounded-xl bg-background/80 border-border/60 text-sm h-11 focus:border-primary"
+                  />
+                  {errors.phone && (
+                    <p className="text-xs text-destructive mt-1">{errors.phone.message}</p>
+                  )}
+                </div>
+              </div>
+
+              <div>
+                <Label className="text-xs font-semibold mb-1.5 block">
+                  Dental Registration / License Number *
+                </Label>
+                <Input
+                  {...register("medicalRegistrationNumber")}
+                  placeholder="e.g. GDC-12345 / DCI Registration"
+                  className="rounded-xl bg-background/80 border-border/60 text-sm h-11 focus:border-primary"
+                />
+                {errors.medicalRegistrationNumber && (
+                  <p className="text-xs text-destructive mt-1">
+                    {errors.medicalRegistrationNumber.message}
+                  </p>
                 )}
-              />
-              {errors.role && (
-                <p className="text-xs text-destructive mt-1">{errors.role.message}</p>
-              )}
-            </div>
-            <div className="sm:col-span-2">
-              <Label className="mb-1.5">Medical registration number</Label>
-              <Input {...register("medicalRegistrationNumber")} placeholder="MCI-12345" />
-              {errors.medicalRegistrationNumber && (
-                <p className="text-xs text-destructive mt-1">
-                  {errors.medicalRegistrationNumber.message}
-                </p>
-              )}
-            </div>
-            <div className="sm:col-span-2">
-              <Label className="mb-1.5">Address</Label>
-              <Textarea rows={2} {...register("address")} placeholder="Clinic address" />
-              {errors.address && (
-                <p className="text-xs text-destructive mt-1">{errors.address.message}</p>
-              )}
-            </div>
-            <div>
-              <Label className="mb-1.5">Password</Label>
-              <Input type="password" {...register("password")} placeholder="••••••••" />
-              {errors.password && (
-                <p className="text-xs text-destructive mt-1">{errors.password.message}</p>
-              )}
-            </div>
-            <div>
-              <Label className="mb-1.5">Confirm password</Label>
-              <Input type="password" {...register("confirmPassword")} placeholder="••••••••" />
-              {errors.confirmPassword && (
-                <p className="text-xs text-destructive mt-1">{errors.confirmPassword.message}</p>
-              )}
-            </div>
-            <div className="sm:col-span-2">
-              <Button type="submit" className="w-full" disabled={isSubmitting}>
-                {isSubmitting ? "Creating account..." : "Create account"}
+              </div>
+
+              <div>
+                <Label className="text-xs font-semibold mb-1.5 block">Clinic Delivery Address *</Label>
+                <Textarea
+                  rows={2}
+                  {...register("address")}
+                  placeholder="Complete clinical address with city & PIN code"
+                  className="rounded-xl bg-background/80 border-border/60 text-sm focus:border-primary"
+                />
+                {errors.address && (
+                  <p className="text-xs text-destructive mt-1">{errors.address.message}</p>
+                )}
+              </div>
+
+              <div className="grid sm:grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-xs font-semibold mb-1.5 block">Password (min 8 chars) *</Label>
+                  <Input
+                    type="password"
+                    {...register("password")}
+                    placeholder="••••••••"
+                    className="rounded-xl bg-background/80 border-border/60 text-sm h-11 focus:border-primary"
+                  />
+                  {errors.password && (
+                    <p className="text-xs text-destructive mt-1">{errors.password.message}</p>
+                  )}
+                </div>
+
+                <div>
+                  <Label className="text-xs font-semibold mb-1.5 block">Confirm Password *</Label>
+                  <Input
+                    type="password"
+                    {...register("confirmPassword")}
+                    placeholder="••••••••"
+                    className="rounded-xl bg-background/80 border-border/60 text-sm h-11 focus:border-primary"
+                  />
+                  {errors.confirmPassword && (
+                    <p className="text-xs text-destructive mt-1">{errors.confirmPassword.message}</p>
+                  )}
+                </div>
+              </div>
+
+              <Button
+                type="submit"
+                className="w-full rounded-2xl h-12 text-sm font-bold bg-gradient-to-r from-primary via-sky-600 to-indigo-600 hover:opacity-95 text-white shadow-lg btn-shine mt-4"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? "Creating Account..." : "Complete Clinic Registration"}{" "}
+                <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
+            </form>
+
+            <div className="mt-8 pt-6 border-t border-border/40 text-center space-y-3">
+              <p className="text-xs text-muted-foreground">
+                Already registered with us?{" "}
+                <Link to="/login" className="text-primary font-bold hover:underline">
+                  Sign in to portal
+                </Link>
+              </p>
+
+              <div className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                <ShieldCheck className="h-3.5 w-3.5 text-emerald-500" />
+                <span>Encrypted Data • Instant Verification For Practicing Doctors</span>
+              </div>
             </div>
-          </form>
-          <p className="text-center text-sm text-muted-foreground mt-6">
-            Already have an account?{" "}
-            <Link
-              to="/login"
-              className="text-primary font-medium hover:underline"
-            >
-              Sign in
-            </Link>
-          </p>
-        </Card>
+          </Card>
+        </motion.div>
       </div>
     </PublicLayout>
   );

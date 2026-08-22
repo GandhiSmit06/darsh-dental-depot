@@ -261,26 +261,41 @@ export interface ApiOk<T> {
 
 export interface ShopProduct {
   _id: string;
-  sku: string;
+  sku?: string;
+  SKU?: string;
   name: string;
   category: string;
   brand: string;
-  price: number;
+  price?: number;
+  purchasePrice?: number;
+  sellingPrice?: number;
   stock: number;
-  imageUrl: string;
+  images?: string[];
+  imageUrl?: string;
   status: string;
+  hsnCode?: string;
+  gstPercentage?: number;
+  batchNumber?: string;
+  description?: string;
+  manufacturer?: string;
+  rating?: number;
+  reviewCount?: number;
 }
 
 export interface CreateProductPayload {
   name: string;
   category: string;
-  description: string;
-  SKU: string;
+  description?: string;
+  SKU?: string;
+  sku?: string;
   stock: number;
   purchasePrice: number;
   sellingPrice: number;
+  price?: number;
   brand?: string;
   manufacturer?: string;
+  images?: string[];
+  imageUrl?: string;
   hsnCode?: string;
   gstPercentage?: number;
   batchNumber?: string;
@@ -410,6 +425,7 @@ export interface DoctorCartItem {
   imageUrl: string;
   price: number;
   quantity: number;
+  stock?: number;
 }
 
 export interface DoctorWishlistItem {
@@ -454,10 +470,23 @@ export interface ProductResponse {
   brand: string;
   category: string;
   sellingPrice: number;
+  price?: number;
+  purchasePrice?: number;
   stock: number;
   rating: number;
   reviewCount: number;
   images: string[];
+  imageUrl?: string;
+  SKU?: string;
+  sku?: string;
+  description?: string;
+  batchNumber?: string;
+  hsnCode?: string;
+  gstPercentage?: number;
+  manufacturer?: string;
+  discountPrice?: number;
+  expiryDate?: string;
+  status?: string;
 }
 
 export interface PlaceOrderPayload {

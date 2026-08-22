@@ -1,12 +1,13 @@
 import { Link } from "@tanstack/react-router";
 import { motion } from "framer-motion";
-import { Heart, ShoppingCart, Star, CheckCircle, Zap, Package, Settings } from "lucide-react";
+import { Heart, ShoppingCart, Star, CheckCircle, Zap, Package, Settings, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 import { useState } from "react";
 import { useAuth } from "@/lib/auth-context";
+import { doctorApi } from "@/lib/api";
 
 export interface ProductCardProps {
   product: any;
@@ -21,6 +22,7 @@ export function ProductCard({ product, onAdd, onWishlist }: ProductCardProps) {
   const isManager = isShopOwner || isAdmin;
 
   const [isLiked, setIsLiked] = useState(false);
+  const [isAdding, setIsAdding] = useState(false);
   const inStock = (product.stock ?? 1) > 0;
   const price = product.price ?? product.sellingPrice ?? 0;
   const originalPrice = product.purchasePrice ? Math.round(price * 1.25) : Math.round(price * 1.2);
@@ -34,24 +36,68 @@ export function ProductCard({ product, onAdd, onWishlist }: ProductCardProps) {
 
   const productId = product._id || product.id;
 
-  const handleWishlist = (e: React.MouseEvent) => {
+  const handleWishlist = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    setIsLiked(!isLiked);
+
     if (onWishlist) {
       onWishlist(product);
-    } else {
-      toast.success(isLiked ? "Removed from wishlist" : `Saved ${product.name} to wishlist`);
+      return;
+    }
+
+    if (!user) {
+      toast.error("Please sign in as a doctor to save items to wishlist");
+      return;
+    }
+
+    const nextState = !isLiked;
+    setIsLiked(nextState);
+
+    try {
+      if (nextState) {
+        await doctorApi.addToWishlist(productId);
+        toast.success(`Saved ${product.name} to clinic wishlist`);
+      } else {
+        await doctorApi.removeFromWishlist(productId);
+        toast.success(`Removed ${product.name} from clinic wishlist`);
+      }
+    } catch (err: any) {
+      toast.error(err.message || "Failed to update wishlist");
     }
   };
 
-  const handleAddToCart = (e: React.MouseEvent) => {
+  const handleAddToCart = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+
     if (onAdd) {
       onAdd(product);
-    } else {
-      toast.success(`Added ${product.name} to cart`);
+      return;
+    }
+
+    if (!user) {
+      toast.error("Please sign in as a doctor to add items to your clinic cart");
+      return;
+    }
+
+    if (user.role !== "doctor") {
+      toast.error("Cart ordering is reserved for registered doctor accounts");
+      return;
+    }
+
+    if (!productId) {
+      toast.error("Unable to identify product");
+      return;
+    }
+
+    setIsAdding(true);
+    try {
+      await doctorApi.addToCart(productId, 1);
+      toast.success(`Added ${product.name} to clinic cart!`);
+    } catch (err: any) {
+      toast.error(err.message || "Failed to add item to cart");
+    } finally {
+      setIsAdding(false);
     }
   };
 
@@ -184,11 +230,19 @@ export function ProductCard({ product, onAdd, onWishlist }: ProductCardProps) {
             ) : (
               <Button
                 size="sm"
-                disabled={!inStock}
+                disabled={!inStock || isAdding}
                 onClick={handleAddToCart}
-                className="rounded-xl px-3.5 h-8 text-xs font-medium bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm hover:shadow-md transition-all active:scale-95"
+                className="rounded-xl px-3.5 h-8 text-xs font-medium bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm hover:shadow-md transition-all active:scale-95 disabled:opacity-70"
               >
-                <ShoppingCart className="h-3.5 w-3.5 mr-1" /> Add
+                {isAdding ? (
+                  <>
+                    <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" /> Adding...
+                  </>
+                ) : (
+                  <>
+                    <ShoppingCart className="h-3.5 w-3.5 mr-1" /> Add
+                  </>
+                )}
               </Button>
             )}
           </div>

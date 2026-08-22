@@ -226,12 +226,16 @@ function CartSection({ onNavigateToOrders }: { onNavigateToOrders?: () => void }
   const { data: cart, loading, error, retry, mutate } = useApiData<DoctorCartItem[]>(doctorApi.getCart);
   const [isCheckingOut, setIsCheckingOut] = useState(false);
 
-  const updateQuantity = async (id: string, qty: number) => {
+  const updateQuantity = async (id: string, qty: number, maxStock?: number) => {
+    if (maxStock !== undefined && qty > maxStock) {
+      toast.warning(`Only ${maxStock} unit(s) available in depot stock`);
+      return;
+    }
     try {
       const res = await doctorApi.updateCartItem(id, qty);
       mutate(res.data);
-    } catch {
-      toast.error("Failed to update cart");
+    } catch (err: any) {
+      toast.error(err.message || "Failed to update cart");
     }
   };
 
@@ -400,20 +404,30 @@ function CartSection({ onNavigateToOrders }: { onNavigateToOrders?: () => void }
                   <div className="text-xs text-muted-foreground">{item.brand}</div>
                   <div className="text-xs font-semibold text-primary mt-1">₹{item.price.toFixed(2)} each</div>
                 </div>
-                <div className="flex items-center border rounded-xl bg-background shadow-2xs overflow-hidden">
-                  <button 
-                    className="px-2.5 py-1.5 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors" 
-                    onClick={() => updateQuantity(item.cartItemId, Math.max(1, item.quantity - 1))}
-                  >
-                    <Minus className="h-3 w-3" />
-                  </button>
-                  <span className="w-8 text-center text-xs font-bold">{item.quantity}</span>
-                  <button 
-                    className="px-2.5 py-1.5 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors" 
-                    onClick={() => updateQuantity(item.cartItemId, item.quantity + 1)}
-                  >
-                    <Plus className="h-3 w-3" />
-                  </button>
+                <div className="flex flex-col items-end gap-1">
+                  <div className="flex items-center border rounded-xl bg-background shadow-2xs overflow-hidden">
+                    <button 
+                      className="px-2.5 py-1.5 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors disabled:opacity-40" 
+                      onClick={() => updateQuantity(item.cartItemId, Math.max(1, item.quantity - 1))}
+                      disabled={item.quantity <= 1}
+                    >
+                      <Minus className="h-3 w-3" />
+                    </button>
+                    <span className="w-8 text-center text-xs font-bold">{item.quantity}</span>
+                    <button 
+                      className="px-2.5 py-1.5 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors disabled:opacity-40" 
+                      onClick={() => updateQuantity(item.cartItemId, item.quantity + 1, item.stock)}
+                      disabled={item.stock !== undefined && item.quantity >= item.stock}
+                      title={item.stock !== undefined && item.quantity >= item.stock ? `Max stock available (${item.stock})` : undefined}
+                    >
+                      <Plus className="h-3 w-3" />
+                    </button>
+                  </div>
+                  {item.stock !== undefined && (
+                    <span className="text-[10px] text-muted-foreground font-medium">
+                      Max: {item.stock} in stock
+                    </span>
+                  )}
                 </div>
                 <div className="w-24 text-right font-black text-foreground">₹{(item.price * item.quantity).toFixed(2)}</div>
                 <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-destructive" onClick={() => removeItem(item.cartItemId)}>

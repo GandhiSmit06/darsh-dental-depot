@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import {
   LayoutDashboard,
   Package,
@@ -19,6 +19,8 @@ import {
   X,
   CheckCircle2,
   XCircle,
+  DollarSign,
+  TrendingUp,
 } from "lucide-react";
 import {
   Bar,
@@ -29,6 +31,11 @@ import {
   Tooltip,
   XAxis,
   YAxis,
+  CartesianGrid,
+  PieChart,
+  Pie,
+  Cell,
+  Legend,
 } from "recharts";
 import { DashboardLayout, type NavItem } from "@/components/dashboard/DashboardLayout";
 import { StatCard, StatusBadge } from "@/components/dashboard/widgets";
@@ -37,6 +44,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
 import {
   Select,
   SelectContent,
@@ -52,7 +60,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import {
@@ -62,6 +70,8 @@ import {
   type ShopInventoryItem,
   type ShopOrder,
   type ShopCustomer,
+  type ShopStats,
+  type WeeklySalesItem,
   type MonthlyTrendItem,
   type CategoryShareItem,
   type ProductPerformanceItem,
@@ -946,7 +956,7 @@ function ProductsSection({ search }: { search?: string }) {
                   </TableCell>
                   <TableCell>{p.category}</TableCell>
                   <TableCell>{p.brand}</TableCell>
-                  <TableCell>₹{p.price.toFixed(2)}</TableCell>
+                  <TableCell>₹{(p.sellingPrice ?? p.price ?? 0).toFixed(2)}</TableCell>
                   <TableCell>{p.stock}</TableCell>
                   <TableCell className="text-right">
                     <Button size="sm" variant="ghost" onClick={() => handleEdit(p)}>

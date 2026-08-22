@@ -127,24 +127,27 @@ function ProductDetail() {
     try {
       await doctorApi.addToCart(product._id, qty);
       toast.success(`Added ${qty} × ${product.name} to clinic cart`);
-    } catch {
-      toast.success(`Added ${qty} × ${product.name} to clinic cart`);
+    } catch (err: any) {
+      toast.error(err.message || "Failed to add to cart");
     } finally {
       setAddingToCart(false);
     }
   };
 
   const handleWishlistToggle = async () => {
-    setIsWishlisted(!isWishlisted);
+    const nextState = !isWishlisted;
+    setIsWishlisted(nextState);
     try {
-      if (!isWishlisted) {
+      if (nextState) {
         await doctorApi.addToWishlist(product._id);
         toast.success("Saved to clinic wishlist");
       } else {
+        await doctorApi.removeFromWishlist(product._id);
         toast.success("Removed from clinic wishlist");
       }
-    } catch {
-      toast.success(isWishlisted ? "Removed from wishlist" : "Saved to wishlist");
+    } catch (err: any) {
+      toast.error(err.message || "Failed to update wishlist");
+      setIsWishlisted(!nextState);
     }
   };
 
@@ -287,15 +290,18 @@ function ProductDetail() {
                 <div className="flex flex-wrap items-center gap-3">
                   <div className="flex items-center border border-border/70 rounded-2xl bg-background p-1 shadow-sm">
                     <button
-                      className="p-2 text-muted-foreground hover:text-foreground hover:bg-secondary rounded-xl transition-colors"
+                      className="p-2 text-muted-foreground hover:text-foreground hover:bg-secondary rounded-xl transition-colors disabled:opacity-40"
                       onClick={() => setQty((q) => Math.max(1, q - 1))}
+                      disabled={qty <= 1}
                     >
                       <Minus className="h-4 w-4" />
                     </button>
                     <span className="w-12 text-center font-bold font-heading text-sm">{qty}</span>
                     <button
-                      className="p-2 text-muted-foreground hover:text-foreground hover:bg-secondary rounded-xl transition-colors"
-                      onClick={() => setQty((q) => q + 1)}
+                      className="p-2 text-muted-foreground hover:text-foreground hover:bg-secondary rounded-xl transition-colors disabled:opacity-40"
+                      onClick={() => setQty((q) => Math.min(product.stock ?? 1, q + 1))}
+                      disabled={qty >= (product.stock ?? 1)}
+                      title={qty >= (product.stock ?? 1) ? `Maximum stock available (${product.stock})` : undefined}
                     >
                       <Plus className="h-4 w-4" />
                     </button>

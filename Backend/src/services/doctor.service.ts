@@ -96,7 +96,7 @@ export class DoctorService {
     const cart = await Cart.findOne({ userId: new Types.ObjectId(doctorId) })
       .populate({
         path: 'items.productId',
-        select: 'name brand sellingPrice images',
+        select: 'name brand sellingPrice price stock images imageUrl',
       })
       .lean();
 
@@ -109,8 +109,9 @@ export class DoctorService {
         productId: item.productId._id.toString(),
         name: item.productId.name,
         brand: item.productId.brand || '',
-        imageUrl: item.productId.images?.[0] || '',
-        price: item.productId.sellingPrice,
+        imageUrl: item.productId.images?.[0] || item.productId.imageUrl || '',
+        price: item.productId.sellingPrice ?? item.productId.price ?? 0,
+        stock: item.productId.stock ?? 0,
         quantity: item.quantity,
       }));
   }
@@ -119,16 +120,29 @@ export class DoctorService {
     const product = await Product.findById(productId);
     if (!product) throw ApiError.notFound('Product not found.');
 
+    if (product.stock <= 0) {
+      throw ApiError.badRequest(`"${product.name}" is currently out of stock.`);
+    }
+
     let cart = await Cart.findOne({ userId: new Types.ObjectId(doctorId) });
     if (!cart) {
       cart = new Cart({ userId: new Types.ObjectId(doctorId), items: [] });
     }
 
     const itemIndex = cart.items.findIndex((item) => item.productId.toString() === productId);
+    const currentQty = itemIndex > -1 ? cart.items[itemIndex].quantity : 0;
+    const newTotalQty = currentQty + quantity;
+
+    if (newTotalQty > product.stock) {
+      throw ApiError.badRequest(
+        `Cannot add ${quantity} more unit(s). Only ${product.stock} unit(s) available in stock (${currentQty} already in your cart).`
+      );
+    }
+
     if (itemIndex > -1) {
-      cart.items[itemIndex].quantity += quantity;
+      cart.items[itemIndex].quantity = newTotalQty;
     } else {
-      cart.items.push({ productId: new Types.ObjectId(productId), quantity });
+      cart.items.push({ productId: new Types.ObjectId(productId), quantity: newTotalQty });
     }
 
     await cart.save();
@@ -139,12 +153,20 @@ export class DoctorService {
     const cart = await Cart.findOne({ userId: new Types.ObjectId(doctorId) });
     if (!cart) throw ApiError.notFound('Cart not found.');
 
-    const item = cart.items.find((item: any) => item._id.toString() === cartItemId);
-    if (!item) throw ApiError.notFound('Item not found in cart.');
+    const item = cart.items.find((i: any) => i._id.toString() === cartItemId);
+    if (!item) throw ApiError.notFound('Cart item not found.');
 
     if (quantity <= 0) {
       cart.items = cart.items.filter((item: any) => item._id.toString() !== cartItemId);
     } else {
+      const product = await Product.findById(item.productId);
+      if (!product) throw ApiError.notFound('Product not found.');
+
+      if (quantity > product.stock) {
+        throw ApiError.badRequest(
+          `Cannot set quantity to ${quantity}. Only ${product.stock} unit(s) available in stock.`
+        );
+      }
       item.quantity = quantity;
     }
 
@@ -166,23 +188,25 @@ export class DoctorService {
     const wishlist = await Wishlist.findOne({ userId: new Types.ObjectId(doctorId) })
       .populate({
         path: 'products',
-        select: 'name brand sellingPrice stock rating reviewCount images',
+        select: 'name brand sellingPrice price stock rating reviewCount images imageUrl',
       })
       .lean();
 
     if (!wishlist) return [];
 
-    return wishlist.products.map((p: any) => ({
-      wishlistItemId: p._id.toString(), // Using product ID as wishlist item ID for simplicity on frontend
-      productId: p._id.toString(),
-      name: p.name,
-      brand: p.brand || '',
-      price: p.sellingPrice,
-      stock: p.stock,
-      rating: p.rating,
-      reviewCount: p.reviewCount,
-      imageUrl: p.images?.[0] || '',
-    }));
+    return wishlist.products
+      .filter((p: any) => p)
+      .map((p: any) => ({
+        wishlistItemId: p._id.toString(),
+        productId: p._id.toString(),
+        name: p.name,
+        brand: p.brand || '',
+        price: p.sellingPrice ?? p.price ?? 0,
+        stock: p.stock ?? 0,
+        rating: p.rating ?? 5.0,
+        reviewCount: p.reviewCount ?? 0,
+        imageUrl: p.images?.[0] || p.imageUrl || '',
+      }));
   }
 
   async addToWishlist(doctorId: string, productId: string) {
@@ -194,7 +218,7 @@ export class DoctorService {
       wishlist = new Wishlist({ userId: new Types.ObjectId(doctorId), products: [] });
     }
 
-    if (!wishlist.products.includes(new Types.ObjectId(productId))) {
+    if (!wishlist.products.some((id: any) => id.toString() === productId)) {
       wishlist.products.push(new Types.ObjectId(productId));
       await wishlist.save();
     }

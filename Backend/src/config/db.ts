@@ -25,7 +25,3 @@ export const connectDB = async (): Promise<void> => {
   }
 };
 
-mongoose.connection.on('disconnected', () => {
-  logger.warn('MongoDB disconnected. Attempting reconnect...');
-  connectDB();
-});

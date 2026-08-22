@@ -1,7 +1,7 @@
 // ─── Centralized API Client ──────────────────────────────────────────────────
 // All backend calls go through this module so auth headers are attached automatically.
 
-const API_BASE = "http://localhost:5000/api/v1";
+const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000/api/v1";
 
 /** Get the stored access token */
 export function getAccessToken(): string | null {

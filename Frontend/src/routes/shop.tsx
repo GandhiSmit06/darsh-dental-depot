@@ -779,6 +779,28 @@ function InventorySection({ search }: { search?: string }) {
 
 function OrdersSection({ search }: { search?: string }) {
   const { data: orders, loading, error, retry } = useApiData<ShopOrder[]>(shopApi.getOrders);
+  const [updatingId, setUpdatingId] = useState<string | null>(null);
+
+  // Real-time asynchronous live polling every 4 seconds (like Zomato/Swiggy merchant console)
+  useEffect(() => {
+    const interval = setInterval(() => {
+      retry();
+    }, 4000);
+    return () => clearInterval(interval);
+  }, [retry]);
+
+  const handleStatusChange = async (orderId: string, orderNumber: string, newStatus: string) => {
+    setUpdatingId(orderId);
+    try {
+      await shopApi.updateOrderStatus(orderId, newStatus);
+      toast.success(`Order ${orderNumber} is now "${newStatus.toUpperCase()}"!`);
+      retry();
+    } catch (err: any) {
+      toast.error(err.message || "Failed to update order status");
+    } finally {
+      setUpdatingId(null);
+    }
+  };
 
   const filteredOrders = orders?.filter((o) => {
     if (!search) return true;
@@ -790,32 +812,76 @@ function OrdersSection({ search }: { search?: string }) {
 
   return (
     <div className="space-y-5">
-      <h1 className="text-2xl font-bold">Orders</h1>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold">Orders Management</h1>
+          <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1.5">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+            </span>
+            Real-time live sync active (updates doctors instantly)
+          </p>
+        </div>
+        <Button variant="outline" size="sm" onClick={() => retry()} className="text-xs">
+          Refresh Orders
+        </Button>
+      </div>
+
       {loading ? <LoadingSpinner label="Loading orders..." /> : error ? <ErrorBanner onRetry={retry} /> : !filteredOrders.length ? <EmptyBanner label={search ? "No orders found matching your search." : "No orders yet"} /> : (
         <Card className="overflow-hidden">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Order</TableHead><TableHead>Customer</TableHead><TableHead>Items</TableHead>
-                <TableHead>Total</TableHead><TableHead>Status</TableHead><TableHead>Date</TableHead><TableHead></TableHead>
+                <TableHead>Order #</TableHead>
+                <TableHead>Customer / Clinic</TableHead>
+                <TableHead>Items</TableHead>
+                <TableHead>Total Amount</TableHead>
+                <TableHead>Current Status</TableHead>
+                <TableHead>Change Status</TableHead>
+                <TableHead>Date</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filteredOrders.map((o) => (
-                <TableRow key={o._id}>
-                  <TableCell className="font-mono">{o.orderId}</TableCell>
-                  <TableCell>{o.customerName}</TableCell>
-                  <TableCell>{o.itemCount}</TableCell>
-                  <TableCell>₹{o.total.toFixed(2)}</TableCell>
-                  <TableCell><StatusBadge status={o.status as "Pending" | "Processing" | "Shipped" | "Delivered" | "Cancelled"} /></TableCell>
-                  <TableCell className="text-muted-foreground">{o.date}</TableCell>
+                <TableRow key={o._id} className="hover:bg-muted/40 transition-colors">
+                  <TableCell className="font-mono font-bold text-xs text-primary">{o.orderId}</TableCell>
                   <TableCell>
-                    <Button size="sm" variant="outline" onClick={() => {
+                    <div className="font-semibold text-sm">{o.customerName}</div>
+                    {o.customerEmail && <div className="text-[11px] text-muted-foreground">{o.customerEmail}</div>}
+                  </TableCell>
+                  <TableCell>{o.itemCount} items</TableCell>
+                  <TableCell className="font-bold text-foreground">₹{o.total.toFixed(2)}</TableCell>
+                  <TableCell>
+                    <StatusBadge status={o.status} />
+                  </TableCell>
+                  <TableCell>
+                    <Select
+                      value={o.status.toLowerCase()}
+                      disabled={updatingId === o._id}
+                      onValueChange={(val) => handleStatusChange(o._id, o.orderId, val)}
+                    >
+                      <SelectTrigger className="h-8 w-38 text-xs font-semibold rounded-xl bg-background border-border/80 shadow-2xs">
+                        <SelectValue placeholder="Update status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="pending">🟡 Pending</SelectItem>
+                        <SelectItem value="processing">⚙️ Processing (Packing)</SelectItem>
+                        <SelectItem value="shipped">🚚 Shipped (Out for delivery)</SelectItem>
+                        <SelectItem value="delivered">🟢 Delivered (Completed)</SelectItem>
+                        <SelectItem value="cancelled">🔴 Cancelled</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </TableCell>
+                  <TableCell className="text-xs text-muted-foreground">{o.date}</TableCell>
+                  <TableCell className="text-right">
+                    <Button size="sm" variant="outline" className="h-8 text-xs px-2.5" onClick={() => {
                       shopApi.getOrderInvoice(o._id)
-                        .then(() => toast.success("Invoice downloaded"))
-                        .catch(() => toast.error("Failed to download invoice"));
+                        .then(() => toast.success("Invoice generated successfully"))
+                        .catch(() => toast.error("Failed to generate invoice"));
                     }}>
-                      <FileText className="h-3.5 w-3.5 mr-1" />Invoice
+                      <FileText className="h-3.5 w-3.5 mr-1 text-primary" />Invoice
                     </Button>
                   </TableCell>
                 </TableRow>

@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState, useEffect, useCallback, useRef } from "react";
 import {
   LayoutDashboard, ShoppingCart, Heart, ShoppingBag, Bell, Settings, Package,
-  CheckCircle2, Truck, Plus, Minus, Trash2, Loader2
+  CheckCircle2, Truck, Plus, Minus, Trash2, Loader2, Phone, MapPin, Clock, Sparkles, RefreshCw
 } from "lucide-react";
 import { DashboardLayout, type NavItem } from "@/components/dashboard/DashboardLayout";
 import { StatCard, StatusBadge } from "@/components/dashboard/widgets";
@@ -447,6 +447,33 @@ function OrdersSection() {
   const activeOrder = useApiData<DoctorActiveOrder | null>(doctorApi.getActiveOrder);
   const history = useApiData<DoctorOrderHistoryItem[]>(doctorApi.getOrderHistory);
   const [isCanceling, setIsCanceling] = useState(false);
+  const previousStatusRef = useRef<string | null>(null);
+
+  // Real-time asynchronous live polling every 3 seconds (like Zomato / Swiggy live delivery)
+  useEffect(() => {
+    const interval = setInterval(() => {
+      activeOrder.retry();
+      history.retry();
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [activeOrder.retry, history.retry]);
+
+  // Trigger real-time notifications on status transition
+  useEffect(() => {
+    if (activeOrder.data?.status) {
+      const current = activeOrder.data.status.toLowerCase();
+      if (previousStatusRef.current && previousStatusRef.current !== current) {
+        if (current === "processing") {
+          toast.info("⚙️ Darsh Dental Depot is now packaging your supplies!");
+        } else if (current === "shipped") {
+          toast.success("🛵 Out for Delivery! Courier is on the way to your clinic in Vadodara.");
+        } else if (current === "delivered") {
+          toast.success("🎉 Order delivered successfully to your clinic!");
+        }
+      }
+      previousStatusRef.current = current;
+    }
+  }, [activeOrder.data?.status]);
 
   const handleCancelOrder = async (id: string) => {
     if (!confirm("Are you sure you want to cancel this order?")) return;
@@ -464,88 +491,293 @@ function OrdersSection() {
   };
 
   const stages = [
-    { label: "Ordered", icon: CheckCircle2 },
-    { label: "Processing", icon: Package },
-    { label: "Shipped", icon: Truck },
-    { label: "Delivered", icon: CheckCircle2 },
+    { key: "pending", label: "Order Placed", desc: "Registered at Depot", icon: CheckCircle2 },
+    { key: "processing", label: "Preparing Supplies", desc: "Packed at Kevdabaug", icon: Package },
+    { key: "shipped", label: "Out for Delivery", desc: "En route in Vadodara", icon: Truck },
+    { key: "delivered", label: "Delivered", desc: "Handed over to Clinic", icon: CheckCircle2 },
   ];
 
   const getProgressWidth = (status?: string) => {
-    switch (status) {
-      case "pending": return "0%";
-      case "processing": return "33%";
-      case "shipped": return "66%";
+    const s = (status || "pending").toLowerCase();
+    switch (s) {
+      case "pending": return "12%";
+      case "processing": return "40%";
+      case "shipped": return "72%";
       case "delivered": return "100%";
       default: return "0%";
     }
   };
 
   const isDone = (status: string | undefined, index: number) => {
-    const s = status || "pending";
+    const s = (status || "pending").toLowerCase();
     const map: Record<string, number> = { pending: 0, processing: 1, shipped: 2, delivered: 3 };
     return (map[s] || 0) >= index;
   };
 
+  const getStatusHeadline = (status?: string) => {
+    const s = (status || "pending").toLowerCase();
+    switch (s) {
+      case "pending":
+        return {
+          title: "Order Received — Awaiting Depot Confirmation",
+          description: "Darsh Dental Depot has received your clinic's request and is preparing the dispatch schedule.",
+          color: "text-amber-500",
+          badge: "bg-amber-500/10 text-amber-600 border-amber-500/20",
+        };
+      case "processing":
+        return {
+          title: "Packaging Supplies at Kevdabaug Depot",
+          description: "Your materials are being safely inspected, packed, and sanitized for delivery.",
+          color: "text-blue-500",
+          badge: "bg-blue-500/10 text-blue-600 border-blue-500/20",
+        };
+      case "shipped":
+        return {
+          title: "Out for Delivery in Vadodara!",
+          description: "Delivery courier is actively en route from Kevdabaug Depot to your clinic.",
+          color: "text-emerald-500",
+          badge: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
+        };
+      case "delivered":
+        return {
+          title: "Delivered to Your Clinic! 🎉",
+          description: "Package safely delivered to your dental clinic. Thank you for choosing Darsh Dental Depot!",
+          color: "text-emerald-600",
+          badge: "bg-emerald-500/10 text-emerald-700 border-emerald-500/30",
+        };
+      case "cancelled":
+        return {
+          title: "Order Cancelled",
+          description: "This order was cancelled.",
+          color: "text-rose-500",
+          badge: "bg-rose-500/10 text-rose-600 border-rose-500/20",
+        };
+      default:
+        return {
+          title: "Processing Order",
+          description: "Updating order tracking details...",
+          color: "text-primary",
+          badge: "bg-primary/10 text-primary border-primary/20",
+        };
+    }
+  };
+
+  const orderStatusInfo = getStatusHeadline(activeOrder.data?.status);
+
   return (
-    <div className="space-y-5">
-      <h1 className="text-2xl font-bold">Order history</h1>
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold font-heading">Order History & Live Tracking</h1>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Real-time delivery updates from Darsh Dental Depot to your clinic
+          </p>
+        </div>
+        <Button variant="outline" size="sm" onClick={() => { activeOrder.retry(); history.retry(); }} className="text-xs">
+          <RefreshCw className="h-3.5 w-3.5 mr-1.5" /> Refresh
+        </Button>
+      </div>
 
-      {activeOrder.loading ? <LoadingSpinner /> : activeOrder.error ? <ErrorBanner onRetry={activeOrder.retry} /> : activeOrder.data && (
-        <Card className="p-5">
-          <div className="flex items-center justify-between mb-5">
-            <div>
-              <div className="text-sm text-muted-foreground">Order #{activeOrder.data.orderId}</div>
-              <div className="font-semibold">{activeOrder.data.itemCount} items · ₹{activeOrder.data.total.toFixed(2)}</div>
+      {/* Swiggy / Zomato Style Live Delivery Tracker Card */}
+      {activeOrder.loading && !activeOrder.data ? (
+        <LoadingSpinner label="Connecting to live dispatch stream..." />
+      ) : activeOrder.error ? (
+        <ErrorBanner onRetry={activeOrder.retry} />
+      ) : activeOrder.data && (
+        <Card className="overflow-hidden border-2 border-primary/20 bg-gradient-to-b from-card via-background to-primary/5 rounded-3xl shadow-lg">
+          {/* Top Live Bar */}
+          <div className="bg-primary/10 px-5 py-3 border-b border-primary/15 flex items-center justify-between flex-wrap gap-2">
+            <div className="flex items-center gap-2">
+              <span className="relative flex h-2.5 w-2.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+              </span>
+              <span className="text-xs font-bold text-foreground uppercase tracking-wider">
+                LIVE DISPATCH TRACKING
+              </span>
+              <span className="text-xs text-muted-foreground hidden sm:inline">• Same-Day Vadodara Delivery</span>
             </div>
-            <div className="flex items-center gap-3">
-              <Badge>{activeOrder.data.status}</Badge>
-              {(activeOrder.data.status === "pending" || activeOrder.data.status === "processing") && (
-                <Button 
-                  variant="destructive" 
-                  size="sm" 
-                  disabled={isCanceling} 
-                  onClick={() => handleCancelOrder(activeOrder.data!.id)}
-                >
-                  {isCanceling ? <Loader2 className="h-4 w-4 animate-spin" /> : "Cancel Order"}
-                </Button>
-              )}
-            </div>
+
+            <Badge className={`${orderStatusInfo.badge} font-bold text-xs capitalize py-1 px-3`}>
+              {activeOrder.data.status}
+            </Badge>
           </div>
-          <div className="relative flex items-center justify-between">
-            <div className="absolute top-4 left-4 right-4 h-0.5 bg-border" />
-            <div className="absolute top-4 left-4 h-0.5 bg-primary transition-all duration-500" style={{ width: `calc(${getProgressWidth(activeOrder.data.status)} - 1rem)` }} />
-            {stages.map((s, i) => (
-              <div key={s.label} className="relative flex flex-col items-center gap-2 z-10">
-                <div className={`h-9 w-9 rounded-full grid place-items-center border-2 transition-colors duration-500 ${isDone(activeOrder.data?.status, i) ? "bg-primary border-primary text-primary-foreground" : "bg-card border-border text-muted-foreground"}`}>
-                  <s.icon className="h-4 w-4" />
-                </div>
-                <span className="text-xs">{s.label}</span>
+
+          <div className="p-6 space-y-6">
+            {/* Header with Order ID & Cancel Option */}
+            <div className="flex items-start justify-between flex-wrap gap-4">
+              <div>
+                <span className="text-xs font-mono font-bold text-primary block">
+                  ORDER #{activeOrder.data.orderId}
+                </span>
+                <h3 className={`text-lg sm:text-xl font-extrabold ${orderStatusInfo.color} mt-0.5`}>
+                  {orderStatusInfo.title}
+                </h3>
+                <p className="text-xs text-muted-foreground mt-1 max-w-lg">
+                  {orderStatusInfo.description}
+                </p>
               </div>
-            ))}
+
+              <div className="flex items-center gap-3">
+                <div className="text-right">
+                  <div className="text-xs text-muted-foreground">{activeOrder.data.itemCount} Items</div>
+                  <div className="text-lg font-black text-foreground">₹{activeOrder.data.total.toFixed(2)}</div>
+                </div>
+
+                {(activeOrder.data.status.toLowerCase() === "pending" || activeOrder.data.status.toLowerCase() === "processing") && (
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    disabled={isCanceling} 
+                    onClick={() => handleCancelOrder(activeOrder.data!.id)}
+                    className="text-destructive border-destructive/30 hover:bg-destructive/10 text-xs h-9"
+                  >
+                    {isCanceling ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" /> : null}
+                    Cancel Order
+                  </Button>
+                )}
+              </div>
+            </div>
+
+            {/* Stepper Progress Bar */}
+            <div className="py-2">
+              <div className="relative flex items-center justify-between max-w-2xl mx-auto">
+                {/* Background line */}
+                <div className="absolute top-5 left-6 right-6 h-1 bg-border/80 rounded-full" />
+                {/* Active animated fill line */}
+                <div 
+                  className="absolute top-5 left-6 h-1 bg-gradient-to-r from-primary via-sky-500 to-emerald-500 rounded-full transition-all duration-700 ease-out" 
+                  style={{ width: `calc(${getProgressWidth(activeOrder.data.status)} - 2rem)` }} 
+                />
+
+                {stages.map((s, i) => {
+                  const done = isDone(activeOrder.data?.status, i);
+                  const isCurrent = (activeOrder.data?.status || "pending").toLowerCase() === s.key;
+                  return (
+                    <div key={s.key} className="relative flex flex-col items-center gap-2 z-10 text-center w-28">
+                      <div 
+                        className={`h-11 w-11 rounded-2xl grid place-items-center border-2 transition-all duration-500 ${
+                          done 
+                            ? "bg-gradient-to-br from-primary to-sky-600 border-primary text-white shadow-md shadow-primary/20 scale-105" 
+                            : "bg-card border-border text-muted-foreground"
+                        } ${isCurrent ? "ring-4 ring-primary/20 animate-pulse" : ""}`}
+                      >
+                        <s.icon className="h-5 w-5" />
+                      </div>
+                      <div>
+                        <span className={`text-xs font-bold block ${done ? "text-foreground" : "text-muted-foreground"}`}>
+                          {s.label}
+                        </span>
+                        <span className="text-[10px] text-muted-foreground leading-tight hidden sm:block">
+                          {s.desc}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Shop Depot Contact & Destination Info Card */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-3 border-t border-border/60">
+              <div className="p-3.5 rounded-2xl bg-muted/40 border border-border/60 flex items-start gap-3">
+                <div className="h-9 w-9 rounded-xl bg-primary/10 text-primary grid place-items-center shrink-0">
+                  <MapPin className="h-4 w-4" />
+                </div>
+                <div className="text-xs">
+                  <span className="font-bold text-foreground block">Dispatched From:</span>
+                  <p className="text-muted-foreground">Darsh Dental Depot, Kevdabaug, Vadodara</p>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">Vraj Vihar Complex, Char Rasta</p>
+                </div>
+              </div>
+
+              <div className="p-3.5 rounded-2xl bg-muted/40 border border-border/60 flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <div className="h-9 w-9 rounded-xl bg-emerald-500/10 text-emerald-600 grid place-items-center shrink-0">
+                    <Phone className="h-4 w-4" />
+                  </div>
+                  <div className="text-xs">
+                    <span className="font-bold text-foreground block">Have a Question?</span>
+                    <p className="text-muted-foreground">Call Shop Owner (Uncle)</p>
+                  </div>
+                </div>
+                <a
+                  href="tel:+919727076119"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-xs transition-colors"
+                >
+                  <Phone className="h-3 w-3" /> +91 97270 76119
+                </a>
+              </div>
+            </div>
+
+            {/* Items inside this order breakdown */}
+            {activeOrder.data.products && activeOrder.data.products.length > 0 && (
+              <div className="space-y-2 pt-2 border-t border-border/60">
+                <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider block">
+                  Items in this order:
+                </span>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {activeOrder.data.products.map((item, idx) => (
+                    <div key={idx} className="flex items-center gap-3 p-2.5 rounded-xl bg-background border border-border/80">
+                      {item.image ? (
+                        <img src={item.image} alt={item.name} className="h-10 w-10 rounded-lg object-cover border shrink-0" />
+                      ) : (
+                        <div className="h-10 w-10 rounded-lg bg-muted grid place-items-center text-muted-foreground shrink-0">
+                          <Package className="h-5 w-5" />
+                        </div>
+                      )}
+                      <div className="min-w-0 flex-1">
+                        <div className="text-xs font-semibold truncate text-foreground">{item.name}</div>
+                        <div className="text-[11px] text-muted-foreground">{item.brand} • Qty: {item.quantity}</div>
+                      </div>
+                      <div className="text-xs font-bold text-foreground">
+                        ₹{(item.price * item.quantity).toFixed(2)}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </Card>
       )}
 
-      {history.loading ? <LoadingSpinner /> : history.error ? <ErrorBanner onRetry={history.retry} /> : !history.data?.length ? <EmptyBanner label="No past orders" /> : (
-        <Card className="overflow-hidden">
-          <Table>
-            <TableHeader>
-              <TableRow><TableHead>Order</TableHead><TableHead>Items</TableHead><TableHead>Total</TableHead><TableHead>Status</TableHead><TableHead>Date</TableHead></TableRow>
-            </TableHeader>
-            <TableBody>
-              {history.data.map((o) => (
-                <TableRow key={o.orderId}>
-                  <TableCell className="font-mono">{o.orderId}</TableCell>
-                  <TableCell>{o.itemCount}</TableCell>
-                  <TableCell>₹{o.total.toFixed(2)}</TableCell>
-                  <TableCell><StatusBadge status={o.status as any} /></TableCell>
-                  <TableCell className="text-muted-foreground">{o.date}</TableCell>
+      {/* Past Orders Table */}
+      <div className="space-y-3 pt-2">
+        <h2 className="text-lg font-bold font-heading">All Order Records</h2>
+        {history.loading ? (
+          <LoadingSpinner label="Loading records..." />
+        ) : history.error ? (
+          <ErrorBanner onRetry={history.retry} />
+        ) : !history.data?.length ? (
+          <EmptyBanner label="No past orders recorded" />
+        ) : (
+          <Card className="overflow-hidden">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Order #</TableHead>
+                  <TableHead>Items</TableHead>
+                  <TableHead>Total Amount</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Date</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </Card>
-      )}
+              </TableHeader>
+              <TableBody>
+                {history.data.map((o) => (
+                  <TableRow key={o.orderId} className="hover:bg-muted/40 transition-colors">
+                    <TableCell className="font-mono font-bold text-xs text-primary">{o.orderId}</TableCell>
+                    <TableCell>{o.itemCount} items</TableCell>
+                    <TableCell className="font-bold text-foreground">₹{o.total.toFixed(2)}</TableCell>
+                    <TableCell><StatusBadge status={o.status as any} /></TableCell>
+                    <TableCell className="text-muted-foreground text-xs">{o.date}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </Card>
+        )}
+      </div>
     </div>
   );
 }

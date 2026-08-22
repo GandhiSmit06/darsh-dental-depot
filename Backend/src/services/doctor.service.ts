@@ -212,12 +212,23 @@ export class DoctorService {
 
   // ── Orders ───────────────────────────────────────────────────────────────
   async getActiveOrder(doctorId: string) {
-    const order = await Order.findOne({
+    let order = await Order.findOne({
       customerId: new Types.ObjectId(doctorId),
       orderStatus: { $nin: ['delivered', 'cancelled'] },
     })
+      .populate('products.productId', 'name images brand')
       .sort({ createdAt: -1 })
       .lean();
+
+    // If no active order, check for the most recent order so delivered status can still be tracked
+    if (!order) {
+      order = await Order.findOne({
+        customerId: new Types.ObjectId(doctorId),
+      })
+        .populate('products.productId', 'name images brand')
+        .sort({ createdAt: -1 })
+        .lean();
+    }
 
     if (!order) return null;
 
@@ -227,6 +238,14 @@ export class DoctorService {
       itemCount: order.products.reduce((sum, item) => sum + item.quantity, 0),
       total: order.totalPrice,
       status: order.orderStatus,
+      products: order.products.map((p: any) => ({
+        name: p.productId?.name || 'Dental Material',
+        brand: p.productId?.brand || '',
+        image: p.productId?.images?.[0] || '',
+        quantity: p.quantity,
+        price: p.price,
+      })),
+      createdAt: order.createdAt,
     };
   }
 

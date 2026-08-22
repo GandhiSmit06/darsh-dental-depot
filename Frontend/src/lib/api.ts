@@ -316,6 +316,23 @@ export const shopApi = {
   createProduct: (data: CreateProductPayload) => apiFetch<ApiOk<ShopProduct>>("/products", { method: "POST", body: JSON.stringify(data) }),
   updateProduct: (id: string, data: Partial<CreateProductPayload>) => apiFetch<ApiOk<ShopProduct>>(`/products/${id}`, { method: "PUT", body: JSON.stringify(data) }),
   deleteProduct: (id: string) => apiFetch<ApiOk<null>>(`/products/${id}`, { method: "DELETE" }),
+  updateOrderStatus: (id: string, status: string) =>
+    apiFetch<ApiOk<any>>(`/orders/${id}/status`, {
+      method: "PUT",
+      body: JSON.stringify({ status: status.toLowerCase() }),
+    }),
+};
+
+export const orderApi = {
+  updateStatus: (id: string, status: string) =>
+    apiFetch<ApiOk<any>>(`/orders/${id}/status`, {
+      method: "PUT",
+      body: JSON.stringify({ status: status.toLowerCase() }),
+    }),
+  cancelOrder: (id: string) =>
+    apiFetch<ApiOk<any>>(`/orders/${id}/cancel`, {
+      method: "POST",
+    }),
 };
 
 // ─── Doctor-specific API calls ──────────────────────────────────────────────
@@ -364,6 +381,14 @@ export interface DoctorActiveOrder {
   itemCount: number;
   total: number;
   status: string;
+  products?: Array<{
+    name: string;
+    brand: string;
+    image?: string;
+    quantity: number;
+    price: number;
+  }>;
+  createdAt?: string;
 }
 
 export interface DoctorOrderHistoryItem {

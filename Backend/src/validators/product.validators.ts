@@ -18,8 +18,9 @@ export const createProductValidator = [
     .notEmpty().withMessage('Product name is required')
     .isLength({ max: 200 }).withMessage('Name too long'),
   body('category')
-    .notEmpty().withMessage('Category is required')
-    .isIn(CATEGORIES).withMessage('Invalid category'),
+    .trim()
+    .notEmpty().withMessage('Category is required'),
+  body('brand').optional().trim(),
   body('description')
     .trim()
     .notEmpty().withMessage('Description is required'),
@@ -48,7 +49,8 @@ export const createProductValidator = [
 
 export const updateProductValidator = [
   body('name').optional().trim().isLength({ max: 200 }),
-  body('category').optional().isIn(CATEGORIES).withMessage('Invalid category'),
+  body('category').optional().trim().notEmpty().withMessage('Category cannot be empty'),
+  body('brand').optional().trim(),
   body('stock').optional().isInt({ min: 0 }).withMessage('Stock must be non-negative'),
   body('sellingPrice').optional().isFloat({ min: 0 }),
   body('discountPrice').optional().isFloat({ min: 0 }),

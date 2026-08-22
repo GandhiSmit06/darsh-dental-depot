@@ -39,9 +39,11 @@ import {
 // Categories & brands for the Add Product form
 const formCategories = [
   "Composites", "Impression Materials", "Endodontics", "Orthodontics",
-  "Instruments", "Disposables", "Cements & Adhesives", "Whitening",
+  "Instruments", "Disposables", "Cements & Adhesives", "Whitening", "Other",
 ];
-const formBrands = ["3M ESPE", "Ivoclar", "Dentsply Sirona", "GC", "Kerr", "Septodont", "VOCO"];
+const formBrands = [
+  "3M ESPE", "Ivoclar", "Dentsply Sirona", "GC", "Kerr", "Septodont", "VOCO", "Other",
+];
 
 export const Route = createFileRoute("/shop")({
   head: () => ({ meta: [{ title: "Shop Owner Dashboard — Darsh Dental Depot" }] }),
@@ -235,13 +237,47 @@ function DashboardSection() {
 function ProductForm({ onClose, onSuccess, initialData }: { onClose: () => void, onSuccess: () => void, initialData?: any }) {
   const [loading, setLoading] = useState(false);
 
+  // Check if initialData has a category/brand in predefined lists or custom
+  const isPredefinedCategory = initialData?.category ? formCategories.slice(0, -1).includes(initialData.category) : true;
+  const initialCategoryVal = initialData?.category
+    ? (isPredefinedCategory ? initialData.category : "Other")
+    : formCategories[0];
+  const [category, setCategory] = useState<string>(initialCategoryVal);
+  const [customCategory, setCustomCategory] = useState<string>(
+    initialData?.category && !isPredefinedCategory ? initialData.category : ""
+  );
+
+  const isPredefinedBrand = initialData?.brand ? formBrands.slice(0, -1).includes(initialData.brand) : true;
+  const initialBrandVal = initialData?.brand
+    ? (isPredefinedBrand ? initialData.brand : "Other")
+    : formBrands[0];
+  const [brand, setBrand] = useState<string>(initialBrandVal);
+  const [customBrand, setCustomBrand] = useState<string>(
+    initialData?.brand && !isPredefinedBrand ? initialData.brand : ""
+  );
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
+    
+    // Resolve final category and brand
+    const finalCategory = category === "Other" 
+      ? customCategory.trim() 
+      : category;
+
+    if (!finalCategory) {
+      toast.error("Please enter a category name");
+      return;
+    }
+
+    const finalBrand = brand === "Other" 
+      ? customBrand.trim() 
+      : (brand || "");
+
     const payload = {
       name: formData.get("name") as string,
-      category: formData.get("category") as string,
-      brand: formData.get("brand") as string,
+      category: finalCategory,
+      brand: finalBrand,
       price: Number(formData.get("price")),
       sellingPrice: Number(formData.get("price")), // mapping Price to sellingPrice
       purchasePrice: Number(formData.get("purchasePrice") || formData.get("price")),
@@ -274,20 +310,65 @@ function ProductForm({ onClose, onSuccess, initialData }: { onClose: () => void,
   return (
     <form className="grid grid-cols-2 gap-3 max-h-[70vh] overflow-y-auto px-1 pb-1" onSubmit={handleSubmit}>
       <div className="col-span-2"><Label className="mb-1.5">Name *</Label><Input name="name" defaultValue={initialData?.name} required /></div>
+      
       <div>
         <Label className="mb-1.5">Category *</Label>
-        <Select name="category" required defaultValue={initialData?.category || formCategories[0]}>
-          <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
-          <SelectContent>{formCategories.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
+        <Select value={category} onValueChange={(val) => setCategory(val)}>
+          <SelectTrigger><SelectValue placeholder="Select Category" /></SelectTrigger>
+          <SelectContent>
+            {formCategories.map((c) => (
+              <SelectItem key={c} value={c}>
+                {c === "Other" ? "✨ Other (Specify custom category)" : c}
+              </SelectItem>
+            ))}
+          </SelectContent>
         </Select>
       </div>
+
       <div>
         <Label className="mb-1.5">Brand</Label>
-        <Select name="brand" defaultValue={initialData?.brand || formBrands[0]}>
-          <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
-          <SelectContent>{formBrands.map((b) => <SelectItem key={b} value={b}>{b}</SelectItem>)}</SelectContent>
+        <Select value={brand} onValueChange={(val) => setBrand(val)}>
+          <SelectTrigger><SelectValue placeholder="Select Brand" /></SelectTrigger>
+          <SelectContent>
+            {formBrands.map((b) => (
+              <SelectItem key={b} value={b}>
+                {b === "Other" ? "✨ Other (Specify custom brand)" : b}
+              </SelectItem>
+            ))}
+          </SelectContent>
         </Select>
       </div>
+
+      {/* Conditionally rendered Custom Category Input */}
+      {category === "Other" && (
+        <div className="col-span-2 sm:col-span-1 bg-primary/5 p-2.5 rounded-xl border border-primary/20">
+          <Label className="mb-1.5 text-primary font-semibold block text-xs">Enter Custom Category Name *</Label>
+          <Input
+            value={customCategory}
+            onChange={(e) => setCustomCategory(e.target.value)}
+            placeholder="e.g. Alginates, Prosthodontics..."
+            required
+            autoFocus
+            className="bg-background text-sm"
+          />
+        </div>
+      )}
+
+      {/* Conditionally rendered Custom Brand Input */}
+      {brand === "Other" && (
+        <div className="col-span-2 sm:col-span-1 bg-primary/5 p-2.5 rounded-xl border border-primary/20">
+          <Label className="mb-1.5 text-primary font-semibold block text-xs">Enter Custom Brand Name *</Label>
+          <Input
+            value={customBrand}
+            onChange={(e) => setCustomBrand(e.target.value)}
+            placeholder="e.g. Zhermack, Kulzer, Mani..."
+            required
+            autoFocus
+            className="bg-background text-sm"
+          />
+        </div>
+      )}
+
       <div><Label className="mb-1.5">SKU *</Label><Input name="SKU" defaultValue={initialData?.sku || initialData?.SKU} required placeholder="e.g. COMP-001" /></div>
       <div><Label className="mb-1.5">Stock *</Label><Input name="stock" defaultValue={initialData?.stock} type="number" required min="0" /></div>
       

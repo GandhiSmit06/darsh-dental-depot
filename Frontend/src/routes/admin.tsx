@@ -581,6 +581,24 @@ function AdminDashboard() {
       </div>
     );
   }
+
+  return (
+    <DashboardLayout
+      title="Admin Control Hub"
+      role="Admin"
+      items={items}
+      active={active}
+      onChange={setActive}
+    >
+      {active === "dashboard" && <Overview />}
+      {active === "users" && <UsersSection />}
+      {active === "products" && <ProductsSection />}
+      {active === "orders" && <OrdersSection />}
+      {active === "analytics" && <AnalyticsSection />}
+      {active === "reports" && <ReportsSection />}
+      {active === "settings" && <SettingsSection />}
+    </DashboardLayout>
+  );
 }
 
 // Helper component for loading state in tables

@@ -479,3 +479,49 @@ export const adminApi = {
   deleteUser: (id: string) => apiFetch<ApiOk<{ id: string }>>(`/admin/users/${id}`, { method: "DELETE" }),
   updateUserStatus: (id: string, data: { isActive?: boolean; isVerified?: boolean }) => apiFetch<ApiOk<User>>(`/admin/users/${id}/status`, { method: "PATCH", body: JSON.stringify(data) }),
 };
+
+export const uploadApi = {
+  uploadImage: async (file: File, folder = "products"): Promise<string> => {
+    const token = getAccessToken();
+    const formData = new FormData();
+    formData.append("image", file);
+
+    const headers: Record<string, string> = {};
+    if (token) headers["Authorization"] = `Bearer ${token}`;
+
+    const res = await fetch(`${API_BASE}/upload/image?folder=${folder}`, {
+      method: "POST",
+      headers,
+      body: formData,
+      credentials: "include",
+    });
+
+    const body = await res.json();
+    if (!res.ok) {
+      throw new ApiError(res.status, body.message || "Failed to upload image");
+    }
+    return body.data?.url;
+  },
+
+  uploadMultiple: async (files: File[], folder = "products"): Promise<string[]> => {
+    const token = getAccessToken();
+    const formData = new FormData();
+    files.forEach((f) => formData.append("images", f));
+
+    const headers: Record<string, string> = {};
+    if (token) headers["Authorization"] = `Bearer ${token}`;
+
+    const res = await fetch(`${API_BASE}/upload/images?folder=${folder}`, {
+      method: "POST",
+      headers,
+      body: formData,
+      credentials: "include",
+    });
+
+    const body = await res.json();
+    if (!res.ok) {
+      throw new ApiError(res.status, body.message || "Failed to upload images");
+    }
+    return body.data?.urls || [];
+  },
+};

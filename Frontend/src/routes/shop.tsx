@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState, useEffect, useCallback, useRef } from "react";
 import {
   LayoutDashboard, Package, Warehouse, ShoppingBag, Users, BarChart3, Bell, Settings,
-  DollarSign, TrendingUp, Plus, FileText, Loader2, Trash2, Edit
+  DollarSign, TrendingUp, Plus, FileText, Loader2, Trash2, Edit, UploadCloud, Image as ImageIcon, X
 } from "lucide-react";
 import {
   Bar, BarChart, CartesianGrid, Cell, Legend, Line, LineChart, Pie, PieChart,
@@ -25,6 +25,7 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import {
   shopApi,
+  uploadApi,
   type ShopStats,
   type ShopProduct,
   type ShopInventoryItem,
@@ -276,6 +277,51 @@ function ProductForm({ onClose, onSuccess, initialData }: { onClose: () => void,
     ? Number(manualSellingPrice) 
     : autoSellingPrice;
 
+  // Product Images state
+  const [images, setImages] = useState<string[]>(
+    initialData?.images && initialData.images.length > 0
+      ? initialData.images
+      : initialData?.imageUrl
+      ? [initialData.imageUrl]
+      : []
+  );
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [imageUrlInput, setImageUrlInput] = useState("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    setUploadingImage(true);
+    try {
+      const fileList = Array.from(files);
+      const uploadedUrls = await uploadApi.uploadMultiple(fileList, "products");
+      setImages((prev) => [...prev, ...uploadedUrls]);
+      toast.success(`${uploadedUrls.length} image(s) uploaded successfully!`);
+    } catch (err: any) {
+      toast.error(err.message || "Failed to upload image");
+    } finally {
+      setUploadingImage(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
+
+  const handleAddImageUrl = () => {
+    if (!imageUrlInput.trim()) return;
+    if (!imageUrlInput.startsWith("http://") && !imageUrlInput.startsWith("https://")) {
+      toast.error("Please enter a valid image URL starting with http:// or https://");
+      return;
+    }
+    setImages((prev) => [...prev, imageUrlInput.trim()]);
+    setImageUrlInput("");
+    toast.success("Image URL added!");
+  };
+
+  const handleRemoveImage = (indexToRemove: number) => {
+    setImages((prev) => prev.filter((_, i) => i !== indexToRemove));
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
@@ -304,6 +350,8 @@ function ProductForm({ onClose, onSuccess, initialData }: { onClose: () => void,
       sellingPrice: computedPrice,
       purchasePrice: numPurchase > 0 ? numPurchase : computedPrice,
       stock: Number(formData.get("stock") || 1),
+      images: images,
+      imageUrl: images[0] || "",
       hsnCode: formData.get("hsnCode") as string,
       gstPercentage: numGst,
       batchNumber: formData.get("batchNumber") as string,
@@ -482,14 +530,113 @@ function ProductForm({ onClose, onSuccess, initialData }: { onClose: () => void,
         </div>
       </div>
 
+      {/* Product Images Upload Section */}
+      <div className="col-span-2 space-y-2.5 border border-border/80 rounded-2xl p-3.5 bg-muted/20">
+        <div className="flex items-center justify-between">
+          <Label className="font-semibold text-xs flex items-center gap-1.5">
+            <ImageIcon className="h-4 w-4 text-primary" /> Product Images
+          </Label>
+          <span className="text-[11px] text-muted-foreground">
+            {images.length} {images.length === 1 ? "image" : "images"} attached
+          </span>
+        </div>
+
+        {/* Upload box & action buttons */}
+        <div className="flex flex-col sm:flex-row gap-2">
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleFileUpload}
+            accept="image/png, image/jpeg, image/webp, image/gif"
+            multiple
+            className="hidden"
+            id="product-image-file-input"
+          />
+          <Button
+            type="button"
+            variant="outline"
+            disabled={uploadingImage}
+            onClick={() => fileInputRef.current?.click()}
+            className="flex-1 border-dashed border-2 hover:border-primary hover:bg-primary/5 py-4 h-auto text-xs flex items-center justify-center gap-2"
+          >
+            {uploadingImage ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                <span>Uploading to Cloud Storage...</span>
+              </>
+            ) : (
+              <>
+                <UploadCloud className="h-4 w-4 text-primary" />
+                <span>Upload Photos from Device (JPG, PNG, WebP)</span>
+              </>
+            )}
+          </Button>
+
+          <div className="flex gap-1.5 sm:w-64">
+            <Input
+              value={imageUrlInput}
+              onChange={(e) => setImageUrlInput(e.target.value)}
+              placeholder="Or paste image URL"
+              className="text-xs h-9"
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  handleAddImageUrl();
+                }
+              }}
+            />
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              onClick={handleAddImageUrl}
+              className="text-xs h-9 px-3"
+            >
+              Add
+            </Button>
+          </div>
+        </div>
+
+        {/* Uploaded Images Preview Thumbnails */}
+        {images.length > 0 && (
+          <div className="flex flex-wrap gap-2.5 pt-2">
+            {images.map((imgUrl, idx) => (
+              <div
+                key={idx}
+                className="relative group rounded-xl overflow-hidden border border-border/80 bg-background shadow-xs w-20 h-20 flex-shrink-0"
+              >
+                <img
+                  src={imgUrl}
+                  alt={`Product ${idx + 1}`}
+                  className="w-full h-full object-cover"
+                />
+                {idx === 0 && (
+                  <span className="absolute bottom-0 inset-x-0 bg-primary/90 text-white text-[9px] font-bold text-center py-0.5 backdrop-blur-xs">
+                    Cover
+                  </span>
+                )}
+                <button
+                  type="button"
+                  onClick={() => handleRemoveImage(idx)}
+                  className="absolute top-1 right-1 bg-black/70 hover:bg-destructive text-white rounded-full p-1 transition-all opacity-90 group-hover:opacity-100 cursor-pointer"
+                  title="Remove image"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
       <div><Label className="mb-1.5 font-semibold text-xs">HSN Code (optional)</Label><Input name="hsnCode" defaultValue={initialData?.hsnCode} placeholder="e.g. 90184900" /></div>
       <div><Label className="mb-1.5 font-semibold text-xs">Batch Number (optional)</Label><Input name="batchNumber" defaultValue={initialData?.batchNumber} placeholder="e.g. BATCH-2026-01" /></div>
 
       <div className="col-span-2"><Label className="mb-1.5 font-semibold text-xs">Description *</Label><Textarea name="description" defaultValue={initialData?.description} rows={3} placeholder="Provide details, pack size, usage instructions..." required /></div>
       
       <div className="col-span-2 flex justify-end gap-2 mt-2">
-        <Button type="button" variant="outline" onClick={onClose} disabled={loading}>Cancel</Button>
-        <Button type="submit" disabled={loading} className="bg-gradient-to-r from-primary to-sky-600 text-white font-semibold">
+        <Button type="button" variant="outline" onClick={onClose} disabled={loading || uploadingImage}>Cancel</Button>
+        <Button type="submit" disabled={loading || uploadingImage} className="bg-gradient-to-r from-primary to-sky-600 text-white font-semibold">
           {loading ? "Saving..." : (initialData ? "Update Product" : "Save Product")}
         </Button>
       </div>
@@ -543,8 +690,14 @@ function ProductsSection({ search }: { search?: string }) {
               {filteredProducts.map((p) => (
                 <TableRow key={p._id}>
                   <TableCell className="flex items-center gap-3 min-w-[220px]">
-                    {p.imageUrl && <img src={p.imageUrl} alt="" className="h-9 w-9 rounded object-cover" />}
-                    <span className="font-medium">{p.name}</span>
+                    {(p.imageUrl || (p.images && p.images[0])) ? (
+                      <img src={p.imageUrl || (p.images && p.images[0])} alt="" className="h-10 w-10 rounded-lg object-cover border shadow-2xs flex-shrink-0" />
+                    ) : (
+                      <div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center text-muted-foreground border flex-shrink-0">
+                        <ImageIcon className="h-5 w-5" />
+                      </div>
+                    )}
+                    <span className="font-semibold text-foreground text-sm">{p.name}</span>
                   </TableCell>
                   <TableCell>{p.category}</TableCell>
                   <TableCell>{p.brand}</TableCell>

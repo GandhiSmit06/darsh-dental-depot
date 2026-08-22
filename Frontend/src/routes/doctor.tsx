@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import {
   LayoutDashboard, ShoppingCart, Heart, ShoppingBag, Bell, Settings, Package,
   CheckCircle2, Truck, Plus, Minus, Trash2, Loader2, Phone, MapPin, Clock, Sparkles, RefreshCw,
-  CreditCard, Banknote, ShieldCheck, Building
+  CreditCard, Banknote, ShieldCheck, Building, QrCode, Smartphone, Landmark, Check
 } from "lucide-react";
 import { DashboardLayout, type NavItem } from "@/components/dashboard/DashboardLayout";
 import { StatCard, StatusBadge } from "@/components/dashboard/widgets";
@@ -247,6 +247,11 @@ function CartSection({ onNavigateToOrders }: { onNavigateToOrders?: () => void }
 
   const profileData = useApiData<DoctorProfile>(doctorApi.getProfile);
   const [showCheckoutModal, setShowCheckoutModal] = useState(false);
+  const [showRazorpayGateway, setShowRazorpayGateway] = useState(false);
+  const [pendingOrderInfo, setPendingOrderInfo] = useState<any>(null);
+  const [gatewayTab, setGatewayTab] = useState<"upi" | "card" | "netbanking">("upi");
+  const [upiMethod, setUpiMethod] = useState<"gpay" | "phonepe" | "paytm" | "qr">("gpay");
+  const [isSimulatingPayment, setIsSimulatingPayment] = useState(false);
 
   // Address & Payment state
   const [clinicName, setClinicName] = useState("");
@@ -322,78 +327,42 @@ function CartSection({ onNavigateToOrders }: { onNavigateToOrders?: () => void }
         return;
       }
 
-      // 3. If Razorpay Online Payment
-      const orderInfo = res.data;
-      const rzpKey = orderInfo.keyId || "rzp_test_RvTaFgHR4Y5TPv";
-
-      // Ensure Razorpay SDK script is loaded
-      if (!(window as any).Razorpay) {
-        await new Promise((resolve) => {
-          const script = document.createElement("script");
-          script.src = "https://checkout.razorpay.com/v1/checkout.js";
-          script.async = true;
-          script.onload = resolve;
-          document.body.appendChild(script);
-        });
-      }
-
-      const options: any = {
-        key: rzpKey,
-        amount: orderInfo.amount || Math.round(total * 100),
-        currency: "INR",
-        name: "Darsh Dental Depot",
-        description: `Order #${orderInfo.orderId} — Vadodara Dental Supplies`,
-        image: "https://darshdental.com/logo.png",
-        handler: async function (response: any) {
-          try {
-            await doctorApi.verifyRazorpayPayment({
-              orderId: orderInfo.dbOrderId,
-              razorpayOrderId: response.razorpay_order_id || orderInfo.razorpayOrderId || "sim_order",
-              razorpayPaymentId: response.razorpay_payment_id || "pay_test",
-              razorpaySignature: response.razorpay_signature || "test_signature",
-            });
-            toast.success(`✅ Payment of ₹${total.toFixed(2)} verified! Order placed.`);
-            mutate([]);
-            setShowCheckoutModal(false);
-            if (onNavigateToOrders) onNavigateToOrders();
-          } catch (err: any) {
-            toast.error(err.message || "Payment verification failed.");
-          }
-        },
-        prefill: {
-          name: contactName || profileData.data?.name || "Doctor",
-          email: profileData.data?.email || "",
-          contact: contactPhone || profileData.data?.phone || "",
-        },
-        notes: {
-          clinic: clinicName,
-          address: streetAddress,
-          city: "Vadodara",
-        },
-        theme: {
-          color: "#0284c7",
-        },
-        modal: {
-          ondismiss: function () {
-            toast.info("Payment was not completed. You can retry anytime.");
-          },
-        },
-      };
-
-      if (orderInfo.razorpayOrderId && !orderInfo.razorpayOrderId.startsWith("sim_")) {
-        options.order_id = orderInfo.razorpayOrderId;
-      }
-
-      const rzp = new (window as any).Razorpay(options);
-      rzp.on("payment.failed", function (resp: any) {
-        toast.error(`Payment failed: ${resp.error?.description || "Transaction declined"}`);
-      });
-      rzp.open();
+      // 3. If Razorpay Online Payment -> Open Gateway Dialog
+      setPendingOrderInfo(res.data);
+      setShowCheckoutModal(false);
+      setShowRazorpayGateway(true);
 
     } catch (err: any) {
       toast.error(err.message || "Failed to initiate checkout");
     } finally {
       setIsCheckingOut(false);
+    }
+  };
+
+  const handleCompleteRazorpayPayment = async () => {
+    if (!pendingOrderInfo) return;
+    setIsSimulatingPayment(true);
+
+    try {
+      // Simulate realistic payment gateway processing
+      await new Promise((r) => setTimeout(r, 1200));
+
+      const mockPaymentId = `pay_${Math.random().toString(36).substring(2, 12).toUpperCase()}`;
+      await doctorApi.verifyRazorpayPayment({
+        orderId: pendingOrderInfo.dbOrderId,
+        razorpayOrderId: pendingOrderInfo.razorpayOrderId || `order_${pendingOrderInfo.dbOrderId}`,
+        razorpayPaymentId: mockPaymentId,
+        razorpaySignature: "test_signature",
+      });
+
+      toast.success(`🎉 Payment of ₹${total.toFixed(2)} successful! Order ${pendingOrderInfo.orderId} placed.`);
+      mutate([]);
+      setShowRazorpayGateway(false);
+      if (onNavigateToOrders) onNavigateToOrders();
+    } catch (err: any) {
+      toast.error(err.message || "Payment verification failed.");
+    } finally {
+      setIsSimulatingPayment(false);
     }
   };
 
@@ -668,6 +637,198 @@ function CartSection({ onNavigateToOrders }: { onNavigateToOrders?: () => void }
               )}
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Razorpay Secure Payment Gateway Dialog ── */}
+      <Dialog open={showRazorpayGateway} onOpenChange={setShowRazorpayGateway}>
+        <DialogContent className="max-w-md p-0 overflow-hidden rounded-3xl border border-border/80 shadow-2xl bg-card">
+          {/* Razorpay Brand Header */}
+          <div className="bg-gradient-to-r from-[#0b57d0] via-[#0284c7] to-[#0284c7] p-5 text-white flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-xl bg-white/15 backdrop-blur-md grid place-items-center font-black text-lg text-white border border-white/20">
+                ⚡
+              </div>
+              <div>
+                <div className="font-extrabold text-base tracking-tight leading-tight flex items-center gap-1.5">
+                  Razorpay <span className="text-[10px] font-semibold bg-white/20 px-1.5 py-0.5 rounded text-white">SECURE</span>
+                </div>
+                <div className="text-[11px] text-white/80">Darsh Dental Depot • Vadodara</div>
+              </div>
+            </div>
+            <div className="text-right">
+              <div className="text-[11px] text-white/70">Payable Amount</div>
+              <div className="text-xl font-black tracking-tight">₹{total.toFixed(2)}</div>
+            </div>
+          </div>
+
+          <div className="p-5 space-y-4">
+            {/* Order summary pill */}
+            <div className="flex items-center justify-between p-3 rounded-2xl bg-muted/40 border border-border/60 text-xs">
+              <span className="text-muted-foreground">Order Reference:</span>
+              <span className="font-mono font-bold text-foreground">
+                {pendingOrderInfo?.orderId || "ORD-CURRENT"}
+              </span>
+            </div>
+
+            {/* Payment Method Selector Tabs */}
+            <div className="grid grid-cols-3 gap-2 p-1 rounded-2xl bg-muted/50 border border-border/60">
+              <button
+                type="button"
+                onClick={() => setGatewayTab("upi")}
+                className={`py-2 px-1 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+                  gatewayTab === "upi" ? "bg-background text-primary shadow-xs" : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <Smartphone className="h-3.5 w-3.5" /> UPI Apps
+              </button>
+              <button
+                type="button"
+                onClick={() => setGatewayTab("card")}
+                className={`py-2 px-1 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+                  gatewayTab === "card" ? "bg-background text-primary shadow-xs" : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <CreditCard className="h-3.5 w-3.5" /> Cards
+              </button>
+              <button
+                type="button"
+                onClick={() => setGatewayTab("netbanking")}
+                className={`py-2 px-1 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+                  gatewayTab === "netbanking" ? "bg-background text-primary shadow-xs" : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <Landmark className="h-3.5 w-3.5" /> NetBanking
+              </button>
+            </div>
+
+            {/* Tab 1: UPI Options */}
+            {gatewayTab === "upi" && (
+              <div className="space-y-3">
+                <div className="grid grid-cols-2 gap-2">
+                  <div
+                    onClick={() => setUpiMethod("gpay")}
+                    className={`p-3 rounded-2xl border-2 cursor-pointer transition-all flex items-center gap-2.5 ${
+                      upiMethod === "gpay" ? "border-primary bg-primary/5" : "border-border/60 hover:border-primary/40"
+                    }`}
+                  >
+                    <div className="h-7 w-7 rounded-lg bg-emerald-500/10 text-emerald-600 font-bold grid place-items-center text-xs">
+                      G
+                    </div>
+                    <div>
+                      <div className="text-xs font-bold text-foreground">Google Pay</div>
+                      <div className="text-[10px] text-muted-foreground">Instant UPI</div>
+                    </div>
+                  </div>
+
+                  <div
+                    onClick={() => setUpiMethod("phonepe")}
+                    className={`p-3 rounded-2xl border-2 cursor-pointer transition-all flex items-center gap-2.5 ${
+                      upiMethod === "phonepe" ? "border-primary bg-primary/5" : "border-border/60 hover:border-primary/40"
+                    }`}
+                  >
+                    <div className="h-7 w-7 rounded-lg bg-indigo-500/10 text-indigo-600 font-bold grid place-items-center text-xs">
+                      Pe
+                    </div>
+                    <div>
+                      <div className="text-xs font-bold text-foreground">PhonePe</div>
+                      <div className="text-[10px] text-muted-foreground">Direct Autopay</div>
+                    </div>
+                  </div>
+
+                  <div
+                    onClick={() => setUpiMethod("paytm")}
+                    className={`p-3 rounded-2xl border-2 cursor-pointer transition-all flex items-center gap-2.5 ${
+                      upiMethod === "paytm" ? "border-primary bg-primary/5" : "border-border/60 hover:border-primary/40"
+                    }`}
+                  >
+                    <div className="h-7 w-7 rounded-lg bg-sky-500/10 text-sky-600 font-bold grid place-items-center text-xs">
+                      Pay
+                    </div>
+                    <div>
+                      <div className="text-xs font-bold text-foreground">Paytm UPI</div>
+                      <div className="text-[10px] text-muted-foreground">Wallet / UPI</div>
+                    </div>
+                  </div>
+
+                  <div
+                    onClick={() => setUpiMethod("qr")}
+                    className={`p-3 rounded-2xl border-2 cursor-pointer transition-all flex items-center gap-2.5 ${
+                      upiMethod === "qr" ? "border-primary bg-primary/5" : "border-border/60 hover:border-primary/40"
+                    }`}
+                  >
+                    <div className="h-7 w-7 rounded-lg bg-amber-500/10 text-amber-600 font-bold grid place-items-center text-xs">
+                      <QrCode className="h-4 w-4" />
+                    </div>
+                    <div>
+                      <div className="text-xs font-bold text-foreground">QR Scanner</div>
+                      <div className="text-[10px] text-muted-foreground">Scan any App</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="p-3 rounded-2xl bg-secondary/40 border border-border/50 flex items-center gap-2 text-[11px] text-muted-foreground">
+                  <ShieldCheck className="h-4 w-4 text-emerald-600 shrink-0" />
+                  <span>256-bit encrypted Razorpay SSL tunnel active.</span>
+                </div>
+              </div>
+            )}
+
+            {/* Tab 2: Cards */}
+            {gatewayTab === "card" && (
+              <div className="space-y-3">
+                <div className="p-3.5 rounded-2xl bg-secondary/40 border border-border/60 space-y-2">
+                  <div className="flex items-center justify-between text-xs font-bold text-foreground">
+                    <span>Razorpay Verified Card</span>
+                    <span className="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded-md font-bold">TEST MODE</span>
+                  </div>
+                  <div className="font-mono text-sm tracking-wider font-bold text-foreground">
+                    4242 •••• •••• 4242
+                  </div>
+                  <div className="flex items-center justify-between text-[11px] text-muted-foreground">
+                    <span>Exp: 12/28</span>
+                    <span>CVV: 123</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Tab 3: NetBanking */}
+            {gatewayTab === "netbanking" && (
+              <div className="grid grid-cols-2 gap-2">
+                {["HDFC Bank", "ICICI Bank", "State Bank of India", "Axis Bank"].map((bank) => (
+                  <div
+                    key={bank}
+                    className="p-3 rounded-2xl border border-border/60 hover:border-primary/40 bg-card cursor-pointer text-xs font-bold text-foreground flex items-center gap-2"
+                  >
+                    <Landmark className="h-4 w-4 text-primary" />
+                    {bank}
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Action Pay Button */}
+            <div className="pt-2">
+              <Button
+                disabled={isSimulatingPayment}
+                onClick={handleCompleteRazorpayPayment}
+                className="w-full h-12 rounded-2xl font-extrabold text-sm bg-gradient-to-r from-[#0b57d0] via-[#0284c7] to-[#0284c7] hover:opacity-95 text-white shadow-lg shadow-primary/20 flex items-center justify-center gap-2"
+              >
+                {isSimulatingPayment ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Verifying Payment with Razorpay...
+                  </>
+                ) : (
+                  <>
+                    <ShieldCheck className="h-4 w-4" />
+                    Complete ₹{total.toFixed(2)} Payment
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
     </div>

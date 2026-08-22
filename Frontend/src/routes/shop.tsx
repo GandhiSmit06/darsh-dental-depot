@@ -21,6 +21,7 @@ import {
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
+import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import {
   shopApi,
@@ -28,6 +29,7 @@ import {
   type ShopProduct,
   type ShopInventoryItem,
   type ShopOrder,
+  type ShopCustomer,
   type WeeklySalesItem,
   type MonthlyTrendItem,
   type CategoryShareItem,
@@ -533,13 +535,13 @@ function CustomersSection({ search }: { search?: string }) {
               {filteredCustomers.map((c) => (
                 <TableRow key={c._id}>
                   <TableCell>
-                    <div className="font-semibold text-foreground">{c.name}</div>
+                    <div className="font-semibold text-foreground">{c.name || "Doctor"}</div>
                     <div className="text-xs text-muted-foreground">{c.clinicName || "Dental Practice"}</div>
                   </TableCell>
-                  <TableCell className="text-muted-foreground text-xs">{c.email}</TableCell>
+                  <TableCell className="text-muted-foreground text-xs">{c.email || "—"}</TableCell>
                   <TableCell className="text-muted-foreground text-xs">{c.phone || "—"}</TableCell>
-                  <TableCell className="font-medium">{c.orders}</TableCell>
-                  <TableCell className="font-semibold text-primary">₹{c.spent.toFixed(2)}</TableCell>
+                  <TableCell className="font-medium">{c.orders ?? 0}</TableCell>
+                  <TableCell className="font-semibold text-primary">₹{(c.spent ?? 0).toFixed(2)}</TableCell>
                 </TableRow>
               ))}
             </TableBody>

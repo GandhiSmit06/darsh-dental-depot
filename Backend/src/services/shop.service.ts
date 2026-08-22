@@ -324,6 +324,59 @@ export class ShopService {
       unitsSold: r.unitsSold,
     }));
   }
+
+  // ── Customers: Real registered Vadodara clinics & doctors ──────────────────
+  async getCustomers(shopOwnerId: string) {
+    const ownerId = new Types.ObjectId(shopOwnerId);
+    const shopProductIds = await Product.find({ createdBy: ownerId }).distinct('_id');
+    const allOrders = await Order.find({ 'products.productId': { $in: shopProductIds } })
+      .populate('customerId', 'fullName email phone clinicName address')
+      .lean();
+
+    const customerMap = new Map<string, any>();
+    for (const order of allOrders) {
+      const cust = order.customerId as any;
+      if (!cust || !cust._id) continue;
+      const cid = cust._id.toString();
+      if (!customerMap.has(cid)) {
+        customerMap.set(cid, {
+          _id: cid,
+          name: cust.fullName || 'Doctor',
+          email: cust.email || '',
+          phone: cust.phone || '',
+          clinicName: cust.clinicName || 'Dental Practice',
+          orders: 1,
+          spent: order.totalPrice || 0,
+        });
+      } else {
+        const existing = customerMap.get(cid);
+        existing.orders += 1;
+        existing.spent += order.totalPrice || 0;
+      }
+    }
+
+    // Include all registered doctors if few or no orders
+    const doctors = await User.find({ role: 'doctor' })
+      .select('fullName email phone clinicName address')
+      .lean();
+
+    for (const d of doctors) {
+      const did = d._id.toString();
+      if (!customerMap.has(did)) {
+        customerMap.set(did, {
+          _id: did,
+          name: d.fullName,
+          email: d.email,
+          phone: d.phone,
+          clinicName: d.clinicName || 'Dental Practice',
+          orders: 0,
+          spent: 0,
+        });
+      }
+    }
+
+    return Array.from(customerMap.values());
+  }
 }
 
 export const shopService = new ShopService();

@@ -184,7 +184,7 @@ export const users: User[] = Array.from({ length: 12 }).map((_, i) => ({
 
 export const activityLogs = Array.from({ length: 10 }).map((_, i) => ({
   id: i,
-  actor: ["admin@darsh.io", "system", "dr.khan@x.io", "shop.mehta@x.io"][i % 4],
+  actor: ["admin@darshdental.com", "system", "dr.patel@darshdental.com", "shop@darshdental.com"][i % 4],
   action: [
     "Updated product inventory",
     "Approved new doctor registration",

@@ -268,12 +268,23 @@ export interface ProductPerformanceItem {
   unitsSold: number;
 }
 
+export interface ShopCustomer {
+  _id: string;
+  name: string;
+  email: string;
+  phone?: string;
+  clinicName?: string;
+  orders: number;
+  spent: number;
+}
+
 export const shopApi = {
   getStats: () => apiFetch<ApiOk<ShopStats>>("/shop/stats"),
   getProducts: () => apiFetch<ApiOk<ShopProduct[]>>("/shop/products"),
   getInventory: () => apiFetch<ApiOk<ShopInventoryItem[]>>("/shop/inventory"),
   getOrders: () => apiFetch<ApiOk<ShopOrder[]>>("/shop/orders"),
   getOrderInvoice: (id: string) => apiFetch<ApiOk<unknown>>(`/shop/orders/${id}/invoice`),
+  getCustomers: () => apiFetch<ApiOk<ShopCustomer[]>>("/shop/customers"),
   getWeeklySales: () => apiFetch<ApiOk<WeeklySalesItem[]>>("/shop/analytics/weekly-sales"),
   getMonthlyTrend: () => apiFetch<ApiOk<MonthlyTrendItem[]>>("/shop/analytics/monthly-trend"),
   getCategoryShare: () => apiFetch<ApiOk<CategoryShareItem[]>>("/shop/analytics/category-share"),

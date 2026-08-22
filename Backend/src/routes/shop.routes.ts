@@ -17,5 +17,6 @@ router.get('/analytics/weekly-sales', shopCtrl.getWeeklySales);
 router.get('/analytics/monthly-trend', shopCtrl.getMonthlyTrend);
 router.get('/analytics/category-share', shopCtrl.getCategoryShare);
 router.get('/analytics/product-performance', shopCtrl.getProductPerformance);
+router.get('/customers', shopCtrl.getCustomers);
 
 export default router;

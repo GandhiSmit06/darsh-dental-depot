@@ -176,16 +176,16 @@ async function seed() {
   const shopOwnerPassword = await hashPassword('Shop@123456');
   const shopOwner = await User.create({
     role: 'shop_owner',
-    fullName: 'Mehta Medical Depot',
+    fullName: 'Darsh Dental Depot',
     email: 'shop@darshdental.com',
-    phone: '9000000002',
+    phone: '9727076119',
     password: shopOwnerPassword,
-    clinicName: 'Mehta Medical Depot',
-    address: '42 Gandhi Road, Vadodara, Gujarat',
+    clinicName: 'Darsh Dental Depot',
+    address: 'FF-10/11, Vraj Vihar Complex, Char Rasta, Opp. Kachhia Patel Wadi, Mahavir Colony, Shiyabaug, Kevdabaug, Vadodara, Gujarat 390001',
     isVerified: true,
     isActive: true,
   });
-  console.log(`✅ Shop Owner created: ${shopOwner.email}`);
+  console.log(`✅ Shop Owner created: ${shopOwner.email} (Darsh Dental Depot)`);
 
   // Create doctor
   const doctorPassword = await hashPassword('Doctor@123456');

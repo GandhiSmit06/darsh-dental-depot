@@ -550,22 +550,20 @@ function OrdersSection() {
   );
 }
 
-// ─── Notifications (unchanged) ──────────────────────────────────────────────
+// ─── Notifications (Clean state) ───────────────────────────────────────────
 
 function NotificationsSection() {
   return (
     <div className="space-y-5">
       <h1 className="text-2xl font-bold">Notifications</h1>
-      <Card className="divide-y">
-        {[
-          { t: "Your order ORD-1024 has shipped", d: "2 hours ago" },
-          { t: "Restock available: Filtek Universal", d: "1 day ago" },
-        ].map((n, i) => (
-          <div key={i} className="p-4">
-            <div className="text-sm font-medium">{n.t}</div>
-            <div className="text-xs text-muted-foreground">{n.d}</div>
-          </div>
-        ))}
+      <Card className="p-8 text-center space-y-3">
+        <div className="h-12 w-12 rounded-2xl bg-primary/10 text-primary mx-auto grid place-items-center">
+          <Bell className="h-6 w-6" />
+        </div>
+        <h3 className="font-semibold text-lg">No New Notifications</h3>
+        <p className="text-sm text-muted-foreground max-w-sm mx-auto">
+          You're all set! Real-time order dispatch alerts and clinic delivery updates from Darsh Dental Depot will appear here.
+        </p>
       </Card>
     </div>
   );

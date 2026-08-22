@@ -488,44 +488,64 @@ function OrdersSection({ search }: { search?: string }) {
   );
 }
 
-// ─── Customers (unchanged) ──────────────────────────────────────────────────
+// ─── Customers (Real API Data) ──────────────────────────────────────────────
 
 function CustomersSection({ search }: { search?: string }) {
-  const customers = Array.from({ length: 8 }).map((_, i) => ({
-    name: ["Dr. A. Khan", "Dr. R. Mehta", "Dr. P. Sharma"][i % 3],
-    email: `customer${i + 1}@dental.io`,
-    orders: 12 + i * 3,
-    spent: (420 + i * 137).toFixed(2),
-  }));
+  const { data: customers, loading, error, retry } = useApiData<ShopCustomer[]>(shopApi.getCustomers);
 
-  const filteredCustomers = customers.filter(c => {
+  const filteredCustomers = customers?.filter((c) => {
     if (!search) return true;
     const s = search.toLowerCase();
-    return c.name.toLowerCase().includes(s) || c.email.toLowerCase().includes(s);
-  });
+    return c.name.toLowerCase().includes(s) || 
+           c.email.toLowerCase().includes(s) || 
+           c.clinicName?.toLowerCase().includes(s) ||
+           c.phone?.includes(s);
+  }) || [];
 
   return (
     <div className="space-y-5">
-      <h1 className="text-2xl font-bold">Customers</h1>
-      <Card className="overflow-hidden">
-        <Table>
-          <TableHeader>
-            <TableRow><TableHead>Name</TableHead><TableHead>Email</TableHead><TableHead>Orders</TableHead><TableHead>Spent</TableHead></TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredCustomers.length === 0 ? (
-              <TableRow><TableCell colSpan={4} className="text-center py-6 text-muted-foreground">No customers found matching your search.</TableCell></TableRow>
-            ) : filteredCustomers.map((c, i) => (
-              <TableRow key={i}>
-                <TableCell className="font-medium">{c.name}</TableCell>
-                <TableCell className="text-muted-foreground">{c.email}</TableCell>
-                <TableCell>{c.orders}</TableCell>
-                <TableCell>₹{c.spent}</TableCell>
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold">Registered Doctors & Clinics</h1>
+        <Badge variant="outline" className="border-primary/40 text-primary font-mono text-xs">
+          Vadodara Clinic Directory
+        </Badge>
+      </div>
+
+      {loading ? (
+        <LoadingSpinner label="Loading clinic accounts..." />
+      ) : error ? (
+        <ErrorBanner onRetry={retry} />
+      ) : !filteredCustomers.length ? (
+        <EmptyBanner label={search ? "No clinics found matching your search." : "No registered doctors yet."} />
+      ) : (
+        <Card className="overflow-hidden">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Doctor / Clinic</TableHead>
+                <TableHead>Email</TableHead>
+                <TableHead>Phone</TableHead>
+                <TableHead>Orders Placed</TableHead>
+                <TableHead>Total Spent</TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </Card>
+            </TableHeader>
+            <TableBody>
+              {filteredCustomers.map((c) => (
+                <TableRow key={c._id}>
+                  <TableCell>
+                    <div className="font-semibold text-foreground">{c.name}</div>
+                    <div className="text-xs text-muted-foreground">{c.clinicName || "Dental Practice"}</div>
+                  </TableCell>
+                  <TableCell className="text-muted-foreground text-xs">{c.email}</TableCell>
+                  <TableCell className="text-muted-foreground text-xs">{c.phone || "—"}</TableCell>
+                  <TableCell className="font-medium">{c.orders}</TableCell>
+                  <TableCell className="font-semibold text-primary">₹{c.spent.toFixed(2)}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </Card>
+      )}
     </div>
   );
 }
@@ -577,43 +597,39 @@ function AnalyticsSection() {
   );
 }
 
-// ─── Notifications (unchanged) ──────────────────────────────────────────────
+// ─── Notifications (Clean real state) ───────────────────────────────────────
 
 function NotificationsSection() {
   return (
     <div className="space-y-5">
       <h1 className="text-2xl font-bold">Notifications</h1>
-      <Card className="divide-y">
-        {[
-          { t: "New order ORD-1024 from Dr. Khan", d: "2 minutes ago" },
-          { t: "Low stock alert: GC Fuji Glass Ionomer", d: "1 hour ago" },
-          { t: "Monthly report is ready", d: "Yesterday" },
-        ].map((n, i) => (
-          <div key={i} className="p-4 flex items-start gap-3">
-            <Bell className="h-4 w-4 text-primary mt-1" />
-            <div className="flex-1">
-              <div className="text-sm font-medium">{n.t}</div>
-              <div className="text-xs text-muted-foreground">{n.d}</div>
-            </div>
-          </div>
-        ))}
+      <Card className="p-8 text-center space-y-3">
+        <div className="h-12 w-12 rounded-2xl bg-primary/10 text-primary mx-auto grid place-items-center">
+          <Bell className="h-6 w-6" />
+        </div>
+        <h3 className="font-semibold text-lg">All Systems Operational</h3>
+        <p className="text-sm text-muted-foreground max-w-sm mx-auto">
+          You are all caught up! New orders placed by Vadodara dental clinics and low-stock alerts will appear here in real time.
+        </p>
       </Card>
     </div>
   );
 }
 
-// ─── Settings (unchanged) ───────────────────────────────────────────────────
+// ─── Settings ───────────────────────────────────────────────────────────────
 
 function SettingsSection() {
   return (
     <div className="space-y-5 max-w-2xl">
-      <h1 className="text-2xl font-bold">Settings</h1>
+      <h1 className="text-2xl font-bold">Shop Settings</h1>
       <Card className="p-6 space-y-4">
-        <div><Label className="mb-1.5">Store name</Label><Input defaultValue="Darsh Dental Depot" /></div>
-        <div><Label className="mb-1.5">Support email</Label><Input defaultValue="support@darshdental.com" /></div>
-        <div className="flex items-center justify-between"><span className="text-sm">Email notifications</span><Switch defaultChecked /></div>
-        <div className="flex items-center justify-between"><span className="text-sm">Low-stock alerts</span><Switch defaultChecked /></div>
-        <Button onClick={() => toast.success("Settings saved")}>Save changes</Button>
+        <div><Label className="mb-1.5">Shop Name</Label><Input defaultValue="Darsh Dental Depot" /></div>
+        <div><Label className="mb-1.5">Direct Helpline / WhatsApp</Label><Input defaultValue="+91 97270 76119" /></div>
+        <div><Label className="mb-1.5">Support Email</Label><Input defaultValue="support@darshdental.com" /></div>
+        <div><Label className="mb-1.5">Store Location</Label><Input defaultValue="FF-10/11, Vraj Vihar Complex, Shiyabaug, Vadodara, Gujarat 390001" /></div>
+        <div className="flex items-center justify-between pt-2 border-t"><span className="text-sm">Real-time Order Alerts</span><Switch defaultChecked /></div>
+        <div className="flex items-center justify-between"><span className="text-sm">Low-Stock SMS / WhatsApp Alerts</span><Switch defaultChecked /></div>
+        <Button onClick={() => toast.success("Settings saved successfully")}>Save Changes</Button>
       </Card>
     </div>
   );

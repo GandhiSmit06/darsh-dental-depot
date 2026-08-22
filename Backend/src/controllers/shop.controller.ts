@@ -47,3 +47,8 @@ export const getProductPerformance = asyncHandler(async (req: Request, res: Resp
   const data = await shopService.getProductPerformance(req.user!._id.toString());
   res.json(ApiResponse.ok('Product performance', data));
 });
+
+export const getCustomers = asyncHandler(async (req: Request, res: Response) => {
+  const data = await shopService.getCustomers(req.user!._id.toString());
+  res.json(ApiResponse.ok('Shop customers', data));
+});

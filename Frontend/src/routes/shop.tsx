@@ -256,6 +256,26 @@ function ProductForm({ onClose, onSuccess, initialData }: { onClose: () => void,
     initialData?.brand && !isPredefinedBrand ? initialData.brand : ""
   );
 
+  // Auto-calculation state for Purchase Price, GST & Selling Price
+  const [purchasePrice, setPurchasePrice] = useState<number | string>(
+    initialData?.purchasePrice || initialData?.price || ""
+  );
+  const [gstPercentage, setGstPercentage] = useState<number | string>(
+    initialData?.gstPercentage ?? 12
+  );
+  const [manualSellingPrice, setManualSellingPrice] = useState<string | null>(
+    initialData?.sellingPrice ? String(initialData.sellingPrice) : null
+  );
+
+  // Compute calculated selling price: Purchase Price + (Purchase Price * GST%)
+  const numPurchase = Number(purchasePrice) || 0;
+  const numGst = Number(gstPercentage) || 0;
+  const gstAmount = (numPurchase * numGst) / 100;
+  const autoSellingPrice = numPurchase > 0 ? Math.round((numPurchase + gstAmount) * 100) / 100 : 0;
+  const finalSellingPrice = manualSellingPrice !== null && manualSellingPrice !== "" 
+    ? Number(manualSellingPrice) 
+    : autoSellingPrice;
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
@@ -274,17 +294,18 @@ function ProductForm({ onClose, onSuccess, initialData }: { onClose: () => void,
       ? customBrand.trim() 
       : (brand || "");
 
+    const computedPrice = finalSellingPrice || numPurchase;
+
     const payload = {
       name: formData.get("name") as string,
       category: finalCategory,
       brand: finalBrand,
-      price: Number(formData.get("price")),
-      sellingPrice: Number(formData.get("price")), // mapping Price to sellingPrice
-      purchasePrice: Number(formData.get("purchasePrice") || formData.get("price")),
-      stock: Number(formData.get("stock")),
-      SKU: formData.get("SKU") as string,
+      price: computedPrice,
+      sellingPrice: computedPrice,
+      purchasePrice: numPurchase > 0 ? numPurchase : computedPrice,
+      stock: Number(formData.get("stock") || 1),
       hsnCode: formData.get("hsnCode") as string,
-      gstPercentage: Number(formData.get("gstPercentage") || 0),
+      gstPercentage: numGst,
       batchNumber: formData.get("batchNumber") as string,
       description: formData.get("description") as string,
     };
@@ -309,10 +330,10 @@ function ProductForm({ onClose, onSuccess, initialData }: { onClose: () => void,
 
   return (
     <form className="grid grid-cols-2 gap-3 max-h-[70vh] overflow-y-auto px-1 pb-1" onSubmit={handleSubmit}>
-      <div className="col-span-2"><Label className="mb-1.5">Name *</Label><Input name="name" defaultValue={initialData?.name} required /></div>
+      <div className="col-span-2"><Label className="mb-1.5 font-semibold text-xs">Product Name *</Label><Input name="name" defaultValue={initialData?.name} placeholder="e.g. Zhermack Tropicalgin Alginate 450g" required /></div>
       
       <div>
-        <Label className="mb-1.5">Category *</Label>
+        <Label className="mb-1.5 font-semibold text-xs">Category *</Label>
         <Select value={category} onValueChange={(val) => setCategory(val)}>
           <SelectTrigger><SelectValue placeholder="Select Category" /></SelectTrigger>
           <SelectContent>
@@ -326,7 +347,7 @@ function ProductForm({ onClose, onSuccess, initialData }: { onClose: () => void,
       </div>
 
       <div>
-        <Label className="mb-1.5">Brand</Label>
+        <Label className="mb-1.5 font-semibold text-xs">Brand</Label>
         <Select value={brand} onValueChange={(val) => setBrand(val)}>
           <SelectTrigger><SelectValue placeholder="Select Brand" /></SelectTrigger>
           <SelectContent>
@@ -369,21 +390,108 @@ function ProductForm({ onClose, onSuccess, initialData }: { onClose: () => void,
         </div>
       )}
 
-      <div className="col-span-2 sm:col-span-1"><Label className="mb-1.5">Stock Available *</Label><Input name="stock" defaultValue={initialData?.stock ?? 1} type="number" required min="0" placeholder="e.g. 10" /></div>
-      
-      <div><Label className="mb-1.5">Selling Price (₹) *</Label><Input name="price" defaultValue={initialData?.sellingPrice || initialData?.price} type="number" required min="0" step="0.01" /></div>
-      <div><Label className="mb-1.5">Purchase Price (₹)</Label><Input name="purchasePrice" defaultValue={initialData?.purchasePrice} type="number" min="0" step="0.01" /></div>
-      
-      <div><Label className="mb-1.5">HSN Code</Label><Input name="hsnCode" defaultValue={initialData?.hsnCode} placeholder="e.g. 90184900" /></div>
-      <div><Label className="mb-1.5">GST (%)</Label><Input name="gstPercentage" defaultValue={initialData?.gstPercentage} type="number" min="0" max="100" placeholder="e.g. 18" /></div>
-      
-      <div className="col-span-2"><Label className="mb-1.5">Batch Number</Label><Input name="batchNumber" defaultValue={initialData?.batchNumber} /></div>
+      <div className="col-span-2 sm:col-span-1">
+        <Label className="mb-1.5 font-semibold text-xs">Stock Available *</Label>
+        <Input name="stock" defaultValue={initialData?.stock ?? 1} type="number" required min="0" placeholder="e.g. 10" />
+      </div>
 
-      <div className="col-span-2"><Label className="mb-1.5">Description *</Label><Textarea name="description" defaultValue={initialData?.description} rows={3} required /></div>
+      {/* Purchase Price & GST inputs */}
+      <div className="col-span-2 sm:col-span-1">
+        <Label className="mb-1.5 font-semibold text-xs text-foreground">Purchase Price (₹) *</Label>
+        <Input
+          type="number"
+          value={purchasePrice}
+          onChange={(e) => {
+            setPurchasePrice(e.target.value);
+            setManualSellingPrice(null); // auto recalculate
+          }}
+          placeholder="e.g. 400"
+          required
+          min="0"
+          step="0.01"
+          className="font-semibold"
+        />
+      </div>
+
+      <div className="col-span-2 sm:col-span-1">
+        <div className="flex items-center justify-between mb-1.5">
+          <Label className="font-semibold text-xs text-foreground">GST Rate (%) *</Label>
+          <div className="flex gap-1">
+            {[5, 12, 18, 28].map((g) => (
+              <button
+                key={g}
+                type="button"
+                onClick={() => {
+                  setGstPercentage(g);
+                  setManualSellingPrice(null);
+                }}
+                className={`text-[10px] px-1.5 py-0.5 rounded font-medium border transition-colors ${
+                  Number(gstPercentage) === g 
+                    ? "bg-primary text-white border-primary" 
+                    : "bg-secondary text-muted-foreground border-border/60 hover:bg-muted"
+                }`}
+              >
+                {g}%
+              </button>
+            ))}
+          </div>
+        </div>
+        <Input
+          type="number"
+          value={gstPercentage}
+          onChange={(e) => {
+            setGstPercentage(e.target.value);
+            setManualSellingPrice(null); // auto recalculate
+          }}
+          placeholder="e.g. 12"
+          min="0"
+          max="100"
+        />
+      </div>
+
+      {/* Live Calculated Selling Price Display Card */}
+      <div className="col-span-2 bg-gradient-to-br from-primary/10 via-sky-500/10 to-indigo-500/10 p-3.5 rounded-2xl border border-primary/25 space-y-2">
+        <div className="flex items-center justify-between">
+          <div>
+            <span className="text-xs font-bold text-primary block">
+              💰 Auto-Calculated Selling Price
+            </span>
+            <span className="text-[11px] text-muted-foreground">
+              Base (₹{numPurchase.toFixed(2)}) + GST {numGst}% (₹{gstAmount.toFixed(2)})
+            </span>
+          </div>
+          <div className="text-right">
+            <span className="text-xl font-extrabold text-foreground tracking-tight">
+              ₹{autoSellingPrice.toFixed(2)}
+            </span>
+          </div>
+        </div>
+
+        <div className="pt-1.5 border-t border-primary/15 flex items-center justify-between text-xs">
+          <span className="text-muted-foreground text-[11px]">Override Selling Price (optional):</span>
+          <div className="w-32">
+            <Input
+              type="number"
+              value={manualSellingPrice ?? autoSellingPrice}
+              onChange={(e) => setManualSellingPrice(e.target.value)}
+              placeholder={String(autoSellingPrice)}
+              className="h-8 text-xs font-bold text-right bg-background/90"
+              step="0.01"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div><Label className="mb-1.5 font-semibold text-xs">HSN Code (optional)</Label><Input name="hsnCode" defaultValue={initialData?.hsnCode} placeholder="e.g. 90184900" /></div>
+      <div><Label className="mb-1.5 font-semibold text-xs">Batch Number (optional)</Label><Input name="batchNumber" defaultValue={initialData?.batchNumber} placeholder="e.g. BATCH-2026-01" /></div>
+
+      <div className="col-span-2"><Label className="mb-1.5 font-semibold text-xs">Description *</Label><Textarea name="description" defaultValue={initialData?.description} rows={3} placeholder="Provide details, pack size, usage instructions..." required /></div>
       
       <div className="col-span-2 flex justify-end gap-2 mt-2">
         <Button type="button" variant="outline" onClick={onClose} disabled={loading}>Cancel</Button>
-        <Button type="submit" disabled={loading}>{loading ? "Saving..." : (initialData ? "Update Product" : "Save Product")}</Button>
+        <Button type="submit" disabled={loading} className="bg-gradient-to-r from-primary to-sky-600 text-white font-semibold">
+          {loading ? "Saving..." : (initialData ? "Update Product" : "Save Product")}
+        </Button>
       </div>
     </form>
   );

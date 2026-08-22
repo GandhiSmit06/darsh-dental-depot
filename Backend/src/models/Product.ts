@@ -12,7 +12,12 @@ const productSchema = new Schema<IProduct>(
     },
     description: { type: String, required: true },
     images: [{ type: String }],
-    SKU: { type: String, required: true, unique: true, uppercase: true, trim: true },
+    SKU: {
+      type: String,
+      uppercase: true,
+      trim: true,
+      default: () => 'DDD-' + Math.random().toString(36).substring(2, 8).toUpperCase(),
+    },
     batchNumber: { type: String, trim: true },
     hsnCode: { type: String, trim: true },
     gstPercentage: { type: Number, min: 0, max: 100 },

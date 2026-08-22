@@ -369,8 +369,7 @@ function ProductForm({ onClose, onSuccess, initialData }: { onClose: () => void,
         </div>
       )}
 
-      <div><Label className="mb-1.5">SKU *</Label><Input name="SKU" defaultValue={initialData?.sku || initialData?.SKU} required placeholder="e.g. COMP-001" /></div>
-      <div><Label className="mb-1.5">Stock *</Label><Input name="stock" defaultValue={initialData?.stock} type="number" required min="0" /></div>
+      <div className="col-span-2 sm:col-span-1"><Label className="mb-1.5">Stock Available *</Label><Input name="stock" defaultValue={initialData?.stock ?? 1} type="number" required min="0" placeholder="e.g. 10" /></div>
       
       <div><Label className="mb-1.5">Selling Price (₹) *</Label><Input name="price" defaultValue={initialData?.sellingPrice || initialData?.price} type="number" required min="0" step="0.01" /></div>
       <div><Label className="mb-1.5">Purchase Price (₹)</Label><Input name="purchasePrice" defaultValue={initialData?.purchasePrice} type="number" min="0" step="0.01" /></div>

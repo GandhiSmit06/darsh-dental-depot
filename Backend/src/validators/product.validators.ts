@@ -25,8 +25,8 @@ export const createProductValidator = [
     .trim()
     .notEmpty().withMessage('Description is required'),
   body('SKU')
-    .trim()
-    .notEmpty().withMessage('SKU is required'),
+    .optional()
+    .trim(),
   body('stock')
     .notEmpty().withMessage('Stock is required')
     .isInt({ min: 0 }).withMessage('Stock must be non-negative integer'),

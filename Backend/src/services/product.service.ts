@@ -9,10 +9,16 @@ import { Types } from 'mongoose';
 
 export class ProductService {
   async createProduct(data: Partial<IProduct>, createdBy: string) {
-    const existing = await Product.findOne({ SKU: data.SKU?.toUpperCase() });
-    if (existing) throw ApiError.conflict('A product with this SKU already exists.');
+    let sku = data.SKU?.trim().toUpperCase();
+    if (!sku) {
+      sku = 'DDD-' + Math.random().toString(36).substring(2, 8).toUpperCase();
+    }
+    const existing = await Product.findOne({ SKU: sku });
+    if (existing) {
+      sku = 'DDD-' + Date.now().toString(36).toUpperCase() + '-' + Math.random().toString(36).substring(2, 5).toUpperCase();
+    }
 
-    const product = await Product.create({ ...data, createdBy });
+    const product = await Product.create({ ...data, SKU: sku, createdBy });
     await redisClient.delPattern('products:*');
     return product;
   }

@@ -22,6 +22,7 @@ router.post('/login-otp/verify', authRateLimiter, authController.verifyLoginOtp)
 
 router.post('/logout', authenticate, authController.logout);
 router.post('/refresh-token', authController.refreshToken);
+router.post('/refresh', authController.refreshToken);
 router.get('/verify-email/:token', authController.verifyEmail);
 router.post('/forgot-password', authRateLimiter, forgotPasswordValidator, validate, authController.forgotPassword);
 router.post('/reset-password/:token', resetPasswordValidator, validate, authController.resetPassword);

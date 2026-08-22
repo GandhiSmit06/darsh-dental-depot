@@ -173,6 +173,13 @@ export class OrderService {
   }
 
   async updateOrderStatus(id: string, status: IOrder['orderStatus']) {
+    const existing = await Order.findById(id);
+    if (!existing) throw ApiError.notFound('Order not found.');
+
+    if (existing.orderStatus === 'delivered' || existing.orderStatus === 'cancelled') {
+      throw ApiError.badRequest(`Order is already ${existing.orderStatus.toUpperCase()} and cannot be modified.`);
+    }
+
     const order = await Order.findByIdAndUpdate(
       id,
       { orderStatus: status },

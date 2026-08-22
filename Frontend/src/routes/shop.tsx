@@ -2,7 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState, useEffect, useCallback, useRef } from "react";
 import {
   LayoutDashboard, Package, Warehouse, ShoppingBag, Users, BarChart3, Bell, Settings,
-  DollarSign, TrendingUp, Plus, FileText, Loader2, Trash2, Edit, UploadCloud, Image as ImageIcon, X
+  DollarSign, TrendingUp, Plus, FileText, Loader2, Trash2, Edit, UploadCloud, Image as ImageIcon, X,
+  CheckCircle2, XCircle
 } from "lucide-react";
 import {
   Bar, BarChart, CartesianGrid, Cell, Legend, Line, LineChart, Pie, PieChart,
@@ -857,22 +858,32 @@ function OrdersSection({ search }: { search?: string }) {
                     <StatusBadge status={o.status} />
                   </TableCell>
                   <TableCell>
-                    <Select
-                      value={o.status.toLowerCase()}
-                      disabled={updatingId === o._id}
-                      onValueChange={(val) => handleStatusChange(o._id, o.orderId, val)}
-                    >
-                      <SelectTrigger className="h-8 w-38 text-xs font-semibold rounded-xl bg-background border-border/80 shadow-2xs">
-                        <SelectValue placeholder="Update status" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="pending">🟡 Pending</SelectItem>
-                        <SelectItem value="processing">⚙️ Processing (Packing)</SelectItem>
-                        <SelectItem value="shipped">🚚 Shipped (Out for delivery)</SelectItem>
-                        <SelectItem value="delivered">🟢 Delivered (Completed)</SelectItem>
-                        <SelectItem value="cancelled">🔴 Cancelled</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    {o.status.toLowerCase() === "delivered" ? (
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                        <CheckCircle2 className="h-3.5 w-3.5" /> Completed
+                      </span>
+                    ) : o.status.toLowerCase() === "cancelled" ? (
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20">
+                        <XCircle className="h-3.5 w-3.5" /> Cancelled
+                      </span>
+                    ) : (
+                      <Select
+                        value={o.status.toLowerCase()}
+                        disabled={updatingId === o._id}
+                        onValueChange={(val) => handleStatusChange(o._id, o.orderId, val)}
+                      >
+                        <SelectTrigger className="h-8 w-38 text-xs font-semibold rounded-xl bg-background border-border/80 shadow-2xs">
+                          <SelectValue placeholder="Update status" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="pending">🟡 Pending</SelectItem>
+                          <SelectItem value="processing">⚙️ Processing (Packing)</SelectItem>
+                          <SelectItem value="shipped">🚚 Shipped (Out for delivery)</SelectItem>
+                          <SelectItem value="delivered">🟢 Delivered (Completed)</SelectItem>
+                          <SelectItem value="cancelled">🔴 Cancelled</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    )}
                   </TableCell>
                   <TableCell className="text-xs text-muted-foreground">{o.date}</TableCell>
                   <TableCell className="text-right">

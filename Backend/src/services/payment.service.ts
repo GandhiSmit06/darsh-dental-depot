@@ -51,6 +51,9 @@ export class PaymentService {
   // ─── Stripe ─────────────────────────────────────────────────────────────────
 
   async createStripePaymentIntent(amount: number, currency = 'inr', metadata: Record<string, string>) {
+    if (!stripe) {
+      throw ApiError.badRequest('Stripe is not configured. Please use Razorpay or Cash on Delivery.');
+    }
     const paymentIntent = await stripe.paymentIntents.create({
       amount: Math.round(amount * 100), // smallest currency unit
       currency,
@@ -61,6 +64,9 @@ export class PaymentService {
   }
 
   async handleStripeWebhook(rawBody: Buffer, signature: string) {
+    if (!stripe) {
+      throw ApiError.badRequest('Stripe is not configured.');
+    }
     let event;
     try {
       event = stripe.webhooks.constructEvent(rawBody, signature, env.STRIPE_WEBHOOK_SECRET);

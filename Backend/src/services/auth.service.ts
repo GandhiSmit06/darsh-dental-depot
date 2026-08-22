@@ -330,14 +330,15 @@ export class AuthService {
   // ── 5. Standard Password Login (Email OR Mobile Number) ───────────────────
   async login(identifier: string, password: string): Promise<AuthTokens> {
     const cleanId = identifier.trim();
-    const isEmail = cleanId.includes('@');
     const cleanPhone = cleanId.replace(/\D/g, '').slice(-10);
 
-    const user = await User.findOne(
-      isEmail
-        ? { email: cleanId.toLowerCase() }
-        : { phone: cleanPhone }
-    ).select('+password +refreshToken');
+    const user = await User.findOne({
+      $or: [
+        { email: cleanId.toLowerCase() },
+        ...(cleanPhone ? [{ phone: cleanPhone }] : []),
+        { phone: cleanId },
+      ],
+    }).select('+password +refreshToken');
 
     if (!user) throw ApiError.unauthorized('Invalid email/mobile or password.');
 

@@ -34,11 +34,14 @@ export const registerValidator = [
 ];
 
 export const loginValidator = [
-  body('email')
-    .trim()
-    .notEmpty().withMessage('Email is required')
-    .isEmail().withMessage('Invalid email address')
-    .normalizeEmail(),
+  body()
+    .custom((_, { req }) => {
+      const id = req.body.email || req.body.phone || req.body.identifier;
+      if (!id || typeof id !== 'string' || !id.trim()) {
+        throw new Error('Email or Mobile number is required');
+      }
+      return true;
+    }),
   body('password')
     .notEmpty().withMessage('Password is required'),
 ];

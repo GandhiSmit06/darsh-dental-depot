@@ -18,7 +18,13 @@ export const authenticate = asyncHandler(
       throw ApiError.unauthorized('Authentication required. Please log in.');
     }
 
-    const decoded = verifyAccessToken(token);
+    let decoded;
+    try {
+      decoded = verifyAccessToken(token);
+    } catch (err: any) {
+      throw ApiError.unauthorized('Session expired or invalid token. Please log in again.');
+    }
+
     const user = await User.findById(decoded.id).select('+refreshToken');
 
     if (!user) {

@@ -6,13 +6,14 @@ const API_BASE = "http://localhost:5000/api/v1";
 /** Get the stored access token */
 export function getAccessToken(): string | null {
   if (typeof window === "undefined") return null;
-  return sessionStorage.getItem("accessToken");
+  return sessionStorage.getItem("accessToken") || localStorage.getItem("accessToken");
 }
 
 /** Persist tokens after login */
 export function setTokens(accessToken: string, refreshToken: string) {
   if (typeof window === "undefined") return;
   sessionStorage.setItem("accessToken", accessToken);
+  localStorage.setItem("accessToken", accessToken);
   localStorage.setItem("refreshToken", refreshToken);
 }
 
@@ -20,6 +21,7 @@ export function setTokens(accessToken: string, refreshToken: string) {
 export function clearTokens() {
   if (typeof window === "undefined") return;
   sessionStorage.removeItem("accessToken");
+  localStorage.removeItem("accessToken");
   localStorage.removeItem("refreshToken");
 }
 
@@ -47,13 +49,22 @@ export class ApiError extends Error {
   }
 }
 
+let isRefreshing = false;
+let refreshSubscribers: ((token: string) => void)[] = [];
+
+function onRefreshed(token: string) {
+  refreshSubscribers.forEach((cb) => cb(token));
+  refreshSubscribers = [];
+}
+
 /**
  * Make an authenticated request to the backend API.
- * Automatically attaches the Bearer token if available.
+ * Automatically attaches the Bearer token and retries if 401 occurs.
  */
 export async function apiFetch<T = unknown>(
   endpoint: string,
   options: RequestInit = {},
+  isRetry = false
 ): Promise<T> {
   const token = getAccessToken();
 
@@ -71,6 +82,44 @@ export async function apiFetch<T = unknown>(
     headers,
     credentials: "include", // send cookies
   });
+
+  // Handle 401 Unauthorized with automatic refresh token
+  if (res.status === 401 && !isRetry && !endpoint.includes("/auth/login") && !endpoint.includes("/auth/refresh")) {
+    const refreshToken = getRefreshToken();
+    if (refreshToken) {
+      if (!isRefreshing) {
+        isRefreshing = true;
+        try {
+          const refreshRes = await fetch(`${API_BASE}/auth/refresh`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ refreshToken }),
+            credentials: "include",
+          });
+          const refreshData = await refreshRes.json();
+          if (refreshRes.ok && refreshData.data?.accessToken) {
+            setTokens(refreshData.data.accessToken, refreshData.data.refreshToken || refreshToken);
+            onRefreshed(refreshData.data.accessToken);
+            isRefreshing = false;
+            return apiFetch<T>(endpoint, options, true);
+          } else {
+            clearTokens();
+            isRefreshing = false;
+          }
+        } catch {
+          clearTokens();
+          isRefreshing = false;
+        }
+      } else {
+        // Wait for active refresh
+        return new Promise<T>((resolve, reject) => {
+          refreshSubscribers.push(() => {
+            apiFetch<T>(endpoint, options, true).then(resolve).catch(reject);
+          });
+        });
+      }
+    }
+  }
 
   const body = await res.json();
 
@@ -411,6 +460,34 @@ export interface ProductResponse {
   images: string[];
 }
 
+export interface PlaceOrderPayload {
+  address: {
+    clinicName?: string;
+    contactName?: string;
+    contactPhone?: string;
+    street: string;
+    landmark?: string;
+    city?: string;
+    state?: string;
+    pincode?: string;
+  };
+  paymentMethod: "razorpay" | "cod";
+  notes?: string;
+}
+
+export interface PlaceOrderResponse {
+  orderId: string;
+  dbOrderId: string;
+  razorpayOrderId?: string;
+  amount?: number;
+  currency?: string;
+  keyId?: string;
+  total?: number;
+  simulation?: boolean;
+  paymentMethod: "razorpay" | "cod";
+  message?: string;
+}
+
 export const doctorApi = {
   getProfile: () => apiFetch<ApiOk<DoctorProfile>>("/doctor/profile"),
   getStats: () => apiFetch<ApiOk<DoctorStats>>("/doctor/stats"),
@@ -428,10 +505,12 @@ export const doctorApi = {
     apiFetch<ApiOk<DoctorWishlistItem[]>>(`/doctor/wishlist/${id}`, { method: "DELETE" }),
   getActiveOrder: () => apiFetch<ApiOk<DoctorActiveOrder | null>>("/doctor/orders/active"),
   getOrderHistory: () => apiFetch<ApiOk<DoctorOrderHistoryItem[]>>("/doctor/orders/history"),
-  placeOrder: () => apiFetch<ApiOk<{ orderId: string, razorpayOrderId: string, total: number }>>("/doctor/orders", { method: "POST" }),
+  placeOrder: (payload: PlaceOrderPayload) => 
+    apiFetch<ApiOk<PlaceOrderResponse>>("/doctor/orders", { method: "POST", body: JSON.stringify(payload) }),
   cancelOrder: (id: string) => apiFetch<ApiOk<unknown>>(`/doctor/orders/${id}/cancel`, { method: "POST" }),
-  updateProfile: (data: { address: string }) => apiFetch<ApiOk<unknown>>("/doctor/profile", { method: "PUT", body: JSON.stringify(data) }),
-  verifyRazorpayPayment: (data: { razorpayOrderId: string, razorpayPaymentId: string, razorpaySignature: string, orderId: string }) => apiFetch<ApiOk<unknown>>("/payments/razorpay/verify", { method: "POST", body: JSON.stringify(data) }),
+  updateProfile: (data: Partial<DoctorProfile>) => apiFetch<ApiOk<unknown>>("/doctor/profile", { method: "PUT", body: JSON.stringify(data) }),
+  verifyRazorpayPayment: (data: { razorpayOrderId: string, razorpayPaymentId: string, razorpaySignature: string, orderId: string }) => 
+    apiFetch<ApiOk<unknown>>("/doctor/orders/verify-payment", { method: "POST", body: JSON.stringify(data) }),
 };
 
 // ─── Products API calls ─────────────────────────────────────────────────────

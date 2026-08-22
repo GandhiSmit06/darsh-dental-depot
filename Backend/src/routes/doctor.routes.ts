@@ -28,6 +28,7 @@ router.delete('/wishlist/:id', doctorCtrl.removeFromWishlist);
 router.get('/orders/active', doctorCtrl.getActiveOrder);
 router.get('/orders/history', doctorCtrl.getOrderHistory);
 router.post('/orders', doctorCtrl.placeOrder);
+router.post('/orders/verify-payment', doctorCtrl.verifyPayment);
 router.post('/orders/:id/cancel', doctorCtrl.cancelOrder);
 
 export default router;

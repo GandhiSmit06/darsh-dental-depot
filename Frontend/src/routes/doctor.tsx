@@ -2,7 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState, useEffect, useCallback, useRef } from "react";
 import {
   LayoutDashboard, ShoppingCart, Heart, ShoppingBag, Bell, Settings, Package,
-  CheckCircle2, Truck, Plus, Minus, Trash2, Loader2, Phone, MapPin, Clock, Sparkles, RefreshCw
+  CheckCircle2, Truck, Plus, Minus, Trash2, Loader2, Phone, MapPin, Clock, Sparkles, RefreshCw,
+  CreditCard, Banknote, ShieldCheck, Building
 } from "lucide-react";
 import { DashboardLayout, type NavItem } from "@/components/dashboard/DashboardLayout";
 import { StatCard, StatusBadge } from "@/components/dashboard/widgets";
@@ -103,7 +104,7 @@ function DoctorDashboard() {
     <DashboardLayout title="Doctor" role="Doctor" items={items} active={active} onChange={setActive}>
       {active === "dashboard" && <Overview />}
       {active === "browse" && <Browse />}
-      {active === "cart" && <CartSection />}
+      {active === "cart" && <CartSection onNavigateToOrders={() => setActive("orders")} />}
       {active === "wishlist" && <Wishlist />}
       {active === "orders" && <OrdersSection />}
       {active === "notifications" && <NotificationsSection />}
@@ -221,11 +222,9 @@ function Browse() {
 
 // ─── PAGE 3: Cart ───────────────────────────────────────────────────────────
 
-function CartSection() {
+function CartSection({ onNavigateToOrders }: { onNavigateToOrders?: () => void }) {
   const { data: cart, loading, error, retry, mutate } = useApiData<DoctorCartItem[]>(doctorApi.getCart);
   const [isCheckingOut, setIsCheckingOut] = useState(false);
-
-  const total = cart?.reduce((s, i) => s + i.price * i.quantity, 0) || 0;
 
   const updateQuantity = async (id: string, qty: number) => {
     try {
@@ -240,164 +239,438 @@ function CartSection() {
     try {
       const res = await doctorApi.removeFromCart(id);
       mutate(res.data);
-      toast.success("Item removed");
+      toast.success("Item removed from cart");
     } catch {
       toast.error("Failed to remove item");
     }
   };
 
   const profileData = useApiData<DoctorProfile>(doctorApi.getProfile);
-  const [showAddressModal, setShowAddressModal] = useState(false);
-  const [addressInput, setAddressInput] = useState("");
-  const [isSavingAddress, setIsSavingAddress] = useState(false);
+  const [showCheckoutModal, setShowCheckoutModal] = useState(false);
+
+  // Address & Payment state
+  const [clinicName, setClinicName] = useState("");
+  const [contactName, setContactName] = useState("");
+  const [contactPhone, setContactPhone] = useState("");
+  const [streetAddress, setStreetAddress] = useState("");
+  const [landmark, setLandmark] = useState("");
+  const [pincode, setPincode] = useState("390001");
+  const [paymentMethod, setPaymentMethod] = useState<"razorpay" | "cod">("razorpay");
+  const [deliveryNotes, setDeliveryNotes] = useState("");
 
   useEffect(() => {
-    if (profileData.data?.address) {
-      setAddressInput(profileData.data.address);
+    if (profileData.data) {
+      if (profileData.data.clinicName) setClinicName(profileData.data.clinicName);
+      if (profileData.data.name) setContactName(profileData.data.name);
+      if (profileData.data.phone) setContactPhone(profileData.data.phone);
+      if (profileData.data.address) setStreetAddress(profileData.data.address);
     }
   }, [profileData.data]);
 
-  const handleCheckout = async () => {
-    if (!profileData.data?.address) {
-      setShowAddressModal(true);
+  const total = cart?.reduce((sum, item) => sum + item.price * item.quantity, 0) || 0;
+
+  const handleOpenCheckout = () => {
+    if (!cart?.length) {
+      toast.error("Your cart is empty. Add products before checking out.");
+      return;
+    }
+    setShowCheckoutModal(true);
+  };
+
+  const handleProcessOrder = async () => {
+    if (!streetAddress.trim()) {
+      toast.error("Please enter your clinic street address in Vadodara");
+      return;
+    }
+    if (!contactPhone.trim()) {
+      toast.error("Please enter a contact phone number");
       return;
     }
 
     setIsCheckingOut(true);
+
     try {
-      const res = await doctorApi.placeOrder();
-      
-      // If backend returned simulation mode (Razorpay keys not configured),
-      // the order is already marked as paid — just show success
-      if ((res.data as any).simulation) {
-        toast.success(`Order ${res.data.orderId} placed successfully! (Payment simulated)`);
+      // 1. Submit order with address & payment method
+      const res = await doctorApi.placeOrder({
+        address: {
+          clinicName: clinicName.trim() || undefined,
+          contactName: contactName.trim() || undefined,
+          contactPhone: contactPhone.trim(),
+          street: streetAddress.trim(),
+          landmark: landmark.trim() || undefined,
+          city: "Vadodara",
+          state: "Gujarat",
+          pincode: pincode.trim() || "390001",
+        },
+        paymentMethod,
+        notes: deliveryNotes.trim() || undefined,
+      });
+
+      // Save updated address to doctor profile for convenience
+      doctorApi.updateProfile({
+        clinicName: clinicName.trim() || undefined,
+        address: streetAddress.trim(),
+        phone: contactPhone.trim(),
+      }).catch(() => {});
+
+      // 2. If Cash on Delivery
+      if (paymentMethod === "cod") {
+        toast.success(`🎉 Order ${res.data.orderId} confirmed with Pay on Delivery!`);
         mutate([]);
+        setShowCheckoutModal(false);
+        if (onNavigateToOrders) onNavigateToOrders();
         return;
       }
 
+      // 3. If Razorpay Online Payment
+      const orderInfo = res.data;
+      const rzpKey = orderInfo.keyId || "rzp_test_RvTaFgHR4Y5TPv";
+
+      // If in fallback simulation mode
+      if (orderInfo.simulation) {
+        toast.success(`🎉 Order ${orderInfo.orderId} placed successfully!`);
+        mutate([]);
+        setShowCheckoutModal(false);
+        if (onNavigateToOrders) onNavigateToOrders();
+        return;
+      }
+
+      // Ensure Razorpay SDK script is loaded
+      if (!(window as any).Razorpay) {
+        await new Promise((resolve) => {
+          const script = document.createElement("script");
+          script.src = "https://checkout.razorpay.com/v1/checkout.js";
+          script.onload = resolve;
+          document.body.appendChild(script);
+        });
+      }
+
       const options = {
-        key: "rzp_test_RvTaFgHR4Y5TPv",
-        amount: res.data.total * 100,
+        key: rzpKey,
+        amount: orderInfo.amount || Math.round(total * 100),
         currency: "INR",
         name: "Darsh Dental Depot",
-        description: "Order Payment",
-        order_id: res.data.razorpayOrderId,
+        description: `Order #${orderInfo.orderId} — Vadodara Dental Supplies`,
+        order_id: orderInfo.razorpayOrderId,
+        image: "https://darshdental.com/logo.png",
         handler: async function (response: any) {
           try {
             await doctorApi.verifyRazorpayPayment({
+              orderId: orderInfo.dbOrderId,
               razorpayOrderId: response.razorpay_order_id,
               razorpayPaymentId: response.razorpay_payment_id,
               razorpaySignature: response.razorpay_signature,
-              orderId: res.data.orderId
             });
-            toast.success("Payment successful! Order placed.");
+            toast.success(`✅ Payment of ₹${total.toFixed(2)} verified! Order placed.`);
             mutate([]);
-          } catch {
-            toast.error("Payment verification failed.");
+            setShowCheckoutModal(false);
+            if (onNavigateToOrders) onNavigateToOrders();
+          } catch (err: any) {
+            toast.error(err.message || "Payment verification failed.");
           }
         },
         prefill: {
-          name: profileData.data?.name,
-          email: profileData.data?.email,
-          contact: profileData.data?.phone
+          name: contactName || profileData.data?.name || "Doctor",
+          email: profileData.data?.email || "",
+          contact: contactPhone || profileData.data?.phone || "",
+        },
+        notes: {
+          clinic: clinicName,
+          address: streetAddress,
+          city: "Vadodara",
         },
         theme: {
-          color: "#2563eb"
-        }
+          color: "#0284c7",
+        },
+        modal: {
+          ondismiss: function () {
+            toast.info("Payment was not completed. You can retry anytime.");
+          },
+        },
       };
-      
+
       const rzp = new (window as any).Razorpay(options);
-      rzp.on('payment.failed', function (response: any){
-          toast.error("Payment failed. Please try again.");
+      rzp.on("payment.failed", function (resp: any) {
+        toast.error(`Payment failed: ${resp.error?.description || "Transaction declined"}`);
       });
       rzp.open();
 
-    } catch {
-      toast.error("Failed to initiate checkout");
+    } catch (err: any) {
+      toast.error(err.message || "Failed to initiate checkout");
     } finally {
       setIsCheckingOut(false);
     }
   };
 
-  const handleSaveAddress = async () => {
-    if (!addressInput.trim()) {
-      toast.error("Please enter an address");
-      return;
-    }
-    setIsSavingAddress(true);
-    try {
-      await doctorApi.updateProfile({ address: addressInput });
-      await profileData.retry();
-      setShowAddressModal(false);
-      handleCheckout(); // Automatically continue to checkout
-    } catch {
-      toast.error("Failed to save address");
-    } finally {
-      setIsSavingAddress(false);
-    }
-  };
-
   return (
     <div className="space-y-5">
-      <h1 className="text-2xl font-bold">Your cart</h1>
-      {loading ? <LoadingSpinner label="Loading cart..." /> : error ? <ErrorBanner onRetry={retry} /> : !cart?.length ? (
-        <EmptyBanner label="Cart is empty" />
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold font-heading">Your Cart</h1>
+        {cart?.length ? (
+          <span className="text-xs text-muted-foreground bg-primary/10 text-primary font-bold px-3 py-1 rounded-full">
+            {cart.length} product{cart.length > 1 ? "s" : ""}
+          </span>
+        ) : null}
+      </div>
+
+      {loading ? (
+        <LoadingSpinner label="Loading cart items..." />
+      ) : error ? (
+        <ErrorBanner onRetry={retry} />
+      ) : !cart?.length ? (
+        <EmptyBanner label="Your cart is currently empty" />
       ) : (
-        <div className="grid lg:grid-cols-3 gap-5">
-          <Card className="lg:col-span-2 divide-y">
+        <div className="grid lg:grid-cols-3 gap-6">
+          <Card className="lg:col-span-2 divide-y divide-border/60 rounded-3xl overflow-hidden shadow-sm">
             {cart.map((item) => (
-              <div key={item.cartItemId} className="p-4 flex items-center gap-4">
-                {item.imageUrl && <img src={item.imageUrl} alt="" className="h-16 w-16 rounded object-cover" />}
+              <div key={item.cartItemId} className="p-4 flex items-center gap-4 hover:bg-muted/20 transition-colors">
+                {item.imageUrl ? (
+                  <img src={item.imageUrl} alt={item.name} className="h-16 w-16 rounded-2xl object-cover border shrink-0" />
+                ) : (
+                  <div className="h-16 w-16 rounded-2xl bg-muted grid place-items-center text-muted-foreground shrink-0">
+                    <Package className="h-6 w-6" />
+                  </div>
+                )}
                 <div className="flex-1 min-w-0">
-                  <div className="font-medium truncate">{item.name}</div>
+                  <div className="font-bold text-sm truncate text-foreground">{item.name}</div>
                   <div className="text-xs text-muted-foreground">{item.brand}</div>
+                  <div className="text-xs font-semibold text-primary mt-1">₹{item.price.toFixed(2)} each</div>
                 </div>
-                <div className="flex items-center border rounded-md">
-                  <button className="px-2 py-1" onClick={() => updateQuantity(item.cartItemId, Math.max(1, item.quantity - 1))}><Minus className="h-3 w-3" /></button>
-                  <span className="w-8 text-center text-sm">{item.quantity}</span>
-                  <button className="px-2 py-1" onClick={() => updateQuantity(item.cartItemId, item.quantity + 1)}><Plus className="h-3 w-3" /></button>
+                <div className="flex items-center border rounded-xl bg-background shadow-2xs overflow-hidden">
+                  <button 
+                    className="px-2.5 py-1.5 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors" 
+                    onClick={() => updateQuantity(item.cartItemId, Math.max(1, item.quantity - 1))}
+                  >
+                    <Minus className="h-3 w-3" />
+                  </button>
+                  <span className="w-8 text-center text-xs font-bold">{item.quantity}</span>
+                  <button 
+                    className="px-2.5 py-1.5 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors" 
+                    onClick={() => updateQuantity(item.cartItemId, item.quantity + 1)}
+                  >
+                    <Plus className="h-3 w-3" />
+                  </button>
                 </div>
-                <div className="w-20 text-right font-semibold">₹{(item.price * item.quantity).toFixed(2)}</div>
-                <Button variant="ghost" size="icon" onClick={() => removeItem(item.cartItemId)}>
+                <div className="w-24 text-right font-black text-foreground">₹{(item.price * item.quantity).toFixed(2)}</div>
+                <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-destructive" onClick={() => removeItem(item.cartItemId)}>
                   <Trash2 className="h-4 w-4" />
                 </Button>
               </div>
             ))}
           </Card>
-          <Card className="p-5 h-fit">
-            <h3 className="font-semibold mb-3">Summary</h3>
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between"><span>Subtotal</span><span>₹{total.toFixed(2)}</span></div>
-              <div className="flex justify-between text-muted-foreground"><span>Shipping</span><span>Free</span></div>
-              <div className="flex justify-between font-bold border-t pt-3 mt-3"><span>Total</span><span>₹{total.toFixed(2)}</span></div>
+
+          {/* Cart Summary Card */}
+          <Card className="p-6 h-fit rounded-3xl shadow-sm border border-border/80 space-y-4">
+            <h3 className="font-bold text-lg">Order Summary</h3>
+            <div className="space-y-2.5 text-sm">
+              <div className="flex justify-between text-muted-foreground">
+                <span>Subtotal ({cart.length} items)</span>
+                <span className="font-semibold text-foreground">₹{total.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between text-muted-foreground">
+                <span className="flex items-center gap-1.5">
+                  <Truck className="h-3.5 w-3.5 text-emerald-500" />
+                  Vadodara Delivery
+                </span>
+                <span className="font-bold text-emerald-600">FREE</span>
+              </div>
+              <div className="flex justify-between font-black text-lg border-t border-border/80 pt-3 mt-3">
+                <span>Total Amount</span>
+                <span className="text-primary">₹{total.toFixed(2)}</span>
+              </div>
             </div>
-            <Button className="w-full mt-4" disabled={isCheckingOut || profileData.loading} onClick={handleCheckout}>
-              {isCheckingOut ? "Processing..." : "Checkout securely"}
+
+            <Button 
+              className="w-full h-12 rounded-2xl font-bold shadow-md shadow-primary/20 text-sm gap-2" 
+              onClick={handleOpenCheckout}
+            >
+              <ShieldCheck className="h-4 w-4" />
+              Proceed to Checkout
             </Button>
+
+            <div className="p-3 rounded-2xl bg-muted/40 text-[11px] text-muted-foreground flex items-center gap-2">
+              <ShieldCheck className="h-4 w-4 text-emerald-600 shrink-0" />
+              <span>100% Genuine Dental Supplies · Direct Dispatch from Kevdabaug Depot</span>
+            </div>
           </Card>
         </div>
       )}
 
-      <Dialog open={showAddressModal} onOpenChange={setShowAddressModal}>
-        <DialogContent>
+      {/* Complete Checkout Dialog (Address & Razorpay Payment Method) */}
+      <Dialog open={showCheckoutModal} onOpenChange={setShowCheckoutModal}>
+        <DialogContent className="sm:max-w-xl max-h-[90vh] overflow-y-auto rounded-3xl p-6">
           <DialogHeader>
-            <DialogTitle>Delivery Address Required</DialogTitle>
+            <DialogTitle className="text-xl font-bold font-heading flex items-center gap-2">
+              <Building className="h-5 w-5 text-primary" />
+              Complete Clinic Order & Payment
+            </DialogTitle>
           </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label>Please enter your complete delivery address before checking out.</Label>
-              <Input 
-                value={addressInput} 
-                onChange={e => setAddressInput(e.target.value)} 
-                placeholder="Clinic name, Street, City, State, Pincode"
-              />
+
+          <div className="space-y-6 py-2">
+            {/* Step 1: Delivery Address */}
+            <div className="space-y-3.5 p-4 rounded-2xl bg-muted/30 border border-border/70">
+              <div className="flex items-center gap-2">
+                <MapPin className="h-4 w-4 text-primary" />
+                <span className="font-bold text-sm">1. Clinic Delivery Address (Vadodara)</span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <Label className="text-xs">Clinic Name</Label>
+                  <Input 
+                    value={clinicName} 
+                    onChange={e => setClinicName(e.target.value)} 
+                    placeholder="e.g. Smile Dental Clinic"
+                    className="h-9 text-xs rounded-xl"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">Contact Mobile Number *</Label>
+                  <Input 
+                    value={contactPhone} 
+                    onChange={e => setContactPhone(e.target.value)} 
+                    placeholder="+91 98765 43210"
+                    className="h-9 text-xs rounded-xl"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <Label className="text-xs">Street / Complex / Shop Address *</Label>
+                <Input 
+                  value={streetAddress} 
+                  onChange={e => setStreetAddress(e.target.value)} 
+                  placeholder="e.g. 2nd Floor, Vraj Vihar Complex, Kevdabaug"
+                  className="h-9 text-xs rounded-xl"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="space-y-1 sm:col-span-2">
+                  <Label className="text-xs">Landmark</Label>
+                  <Input 
+                    value={landmark} 
+                    onChange={e => setLandmark(e.target.value)} 
+                    placeholder="e.g. Near Char Rasta"
+                    className="h-9 text-xs rounded-xl"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">Pincode</Label>
+                  <Input 
+                    value={pincode} 
+                    onChange={e => setPincode(e.target.value)} 
+                    placeholder="390001"
+                    className="h-9 text-xs rounded-xl"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <Label className="text-xs">Special Instructions (Optional)</Label>
+                <Input 
+                  value={deliveryNotes} 
+                  onChange={e => setDeliveryNotes(e.target.value)} 
+                  placeholder="e.g. Deliver before lunch break / Call doctor upon arrival"
+                  className="h-9 text-xs rounded-xl"
+                />
+              </div>
+            </div>
+
+            {/* Step 2: Payment Method */}
+            <div className="space-y-3.5 p-4 rounded-2xl bg-muted/30 border border-border/70">
+              <div className="flex items-center gap-2">
+                <CreditCard className="h-4 w-4 text-primary" />
+                <span className="font-bold text-sm">2. Select Payment Method</span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {/* Razorpay Online Option */}
+                <div 
+                  onClick={() => setPaymentMethod("razorpay")}
+                  className={`p-3.5 rounded-2xl border-2 cursor-pointer transition-all ${
+                    paymentMethod === "razorpay" 
+                      ? "border-primary bg-primary/5 shadow-xs" 
+                      : "border-border/80 bg-card hover:border-primary/40"
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-1.5">
+                    <div className="flex items-center gap-2">
+                      <CreditCard className="h-4 w-4 text-primary" />
+                      <span className="font-bold text-xs">Razorpay Online</span>
+                    </div>
+                    {paymentMethod === "razorpay" && (
+                      <span className="h-2 w-2 rounded-full bg-primary" />
+                    )}
+                  </div>
+                  <p className="text-[11px] text-muted-foreground">
+                    UPI (GPay / PhonePe / Paytm), Cards & NetBanking
+                  </p>
+                  <span className="inline-block mt-2 text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-md">
+                    Instant Dispatch
+                  </span>
+                </div>
+
+                {/* Cash on Delivery Option */}
+                <div 
+                  onClick={() => setPaymentMethod("cod")}
+                  className={`p-3.5 rounded-2xl border-2 cursor-pointer transition-all ${
+                    paymentMethod === "cod" 
+                      ? "border-primary bg-primary/5 shadow-xs" 
+                      : "border-border/80 bg-card hover:border-primary/40"
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-1.5">
+                    <div className="flex items-center gap-2">
+                      <Banknote className="h-4 w-4 text-emerald-600" />
+                      <span className="font-bold text-xs">Pay on Delivery</span>
+                    </div>
+                    {paymentMethod === "cod" && (
+                      <span className="h-2 w-2 rounded-full bg-primary" />
+                    )}
+                  </div>
+                  <p className="text-[11px] text-muted-foreground">
+                    Pay cash or scan courier UPI QR when package arrives at your clinic
+                  </p>
+                  <span className="inline-block mt-2 text-[10px] font-bold text-emerald-700 bg-emerald-500/10 px-2 py-0.5 rounded-md">
+                    Vadodara Clinics Only
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Total breakdown */}
+            <div className="flex items-center justify-between p-3.5 rounded-2xl bg-primary/10 border border-primary/20">
+              <span className="text-sm font-bold text-foreground">Total Payable Amount:</span>
+              <span className="text-xl font-black text-primary">₹{total.toFixed(2)}</span>
             </div>
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowAddressModal(false)}>Cancel</Button>
-            <Button disabled={isSavingAddress} onClick={handleSaveAddress}>
-              {isSavingAddress ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-              Save and Continue
+
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button variant="outline" onClick={() => setShowCheckoutModal(false)} disabled={isCheckingOut} className="rounded-xl">
+              Cancel
+            </Button>
+            <Button 
+              disabled={isCheckingOut} 
+              onClick={handleProcessOrder}
+              className="rounded-xl font-bold shadow-md shadow-primary/20 gap-2"
+            >
+              {isCheckingOut ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Processing...
+                </>
+              ) : paymentMethod === "razorpay" ? (
+                <>
+                  <CreditCard className="h-4 w-4" />
+                  Pay ₹{total.toFixed(2)} via Razorpay
+                </>
+              ) : (
+                <>
+                  <Banknote className="h-4 w-4" />
+                  Confirm Pay on Delivery Order
+                </>
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>

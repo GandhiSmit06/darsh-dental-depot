@@ -67,8 +67,13 @@ export const getOrderHistory = asyncHandler(async (req: Request, res: Response) 
 });
 
 export const placeOrder = asyncHandler(async (req: Request, res: Response) => {
-  const result = await doctorService.placeOrderFromCart(req.user!._id.toString());
-  res.json(ApiResponse.ok('Order placed successfully', result));
+  const result = await doctorService.placeOrderFromCart(req.user!._id.toString(), req.body);
+  res.json(ApiResponse.ok('Order processed', result));
+});
+
+export const verifyPayment = asyncHandler(async (req: Request, res: Response) => {
+  const result = await doctorService.verifyRazorpayPayment(req.user!._id.toString(), req.body);
+  res.json(ApiResponse.ok('Payment verified successfully', result));
 });
 
 export const cancelOrder = asyncHandler(async (req: Request, res: Response) => {

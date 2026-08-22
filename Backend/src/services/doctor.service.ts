@@ -6,6 +6,8 @@ import { Wishlist } from '../models/Wishlist';
 import { Product } from '../models/Product';
 import { ApiError } from '../utils/ApiError';
 import { paymentService } from './payment.service';
+import { env } from '../config/env';
+import { sendOrderConfirmationEmail } from '../helpers/mailer.helper';
 
 export class DoctorService {
   // ── Profile ──────────────────────────────────────────────────────────────
@@ -264,12 +266,28 @@ export class DoctorService {
     }));
   }
 
-  async placeOrderFromCart(doctorId: string) {
+  async placeOrderFromCart(
+    doctorId: string,
+    payload?: {
+      address?: {
+        clinicName?: string;
+        contactName?: string;
+        contactPhone?: string;
+        street: string;
+        landmark?: string;
+        city?: string;
+        state?: string;
+        pincode?: string;
+      };
+      paymentMethod?: 'razorpay' | 'cod';
+      notes?: string;
+    }
+  ) {
     const userId = new Types.ObjectId(doctorId);
     const cart = await Cart.findOne({ userId }).populate('items.productId');
 
     if (!cart || cart.items.length === 0) {
-      throw ApiError.badRequest('Cart is empty.');
+      throw ApiError.badRequest('Your cart is empty. Please add dental products before checking out.');
     }
 
     const orderItems = [];
@@ -280,7 +298,7 @@ export class DoctorService {
       if (!product) continue;
 
       if (product.stock < item.quantity) {
-        throw ApiError.badRequest(`Not enough stock for ${product.name}`);
+        throw ApiError.badRequest(`Insufficient stock for "${product.name}". Available: ${product.stock}`);
       }
 
       orderItems.push({
@@ -296,8 +314,12 @@ export class DoctorService {
       await Product.findByIdAndUpdate(product._id, { $inc: { stock: -item.quantity } });
     }
 
-    // Get user address
     const user = await User.findById(userId).lean();
+    const paymentMethod = payload?.paymentMethod || 'razorpay';
+    const street = payload?.address?.street || user?.address || 'Vadodara Clinic';
+    const landmark = payload?.address?.landmark ? ` (Landmark: ${payload.address.landmark})` : '';
+    const clinicName = payload?.address?.clinicName || user?.clinicName || 'Clinic';
+    const contactPhone = payload?.address?.contactPhone || user?.phone || '';
 
     const order = new Order({
       customerId: userId,
@@ -305,47 +327,116 @@ export class DoctorService {
       totalPrice,
       orderStatus: 'pending',
       paymentStatus: 'pending',
-      paymentMethod: 'razorpay',
+      paymentMethod: paymentMethod === 'cod' ? 'cod' : 'razorpay',
       address: {
-        street: user?.address || 'Not provided',
-        city: 'Vadodara',
-        state: 'Gujarat',
-        pincode: '390001',
+        street: `${street}${landmark}`,
+        city: payload?.address?.city || 'Vadodara',
+        state: payload?.address?.state || 'Gujarat',
+        pincode: payload?.address?.pincode || '390001',
         country: 'India',
       },
+      notes: payload?.notes || `Clinic: ${clinicName}, Phone: ${contactPhone}`,
     });
 
     await order.save();
 
-    // Create Razorpay order (graceful fallback if test keys are invalid)
+    // If COD, clear cart and return confirmation
+    if (paymentMethod === 'cod') {
+      cart.items = [];
+      await cart.save();
+
+      try {
+        if (user?.email) {
+          await sendOrderConfirmationEmail(
+            user.email,
+            user.fullName || 'Doctor',
+            order._id.toString(),
+            totalPrice,
+            orderItems
+          );
+        }
+      } catch {}
+
+      return {
+        orderId: `ORD-${order._id.toString().slice(-6).toUpperCase()}`,
+        dbOrderId: order._id.toString(),
+        total: order.totalPrice,
+        paymentMethod: 'cod',
+        message: 'Order placed successfully! Payment will be collected upon delivery at your clinic.',
+      };
+    }
+
+    // Razorpay Flow
     let razorpayOrderId = `sim_${order._id.toString()}`;
     let useSimulation = false;
     try {
       const razorpayOrder = await paymentService.createRazorpayOrder(
         totalPrice,
         'INR',
-        `receipt_${order._id.toString().slice(-8)}`
+        `rcpt_${order._id.toString().slice(-8)}`
       );
       razorpayOrderId = razorpayOrder.id;
-    } catch (err: any) {
-      console.warn('Razorpay order creation failed, using simulation mode:', err?.message || err);
-      useSimulation = true;
-      // Mark order as paid immediately in simulation mode
-      order.paymentStatus = 'paid';
-      order.orderStatus = 'processing';
+      order.razorpayOrderId = razorpayOrderId;
       await order.save();
+    } catch (err: any) {
+      console.warn('Razorpay order creation fallback:', err?.message || err);
+      useSimulation = true;
     }
-
-    // Clear cart
-    cart.items = [];
-    await cart.save();
 
     return {
       orderId: `ORD-${order._id.toString().slice(-6).toUpperCase()}`,
       dbOrderId: order._id.toString(),
       razorpayOrderId,
+      amount: Math.round(totalPrice * 100),
+      currency: 'INR',
+      keyId: env.RAZORPAY_KEY_ID || 'rzp_test_RvTaFgHR4Y5TPv',
       total: order.totalPrice,
       simulation: useSimulation,
+      paymentMethod: 'razorpay',
+    };
+  }
+
+  async verifyRazorpayPayment(
+    doctorId: string,
+    data: {
+      orderId: string;
+      razorpayOrderId: string;
+      razorpayPaymentId: string;
+      razorpaySignature: string;
+    }
+  ) {
+    const userId = new Types.ObjectId(doctorId);
+    const order = await paymentService.verifyRazorpayPayment(
+      data.razorpayOrderId,
+      data.razorpayPaymentId,
+      data.razorpaySignature,
+      data.orderId
+    );
+
+    // Clear cart on successful payment
+    const cart = await Cart.findOne({ userId });
+    if (cart) {
+      cart.items = [];
+      await cart.save();
+    }
+
+    const user = await User.findById(userId).lean();
+    try {
+      if (user?.email) {
+        await sendOrderConfirmationEmail(
+          user.email,
+          user.fullName || 'Doctor',
+          order._id.toString(),
+          order.totalPrice,
+          order.products as any
+        );
+      }
+    } catch {}
+
+    return {
+      success: true,
+      orderId: `ORD-${order._id.toString().slice(-6).toUpperCase()}`,
+      order,
     };
   }
 

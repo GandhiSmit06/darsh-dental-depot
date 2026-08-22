@@ -326,40 +326,31 @@ function CartSection({ onNavigateToOrders }: { onNavigateToOrders?: () => void }
       const orderInfo = res.data;
       const rzpKey = orderInfo.keyId || "rzp_test_RvTaFgHR4Y5TPv";
 
-      // If in fallback simulation mode
-      if (orderInfo.simulation) {
-        toast.success(`🎉 Order ${orderInfo.orderId} placed successfully!`);
-        mutate([]);
-        setShowCheckoutModal(false);
-        if (onNavigateToOrders) onNavigateToOrders();
-        return;
-      }
-
       // Ensure Razorpay SDK script is loaded
       if (!(window as any).Razorpay) {
         await new Promise((resolve) => {
           const script = document.createElement("script");
           script.src = "https://checkout.razorpay.com/v1/checkout.js";
+          script.async = true;
           script.onload = resolve;
           document.body.appendChild(script);
         });
       }
 
-      const options = {
+      const options: any = {
         key: rzpKey,
         amount: orderInfo.amount || Math.round(total * 100),
         currency: "INR",
         name: "Darsh Dental Depot",
         description: `Order #${orderInfo.orderId} — Vadodara Dental Supplies`,
-        order_id: orderInfo.razorpayOrderId,
         image: "https://darshdental.com/logo.png",
         handler: async function (response: any) {
           try {
             await doctorApi.verifyRazorpayPayment({
               orderId: orderInfo.dbOrderId,
-              razorpayOrderId: response.razorpay_order_id,
-              razorpayPaymentId: response.razorpay_payment_id,
-              razorpaySignature: response.razorpay_signature,
+              razorpayOrderId: response.razorpay_order_id || orderInfo.razorpayOrderId || "sim_order",
+              razorpayPaymentId: response.razorpay_payment_id || "pay_test",
+              razorpaySignature: response.razorpay_signature || "test_signature",
             });
             toast.success(`✅ Payment of ₹${total.toFixed(2)} verified! Order placed.`);
             mutate([]);
@@ -388,6 +379,10 @@ function CartSection({ onNavigateToOrders }: { onNavigateToOrders?: () => void }
           },
         },
       };
+
+      if (orderInfo.razorpayOrderId && !orderInfo.razorpayOrderId.startsWith("sim_")) {
+        options.order_id = orderInfo.razorpayOrderId;
+      }
 
       const rzp = new (window as any).Razorpay(options);
       rzp.on("payment.failed", function (resp: any) {

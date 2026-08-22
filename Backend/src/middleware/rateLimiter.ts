@@ -7,6 +7,7 @@ export const globalRateLimiter = rateLimit({
   max: env.RATE_LIMIT_MAX,
   standardHeaders: true,
   legacyHeaders: false,
+  skip: () => env.NODE_ENV === 'development',
   message: ApiResponse.error('Too many requests, please try again later.'),
 });
 
@@ -15,5 +16,6 @@ export const authRateLimiter = rateLimit({
   max: env.AUTH_RATE_LIMIT_MAX,
   standardHeaders: true,
   legacyHeaders: false,
-  message: ApiResponse.error('Too many login attempts. Please wait 15 minutes.'),
+  skip: () => env.NODE_ENV === 'development',
+  message: ApiResponse.error('Too many login attempts. Please wait a few moments.'),
 });

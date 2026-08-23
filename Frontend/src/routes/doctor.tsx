@@ -355,7 +355,12 @@ function CartSection({ onNavigateToOrders }: { onNavigateToOrders?: () => void }
           if (onNavigateToOrders) onNavigateToOrders();
         },
         onDismiss: () => {
-          toast.info("Payment window was closed. Your order record has been saved.");
+          toast.info("Payment window was closed. Your order record has been saved as pending.");
+          mutate([]);
+          if (onNavigateToOrders) onNavigateToOrders();
+        },
+        onFailure: (errorMsg) => {
+          toast.error(`Payment failed: ${errorMsg}`);
           mutate([]);
           if (onNavigateToOrders) onNavigateToOrders();
         },

@@ -308,39 +308,50 @@
     left: 140%;
   }
 
-  /* ─── Uiverse yellow-dolphin-16 Page Loader Animation ─── */
-  .dolphin-loader {
-    display: block;
-    width: 84px;
-    height: 84px;
-    position: relative;
+  /* ─── NeoLeaf-Style Wave Text Loader ─── */
+  .neoleaf-loader-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background-color: #0a0a0f;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: opacity 0.75s cubic-bezier(0.4, 0, 0.2, 1),
+                visibility 0.75s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
-  .dolphin-loader:before,
-  .dolphin-loader:after {
-    content: "";
-    position: absolute;
-    left: 50%;
-    bottom: 0;
-    width: 64px;
-    height: 64px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #0284c7 0%, #38bdf8 50%, #6366f1 100%);
-    box-shadow: 0 0 25px rgba(56, 189, 248, 0.6);
-    transform: translate(-50%, -100%) scale(0);
-    animation: dolphin_push 2s infinite linear;
+  .neoleaf-loader-overlay.neoleaf-fade-out {
+    opacity: 0;
+    visibility: hidden;
   }
 
-  .dolphin-loader:after {
-    animation-delay: 1s;
+  .neoleaf-progress {
+    position: fixed;
+    bottom: clamp(28px, 5vh, 60px);
+    right: clamp(28px, 5vw, 80px);
+    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+    font-size: clamp(12px, 1.2vw, 16px);
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.5);
+    letter-spacing: 1.5px;
+    text-transform: lowercase;
+    z-index: 10000;
   }
 
-  @keyframes dolphin_push {
-    0%, 50% {
-      transform: translate(-50%, 0%) scale(1);
-    }
-    100% {
-      transform: translate(-50%, -100%) scale(0);
-    }
+  .neoleaf-progress-num {
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.8);
+    min-width: 2ch;
+    display: inline-block;
+    text-align: right;
+  }
+
+  /* Route-change thin progress bar */
+  @keyframes routeBar {
+    0% { transform: scaleX(0); opacity: 1; }
+    60% { transform: scaleX(0.7); opacity: 1; }
+    100% { transform: scaleX(1); opacity: 0; }
   }
 }

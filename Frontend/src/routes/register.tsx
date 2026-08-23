@@ -179,14 +179,17 @@ function RegisterPage() {
         confirmPassword: data.confirmPassword,
       };
 
-      setLastPayload(payload);
-      const res = await authApi.sendRegisterOtp(payload);
-      setPendingEmail(payload.email);
-      setPendingPhone(payload.phone);
-      setPendingName(payload.fullName);
-      setStep(2);
-      setCountdown(60);
-      toast.success(res.message || "Verification code sent to your email and phone!");
+      await authApi.register(payload);
+      
+      // Immediately log in with new credentials
+      const loginRes = await authApi.login({
+        email: payload.email,
+        password: payload.password,
+      });
+
+      setSession(loginRes.data.user, loginRes.data.accessToken, loginRes.data.refreshToken);
+      toast.success(`Welcome to Darsh Dental Depot, Dr. ${payload.fullName}!`);
+      nav({ to: "/doctor" });
     } catch (err) {
       if (err instanceof ApiError) {
         if (err.errors && err.errors.length > 0) {
@@ -197,7 +200,7 @@ function RegisterPage() {
           toast.error(err.message);
         }
       } else {
-        toast.error("Failed to send verification code. Please check your details.");
+        toast.error("Registration failed. Please check your details and try again.");
       }
     } finally {
       setIsSubmitting(false);

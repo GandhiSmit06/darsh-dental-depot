@@ -3,13 +3,11 @@ import {
   authApi,
   setTokens,
   clearTokens,
-  getAccessToken,
-  getRefreshToken,
   type AuthUser,
   type RegisterPayload,
   type LoginPayload,
-  ApiError,
 } from "./api";
+import { supabase } from "./supabase";
 
 interface AuthContextValue {
   user: AuthUser | null;
@@ -27,49 +25,54 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Try to restore session on mount
+  // Restore session & listen for Supabase auth state changes
   useEffect(() => {
+    let isMounted = true;
+
     const restore = async () => {
-      const token = getAccessToken();
-      const refreshToken = getRefreshToken();
-
-      if (token) {
-        try {
-          const res = await authApi.getMe();
-          setUser(res.data);
-        } catch {
-          // Access token expired, try refreshing
-          if (refreshToken) {
-            try {
-              const res = await authApi.refreshToken(refreshToken);
-              setTokens(res.data.accessToken, refreshToken);
-              setUser(res.data.user);
-            } catch {
-              clearTokens();
-            }
-          } else {
-            clearTokens();
-          }
+      try {
+        const { data: sessionData } = await supabase.auth.getSession();
+        if (sessionData?.session?.user) {
+          const me = await authApi.getMe();
+          if (isMounted) setUser(me.data);
+        } else {
+          if (isMounted) setUser(null);
         }
-      } else if (refreshToken) {
-        try {
-          const res = await authApi.refreshToken(refreshToken);
-          setTokens(res.data.accessToken, refreshToken);
-          setUser(res.data.user);
-        } catch {
-          clearTokens();
-        }
+      } catch {
+        if (isMounted) setUser(null);
+      } finally {
+        if (isMounted) setIsLoading(false);
       }
-
-      setIsLoading(false);
     };
 
     restore();
+
+    // Realtime auth listener
+    const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (session?.user) {
+        try {
+          const me = await authApi.getMe();
+          if (isMounted) setUser(me.data);
+        } catch {
+          if (isMounted) setUser(null);
+        }
+      } else if (event === "SIGNED_OUT") {
+        if (isMounted) {
+          setUser(null);
+          clearTokens();
+        }
+      }
+      if (isMounted) setIsLoading(false);
+    });
+
+    return () => {
+      isMounted = false;
+      authListener.subscription.unsubscribe();
+    };
   }, []);
 
   const login = useCallback(async (data: LoginPayload): Promise<AuthUser> => {
     const res = await authApi.login(data);
-    setTokens(res.data.accessToken, res.data.refreshToken);
     setUser(res.data.user);
     return res.data.user;
   }, []);
@@ -80,13 +83,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const logout = useCallback(async () => {
-    try {
-      await authApi.logout();
-    } catch {
-      // Even if backend logout fails, clear local state
-    }
-    clearTokens();
+    await authApi.logout();
     setUser(null);
+    clearTokens();
   }, []);
 
   const setSession = useCallback((authUser: AuthUser, accessToken: string, refreshToken?: string) => {

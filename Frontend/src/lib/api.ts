@@ -1011,8 +1011,53 @@ export const doctorApi = {
   },
 
   cancelOrder: async (id: string) => {
-    await supabase.from("orders").update({ order_status: "cancelled" }).eq("id", id);
-    return { success: true as const, message: "Order cancelled" };
+    // 1. Restore stock for order items
+    try {
+      const { data: items } = await supabase
+        .from("order_items")
+        .select("product_id, quantity")
+        .eq("order_id", id);
+
+      if (items && items.length > 0) {
+        for (const item of items) {
+          if (!item.product_id) continue;
+          const { data: prod } = await supabase
+            .from("products")
+            .select("stock")
+            .eq("id", item.product_id)
+            .single();
+          if (prod && prod.stock !== undefined) {
+            const restoredStock = prod.stock + (item.quantity || 1);
+            await supabase
+              .from("products")
+              .update({
+                stock: restoredStock,
+                status: "active",
+                updated_at: new Date().toISOString(),
+              })
+              .eq("id", item.product_id);
+          }
+        }
+      }
+    } catch (e) {
+      console.warn("Stock restore warning:", e);
+    }
+
+    // 2. Update order status in Supabase
+    const { error } = await supabase
+      .from("orders")
+      .update({
+        order_status: "cancelled",
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", id);
+
+    if (error) {
+      console.error("Cancel order error:", error);
+      throw new ApiError(400, error.message || "Failed to cancel order");
+    }
+
+    return { success: true as const, message: "Order cancelled successfully" };
   },
 
   verifyRazorpayPayment: async (data: {

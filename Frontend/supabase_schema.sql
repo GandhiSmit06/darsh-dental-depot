@@ -170,9 +170,9 @@ create policy "Users can view their own orders"
 create policy "Authenticated users can create orders" 
   on public.orders for insert with check (auth.uid() = user_id);
 
-create policy "Admins can update orders" 
+create policy "Users and admins can update orders" 
   on public.orders for update using (
-    exists (select 1 from public.profiles where id = auth.uid() and role in ('admin', 'shop_owner'))
+    auth.uid() = user_id or exists (select 1 from public.profiles where id = auth.uid() and role in ('admin', 'shop_owner'))
   );
 
 -- Order Items Policies

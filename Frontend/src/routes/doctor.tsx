@@ -707,10 +707,10 @@ function OrdersSection() {
     try {
       await doctorApi.cancelOrder(id);
       toast.success("Order cancelled successfully");
-      activeOrder.retry();
-      history.retry();
-    } catch {
-      toast.error("Failed to cancel order");
+      activeOrder.mutate(null);
+      await Promise.all([activeOrder.retry(), history.retry()]);
+    } catch (err: any) {
+      toast.error(err.message || "Failed to cancel order");
     } finally {
       setIsCanceling(false);
     }

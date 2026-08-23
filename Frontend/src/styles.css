@@ -317,8 +317,8 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    transition: opacity 0.75s cubic-bezier(0.4, 0, 0.2, 1),
-                visibility 0.75s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: opacity 1s cubic-bezier(0.25, 0, 0.15, 1),
+                visibility 1s cubic-bezier(0.25, 0, 0.15, 1);
   }
 
   .neoleaf-loader-overlay.neoleaf-fade-out {

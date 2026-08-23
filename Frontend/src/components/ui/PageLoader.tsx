@@ -1,140 +1,197 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useRouterState } from "@tanstack/react-router";
 
+/* ── Easing: slow-start, smooth middle, gentle ease-out ── */
+function easeInOutCubic(t: number): number {
+  return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+}
+
 export function PageLoader() {
   const isRouteLoading = useRouterState({ select: (s) => s.isLoading });
   const [showInitial, setShowInitial] = useState(true);
   const [fadeOut, setFadeOut] = useState(false);
   const [progress, setProgress] = useState(0);
   const animFrameRef = useRef<number>(0);
-  const waveOffsetRef = useRef(0);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const startTimeRef = useRef<number | null>(null);
+  const prevTimeRef = useRef<number>(0);
+  const wavePhaseRef = useRef(0);
+  const dprRef = useRef(1);
 
-  const LOAD_DURATION = 2400; // ms for 0→100%
+  const LOAD_DURATION = 2800; // slightly longer for smoother feel
 
-  // Wave drawing on canvas (clipped by text)
   const drawFrame = useCallback((timestamp: number) => {
-    if (!startTimeRef.current) startTimeRef.current = timestamp;
+    /* ── Timing ── */
+    if (!startTimeRef.current) {
+      startTimeRef.current = timestamp;
+      prevTimeRef.current = timestamp;
+    }
+    const dt = (timestamp - prevTimeRef.current) / 1000; // delta in seconds
+    prevTimeRef.current = timestamp;
+
     const elapsed = timestamp - startTimeRef.current;
-    const rawProgress = Math.min((elapsed / LOAD_DURATION) * 100, 100);
+    const linearT = Math.min(elapsed / LOAD_DURATION, 1);
+    const easedT = easeInOutCubic(linearT);          // smooth eased 0→1
+    const rawProgress = easedT * 100;
     setProgress(Math.floor(rawProgress));
 
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const ctx = canvas.getContext("2d");
+    const ctx = canvas.getContext("2d", { alpha: true });
     if (!ctx) return;
 
-    const W = canvas.width;
-    const H = canvas.height;
+    // Use CSS pixel dimensions (canvas is already scaled by DPR in resize handler)
+    const W = window.innerWidth;
+    const H = window.innerHeight;
+
     ctx.clearRect(0, 0, W, H);
 
-    // ── Text metrics ──
-    const fontSize = Math.min(W * 0.135, 140);
-    ctx.font = `900 ${fontSize}px 'Outfit', 'Plus Jakarta Sans', system-ui, sans-serif`;
+    /* ── Enable sub-pixel anti-aliasing ── */
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = "high";
+
+    /* ── Text layout ── */
+    const fontSize = Math.min(W * 0.13, 150);
+    const fontStr = `900 ${fontSize}px 'Outfit', 'Plus Jakarta Sans', system-ui, sans-serif`;
+    ctx.font = fontStr;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
 
-    const text = "Darsh Dental";
-    const text2 = "Depot";
-    const lineGap = fontSize * 0.15;
-    const totalTextH = fontSize * 2 + lineGap;
-    const textY1 = H / 2 - totalTextH / 2 + fontSize / 2;
-    const textY2 = textY1 + fontSize + lineGap;
+    const line1 = "Darsh Dental";
+    const line2 = "Depot";
+    const lineGap = fontSize * 0.18;
+    const blockH = fontSize * 2 + lineGap;
+    const y1 = H / 2 - blockH / 2 + fontSize / 2;
+    const y2 = y1 + fontSize + lineGap;
+    const cx = W / 2;
 
-    // ── 1. Draw dark ghost text (background) ──
+    /* ── 1. Ghost text (subtle dark silhouette) ── */
     ctx.save();
-    ctx.fillStyle = "rgba(255, 255, 255, 0.08)";
-    ctx.fillText(text, W / 2, textY1);
-    ctx.fillText(text2, W / 2, textY2);
+    ctx.fillStyle = "rgba(255, 255, 255, 0.07)";
+    ctx.fillText(line1, cx, y1);
+    ctx.fillText(line2, cx, y2);
     ctx.restore();
 
-    // ── 2. Create text-shaped clipping mask ──
+    /* ── 2. Text mask + wave fill ── */
     ctx.save();
-    ctx.beginPath();
-    ctx.fillStyle = "black";
-    ctx.fillText(text, W / 2, textY1);
-    ctx.fillText(text2, W / 2, textY2);
-    // Use composite to clip subsequent draws to only the text pixels
+    // Draw text as mask
+    ctx.fillStyle = "#000";
+    ctx.fillText(line1, cx, y1);
+    ctx.fillText(line2, cx, y2);
     ctx.globalCompositeOperation = "source-atop";
 
-    // ── 3. Draw the wave fill inside the text ──
-    // Wave rises from bottom of text area to top
-    const textTop = textY1 - fontSize * 0.55;
-    const textBottom = textY2 + fontSize * 0.55;
-    const textRange = textBottom - textTop;
-    const fillLevel = textBottom - (rawProgress / 100) * textRange;
+    // Wave geometry
+    const textTop = y1 - fontSize * 0.6;
+    const textBot = y2 + fontSize * 0.6;
+    const range = textBot - textTop;
+    const fillLevel = textBot - easedT * range;
 
-    // Animate wave offset horizontally
-    waveOffsetRef.current += 2.5;
-    const waveAmp = 8 + (1 - rawProgress / 100) * 12; // Wave gets calmer as it fills
-    const waveFreq = 0.02;
+    // Smooth wave phase advancement (time-based, not frame-based)
+    wavePhaseRef.current += dt * 1.8; // radians per second
 
-    // Draw wave path
+    // Wave amplitude decays smoothly as fill rises
+    const ampDecay = 1 - easedT * 0.85;
+    const amp1 = 10 * ampDecay;
+    const amp2 = 5 * ampDecay;
+    const freq1 = 0.018;
+    const freq2 = 0.032;
+    const phase = wavePhaseRef.current;
+
+    // Primary wave path
     ctx.beginPath();
-    ctx.moveTo(0, H);
-    ctx.lineTo(0, fillLevel);
-    for (let x = 0; x <= W; x += 2) {
-      const y =
-        fillLevel +
-        Math.sin(x * waveFreq + waveOffsetRef.current * 0.04) * waveAmp +
-        Math.sin(x * waveFreq * 1.8 + waveOffsetRef.current * 0.025) *
-          (waveAmp * 0.4);
-      ctx.lineTo(x, y);
+    ctx.moveTo(-2, H + 2);
+    ctx.lineTo(-2, fillLevel);
+    for (let x = 0; x <= W + 2; x += 1) {
+      const wave =
+        Math.sin(x * freq1 + phase) * amp1 +
+        Math.sin(x * freq2 - phase * 0.7) * amp2;
+      ctx.lineTo(x, fillLevel + wave);
     }
-    ctx.lineTo(W, H);
+    ctx.lineTo(W + 2, H + 2);
     ctx.closePath();
 
-    // Gradient fill (brand colors)
-    const grad = ctx.createLinearGradient(0, textBottom, 0, textTop);
-    grad.addColorStop(0, "#0ea5e9");    // sky-500
-    grad.addColorStop(0.4, "#38bdf8");  // sky-400
-    grad.addColorStop(0.7, "#7dd3fc");  // sky-300
-    grad.addColorStop(1, "#ffffff");    // white at top
+    // Gradient: brand-coloured liquid
+    const grad = ctx.createLinearGradient(0, textBot, 0, textTop);
+    grad.addColorStop(0, "#0284c7");   // sky-600 (deep)
+    grad.addColorStop(0.3, "#0ea5e9"); // sky-500
+    grad.addColorStop(0.6, "#38bdf8"); // sky-400
+    grad.addColorStop(0.85, "#bae6fd"); // sky-200
+    grad.addColorStop(1, "#ffffff");
     ctx.fillStyle = grad;
+    ctx.fill();
+
+    // ── Secondary wave layer for depth (offset + transparent) ──
+    ctx.beginPath();
+    ctx.moveTo(-2, H + 2);
+    ctx.lineTo(-2, fillLevel + 4);
+    for (let x = 0; x <= W + 2; x += 1) {
+      const wave2 =
+        Math.sin(x * freq1 * 1.3 + phase * 1.4 + 1.5) * (amp1 * 0.6) +
+        Math.sin(x * freq2 * 0.8 - phase * 0.5 + 3.0) * (amp2 * 0.8);
+      ctx.lineTo(x, fillLevel + 4 + wave2);
+    }
+    ctx.lineTo(W + 2, H + 2);
+    ctx.closePath();
+
+    const grad2 = ctx.createLinearGradient(0, textBot, 0, textTop);
+    grad2.addColorStop(0, "rgba(14, 165, 233, 0.4)");
+    grad2.addColorStop(0.5, "rgba(56, 189, 248, 0.3)");
+    grad2.addColorStop(1, "rgba(255, 255, 255, 0.2)");
+    ctx.fillStyle = grad2;
     ctx.fill();
 
     ctx.restore();
 
-    if (rawProgress < 100) {
+    /* ── 3. Subtle glow around wave edge ── */
+    ctx.save();
+    ctx.globalAlpha = 0.12 * ampDecay;
+    ctx.shadowColor = "#38bdf8";
+    ctx.shadowBlur = 30;
+    ctx.font = fontStr;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillStyle = "transparent";
+    // draw invisible text just for the shadow
+    ctx.fillText(line1, cx, y1);
+    ctx.fillText(line2, cx, y2);
+    ctx.restore();
+
+    /* ── Continue or finish ── */
+    if (linearT < 1) {
       animFrameRef.current = requestAnimationFrame(drawFrame);
     } else {
-      // Draw one final solid frame at 100%
+      // Final frame: fully white text
       ctx.save();
-      ctx.beginPath();
-      ctx.fillStyle = "black";
-      ctx.fillText(text, W / 2, textY1);
-      ctx.fillText(text2, W / 2, textY2);
+      ctx.font = fontStr;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillStyle = "#000";
+      ctx.fillText(line1, cx, y1);
+      ctx.fillText(line2, cx, y2);
       ctx.globalCompositeOperation = "source-atop";
       ctx.fillStyle = "#ffffff";
       ctx.fillRect(0, 0, W, H);
       ctx.restore();
 
-      // Trigger fade-out after brief pause
-      setTimeout(() => setFadeOut(true), 350);
-      setTimeout(() => setShowInitial(false), 1100);
+      // Gentle fade-out
+      setTimeout(() => setFadeOut(true), 400);
+      setTimeout(() => setShowInitial(false), 1200);
     }
   }, []);
 
-  // Start animation
-  useEffect(() => {
-    if (!showInitial) return;
-    animFrameRef.current = requestAnimationFrame(drawFrame);
-    return () => {
-      if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
-    };
-  }, [showInitial, drawFrame]);
-
-  // Handle canvas sizing
+  /* ── Canvas resize handler (DPR-aware) ── */
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const resize = () => {
       const dpr = window.devicePixelRatio || 1;
-      canvas.width = window.innerWidth * dpr;
-      canvas.height = window.innerHeight * dpr;
-      canvas.style.width = `${window.innerWidth}px`;
-      canvas.style.height = `${window.innerHeight}px`;
+      dprRef.current = dpr;
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+      canvas.width = w * dpr;
+      canvas.height = h * dpr;
+      canvas.style.width = `${w}px`;
+      canvas.style.height = `${h}px`;
       const ctx = canvas.getContext("2d");
       if (ctx) ctx.scale(dpr, dpr);
     };
@@ -143,7 +200,16 @@ export function PageLoader() {
     return () => window.removeEventListener("resize", resize);
   }, []);
 
-  // Route-change mini-loader (thin progress bar at top)
+  /* ── Start animation loop ── */
+  useEffect(() => {
+    if (!showInitial) return;
+    animFrameRef.current = requestAnimationFrame(drawFrame);
+    return () => {
+      if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
+    };
+  }, [showInitial, drawFrame]);
+
+  /* ── Route-change mini-loader ── */
   const [routeProgress, setRouteProgress] = useState(false);
   useEffect(() => {
     if (isRouteLoading && !showInitial) {
@@ -156,7 +222,6 @@ export function PageLoader() {
 
   if (!showInitial && !routeProgress) return null;
 
-  // Route-change progress bar (after initial load)
   if (!showInitial && routeProgress) {
     return (
       <div className="fixed top-0 left-0 right-0 z-[9999] h-0.5">
@@ -171,12 +236,10 @@ export function PageLoader() {
     );
   }
 
-  // ── Initial page-load NeoLeaf-style wave loader ──
   return (
     <div
       className={`neoleaf-loader-overlay ${fadeOut ? "neoleaf-fade-out" : ""}`}
     >
-      {/* Canvas for wave-filled text */}
       <canvas
         ref={canvasRef}
         style={{
@@ -187,8 +250,6 @@ export function PageLoader() {
           height: "100%",
         }}
       />
-
-      {/* Progress counter */}
       <div className="neoleaf-progress">
         loading...{" "}
         <span className="neoleaf-progress-num">{progress}</span> %

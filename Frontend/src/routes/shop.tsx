@@ -22,6 +22,10 @@ import {
   DollarSign,
   TrendingUp,
   RefreshCw,
+  CreditCard,
+  Banknote,
+  Building,
+  Phone,
 } from "lucide-react";
 import {
   Bar,
@@ -1063,13 +1067,14 @@ function InventorySection({ search }: { search?: string }) {
   );
 }
 
-// ─── PAGE 4: Orders ─────────────────────────────────────────────────────────
+// ─── PAGE 4: Orders & Payment Records ──────────────────────────────────────
 
 function OrdersSection({ search }: { search?: string }) {
   const { data: orders, loading, error, retry } = useApiData<ShopOrder[]>(shopApi.getOrders);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [paymentFilter, setPaymentFilter] = useState<"all" | "razorpay" | "cod" | "paid" | "pending">("all");
 
-  // Real-time asynchronous live polling every 4 seconds (like Zomato/Swiggy merchant console)
+  // Real-time live polling every 4 seconds
   useEffect(() => {
     const interval = setInterval(() => {
       retry();
@@ -1090,54 +1095,151 @@ function OrdersSection({ search }: { search?: string }) {
     }
   };
 
-  const filteredOrders =
-    orders?.filter((o) => {
-      if (!search) return true;
-      const s = search.toLowerCase();
-      return (
-        o.orderId.toLowerCase().includes(s) ||
-        o.customerName.toLowerCase().includes(s) ||
-        o.customerEmail.toLowerCase().includes(s)
-      );
-    }) || [];
+  const allOrders = orders || [];
+  
+  // Real-time payment metrics calculation
+  const totalOrdersCount = allOrders.length;
+  const razorpayOrders = allOrders.filter((o) => o.paymentMethod?.toLowerCase() === "razorpay");
+  const codOrders = allOrders.filter((o) => o.paymentMethod?.toLowerCase() === "cod");
+  const paidOrders = allOrders.filter((o) => o.paymentStatus?.toLowerCase() === "paid");
+  const pendingPaymentOrders = allOrders.filter((o) => o.paymentStatus?.toLowerCase() === "pending");
+
+  const totalRevenue = allOrders.reduce((sum, o) => sum + (o.status !== "cancelled" ? o.total : 0), 0);
+  const razorpayPaidRevenue = razorpayOrders
+    .filter((o) => o.paymentStatus?.toLowerCase() === "paid")
+    .reduce((sum, o) => sum + o.total, 0);
+  const codRevenue = codOrders.reduce((sum, o) => sum + o.total, 0);
+
+  const filteredOrders = allOrders.filter((o) => {
+    if (paymentFilter === "razorpay" && o.paymentMethod?.toLowerCase() !== "razorpay") return false;
+    if (paymentFilter === "cod" && o.paymentMethod?.toLowerCase() !== "cod") return false;
+    if (paymentFilter === "paid" && o.paymentStatus?.toLowerCase() !== "paid") return false;
+    if (paymentFilter === "pending" && o.paymentStatus?.toLowerCase() !== "pending") return false;
+
+    if (!search) return true;
+    const s = search.toLowerCase();
+    return (
+      o.orderId.toLowerCase().includes(s) ||
+      o.customerName.toLowerCase().includes(s) ||
+      o.customerEmail.toLowerCase().includes(s) ||
+      (o.clinicName && o.clinicName.toLowerCase().includes(s)) ||
+      (o.paymentId && o.paymentId.toLowerCase().includes(s))
+    );
+  });
 
   return (
     <div className="space-y-5">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold">Orders Management</h1>
+          <h1 className="text-2xl font-bold font-heading">Orders & Payments</h1>
           <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1.5">
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
             </span>
-            Real-time live sync active (updates doctors instantly)
+            Real-time live audit • Live order sync from Vadodara clinics
           </p>
         </div>
-        <Button variant="outline" size="sm" onClick={() => retry()} className="text-xs">
-          Refresh Orders
+        <Button variant="outline" size="sm" onClick={() => retry()} className="text-xs rounded-xl gap-1.5">
+          <RefreshCw className="h-3.5 w-3.5" /> Refresh Live
         </Button>
       </div>
 
+      {/* Payment & Order Summary KPI Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <Card className="p-4 rounded-2xl border bg-card shadow-2xs space-y-1.5">
+          <div className="flex items-center justify-between text-xs text-muted-foreground font-semibold">
+            <span>Total Orders Placed</span>
+            <ShoppingBag className="h-4 w-4 text-primary" />
+          </div>
+          <div className="text-2xl font-extrabold font-heading text-foreground">{totalOrdersCount}</div>
+          <div className="text-[11px] text-muted-foreground">
+            Gross Total: <span className="font-bold text-foreground">₹{totalRevenue.toLocaleString("en-IN")}</span>
+          </div>
+        </Card>
+
+        <Card className="p-4 rounded-2xl border border-sky-500/20 bg-sky-500/5 shadow-2xs space-y-1.5">
+          <div className="flex items-center justify-between text-xs text-sky-700 dark:text-sky-400 font-semibold">
+            <span>Razorpay Online Paid</span>
+            <CreditCard className="h-4 w-4 text-sky-600" />
+          </div>
+          <div className="text-2xl font-extrabold font-heading text-sky-800 dark:text-sky-300">
+            ₹{razorpayPaidRevenue.toLocaleString("en-IN")}
+          </div>
+          <div className="text-[11px] text-sky-700/80 dark:text-sky-400">
+            <span className="font-bold">{paidOrders.length}</span> verified online transaction{paidOrders.length !== 1 ? "s" : ""}
+          </div>
+        </Card>
+
+        <Card className="p-4 rounded-2xl border border-emerald-500/20 bg-emerald-500/5 shadow-2xs space-y-1.5">
+          <div className="flex items-center justify-between text-xs text-emerald-700 dark:text-emerald-400 font-semibold">
+            <span>Pay on Delivery (COD)</span>
+            <Banknote className="h-4 w-4 text-emerald-600" />
+          </div>
+          <div className="text-2xl font-extrabold font-heading text-emerald-800 dark:text-emerald-300">
+            ₹{codRevenue.toLocaleString("en-IN")}
+          </div>
+          <div className="text-[11px] text-emerald-700/80 dark:text-emerald-400">
+            <span className="font-bold">{codOrders.length}</span> COD clinic package{codOrders.length !== 1 ? "s" : ""}
+          </div>
+        </Card>
+
+        <Card className="p-4 rounded-2xl border border-amber-500/20 bg-amber-500/5 shadow-2xs space-y-1.5">
+          <div className="flex items-center justify-between text-xs text-amber-700 dark:text-amber-400 font-semibold">
+            <span>Pending Payments</span>
+            <span className="h-2 w-2 rounded-full bg-amber-500" />
+          </div>
+          <div className="text-2xl font-extrabold font-heading text-amber-800 dark:text-amber-300">
+            {pendingPaymentOrders.length}
+          </div>
+          <div className="text-[11px] text-amber-700/80 dark:text-amber-400">
+            Awaiting delivery settlement or retry
+          </div>
+        </Card>
+      </div>
+
+      {/* Filter Tabs */}
+      <div className="flex items-center gap-2 overflow-x-auto pb-1 text-xs">
+        {[
+          { key: "all", label: `All Orders (${allOrders.length})` },
+          { key: "razorpay", label: `⚡ Razorpay Online (${razorpayOrders.length})` },
+          { key: "cod", label: `💵 Pay on Delivery (${codOrders.length})` },
+          { key: "paid", label: `✅ Paid (${paidOrders.length})` },
+          { key: "pending", label: `⏳ Pending (${pendingPaymentOrders.length})` },
+        ].map((tab) => (
+          <button
+            key={tab.key}
+            onClick={() => setPaymentFilter(tab.key as any)}
+            className={`px-3 py-1.5 rounded-xl font-bold whitespace-nowrap transition-all ${
+              paymentFilter === tab.key
+                ? "bg-primary text-primary-foreground shadow-xs"
+                : "bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground"
+            }`}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
       {loading ? (
-        <LoadingSpinner label="Loading orders..." />
+        <LoadingSpinner label="Loading orders and payment logs..." />
       ) : error ? (
         <ErrorBanner onRetry={retry} />
       ) : !filteredOrders.length ? (
-        <EmptyBanner label={search ? "No orders found matching your search." : "No orders yet"} />
+        <EmptyBanner label={search ? "No orders found matching your search." : "No orders found for this filter."} />
       ) : (
-        <Card className="overflow-hidden">
+        <Card className="overflow-hidden rounded-2xl border shadow-xs">
           <Table>
             <TableHeader>
-              <TableRow>
-                <TableHead>Order #</TableHead>
-                <TableHead>Customer / Clinic</TableHead>
-                <TableHead>Items</TableHead>
-                <TableHead>Total Amount</TableHead>
-                <TableHead>Current Status</TableHead>
-                <TableHead>Change Status</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+              <TableRow className="bg-muted/30">
+                <TableHead className="font-bold">Order #</TableHead>
+                <TableHead className="font-bold">Doctor / Clinic</TableHead>
+                <TableHead className="font-bold">Items</TableHead>
+                <TableHead className="font-bold">Amount</TableHead>
+                <TableHead className="font-bold">Payment Details & ID</TableHead>
+                <TableHead className="font-bold">Order Status</TableHead>
+                <TableHead className="font-bold">Date & Time</TableHead>
+                <TableHead className="text-right font-bold">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -1147,20 +1249,63 @@ function OrdersSection({ search }: { search?: string }) {
                     {o.orderId}
                   </TableCell>
                   <TableCell>
-                    <div className="font-semibold text-sm">{o.customerName}</div>
-                    {o.customerEmail && (
-                      <div className="text-[11px] text-muted-foreground">{o.customerEmail}</div>
+                    <div className="font-bold text-sm text-foreground flex items-center gap-1.5">
+                      {o.customerName}
+                    </div>
+                    {o.clinicName && (
+                      <div className="text-xs text-muted-foreground font-medium flex items-center gap-1 mt-0.5">
+                        <Building className="h-3 w-3 text-primary/70 shrink-0" />
+                        {o.clinicName}
+                      </div>
+                    )}
+                    {o.contactPhone && (
+                      <div className="text-[11px] text-muted-foreground font-mono flex items-center gap-1 mt-0.5">
+                        <Phone className="h-3 w-3 text-muted-foreground/70 shrink-0" />
+                        {o.contactPhone}
+                      </div>
                     )}
                   </TableCell>
-                  <TableCell>{o.itemCount} items</TableCell>
-                  <TableCell className="font-bold text-foreground">₹{o.total.toFixed(2)}</TableCell>
                   <TableCell>
-                    <StatusBadge status={o.status} />
+                    <span className="text-xs font-semibold bg-muted px-2 py-0.5 rounded-md">
+                      {o.itemCount} item{o.itemCount > 1 ? "s" : ""}
+                    </span>
+                  </TableCell>
+                  <TableCell className="font-extrabold text-sm text-foreground">
+                    ₹{o.total.toFixed(2)}
+                  </TableCell>
+                  <TableCell>
+                    <div className="space-y-1">
+                      {o.paymentMethod?.toLowerCase() === "razorpay" ? (
+                        <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-sky-500/10 text-sky-700 dark:text-sky-300 border border-sky-500/20">
+                          <CreditCard className="h-3 w-3 text-sky-600" /> Razorpay Online
+                        </div>
+                      ) : (
+                        <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20">
+                          <Banknote className="h-3 w-3 text-emerald-600" /> Pay on Delivery (COD)
+                        </div>
+                      )}
+                      <div>
+                        {o.paymentStatus?.toLowerCase() === "paid" ? (
+                          <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-600 dark:text-emerald-400">
+                            <CheckCircle2 className="h-3 w-3" /> Paid
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 text-[11px] font-bold text-amber-600 dark:text-amber-400">
+                            🟡 Payment Pending
+                          </span>
+                        )}
+                      </div>
+                      {o.paymentId && (
+                        <div className="text-[10px] font-mono text-muted-foreground bg-muted/60 px-1.5 py-0.5 rounded w-fit">
+                          ID: {o.paymentId}
+                        </div>
+                      )}
+                    </div>
                   </TableCell>
                   <TableCell>
                     {o.status.toLowerCase() === "delivered" ? (
                       <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
-                        <CheckCircle2 className="h-3.5 w-3.5" /> Completed
+                        <CheckCircle2 className="h-3.5 w-3.5" /> Delivered
                       </span>
                     ) : o.status.toLowerCase() === "cancelled" ? (
                       <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20">
@@ -1185,20 +1330,22 @@ function OrdersSection({ search }: { search?: string }) {
                       </Select>
                     )}
                   </TableCell>
-                  <TableCell className="text-xs text-muted-foreground">{o.date}</TableCell>
+                  <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
+                    {o.date}
+                  </TableCell>
                   <TableCell className="text-right">
                     <Button
                       size="sm"
                       variant="outline"
-                      className="h-8 text-xs px-2.5"
+                      className="h-8 text-xs px-2.5 rounded-xl gap-1"
                       onClick={() => {
                         shopApi
                           .getOrderInvoice(o._id)
-                          .then(() => toast.success("Invoice generated successfully"))
+                          .then(() => toast.success(`Invoice for ${o.orderId} generated`))
                           .catch(() => toast.error("Failed to generate invoice"));
                       }}
                     >
-                      <FileText className="h-3.5 w-3.5 mr-1 text-primary" />
+                      <FileText className="h-3.5 w-3.5 text-primary" />
                       Invoice
                     </Button>
                   </TableCell>

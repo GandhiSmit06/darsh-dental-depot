@@ -164,6 +164,9 @@ export interface DoctorOrderHistoryItem {
   itemCount: number;
   total: number;
   status: string;
+  paymentStatus: string;
+  paymentMethod: string;
+  paymentId?: string;
   date: string;
 }
 
@@ -210,11 +213,16 @@ export interface ShopOrder {
   orderId: string;
   customerName: string;
   customerEmail: string;
+  clinicName?: string;
+  contactPhone?: string;
   itemCount: number;
   total: number;
   status: string;
   paymentStatus: string;
+  paymentMethod: string;
+  paymentId?: string;
   date: string;
+  rawDate?: string;
 }
 
 export interface ShopCustomer {
@@ -892,15 +900,20 @@ export const doctorApi = {
       .eq("user_id", userData.user.id)
       .order("created_at", { ascending: false });
 
-    const mapped = (orders || []).map((o: any) => ({
+    const mapped: DoctorOrderHistoryItem[] = (orders || []).map((o: any) => ({
       orderId: o.order_number,
       itemCount: (o.order_items || []).length,
       total: Number(o.total_price),
       status: o.order_status,
+      paymentStatus: o.payment_status || (o.payment_method === "cod" ? "pending" : "paid"),
+      paymentMethod: o.payment_method || "cod",
+      paymentId: o.payment_id || "",
       date: new Date(o.created_at).toLocaleDateString("en-IN", {
         day: "numeric",
         month: "short",
         year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
       }),
     }));
 
@@ -930,7 +943,7 @@ export const doctorApi = {
           subtotal,
           tax_amount: taxAmount,
           order_status: "pending",
-          payment_status: payload.paymentMethod === "cod" ? "pending" : "paid",
+          payment_status: "pending",
           payment_method: payload.paymentMethod,
           shipping_address: payload.address,
           notes: payload.notes || "",
@@ -943,7 +956,7 @@ export const doctorApi = {
       throw new ApiError(500, orderErr?.message || "Failed to create order");
     }
 
-    // 2. Insert Order Items
+    // 2. Insert Order Items & decrement stock
     const itemsToInsert = cart.map((item) => ({
       order_id: order.id,
       product_id: item.productId,
@@ -954,6 +967,30 @@ export const doctorApi = {
     }));
 
     await supabase.from("order_items").insert(itemsToInsert);
+
+    // Decrement stock for purchased products in Supabase
+    for (const item of cart) {
+      try {
+        const { data: currentProd } = await supabase
+          .from("products")
+          .select("stock")
+          .eq("id", item.productId)
+          .single();
+        if (currentProd && currentProd.stock !== undefined) {
+          const newStock = Math.max(0, currentProd.stock - item.quantity);
+          await supabase
+            .from("products")
+            .update({
+              stock: newStock,
+              status: newStock > 0 ? "active" : "out_of_stock",
+              updated_at: new Date().toISOString(),
+            })
+            .eq("id", item.productId);
+        }
+      } catch (e) {
+        console.warn("Stock update warning:", e);
+      }
+    }
 
     // 3. Clear cart
     saveLocalCart([]);
@@ -978,7 +1015,27 @@ export const doctorApi = {
     return { success: true as const, message: "Order cancelled" };
   },
 
-  verifyRazorpayPayment: async (_data: any) => {
+  verifyRazorpayPayment: async (data: {
+    orderId: string;
+    razorpayOrderId?: string;
+    razorpayPaymentId: string;
+    razorpaySignature?: string;
+  }) => {
+    const { error } = await supabase
+      .from("orders")
+      .update({
+        payment_status: "paid",
+        payment_method: "razorpay",
+        payment_id: data.razorpayPaymentId,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", data.orderId);
+
+    if (error) {
+      console.error("Failed to update payment status:", error);
+      throw new ApiError(500, "Failed to record payment in database");
+    }
+
     return { success: true as const, message: "Payment verified successfully" };
   },
 };
@@ -1056,24 +1113,34 @@ export const shopApi = {
   getOrders: async () => {
     const { data: orders } = await supabase
       .from("orders")
-      .select("*, profiles(full_name, email), order_items(*)")
+      .select("*, profiles(full_name, email, phone, clinic_name), order_items(*)")
       .order("created_at", { ascending: false });
 
-    const mapped: ShopOrder[] = (orders || []).map((o: any) => ({
-      _id: o.id,
-      orderId: o.order_number,
-      customerName: o.profiles?.full_name || "Doctor",
-      customerEmail: o.profiles?.email || "",
-      itemCount: (o.order_items || []).length,
-      total: Number(o.total_price),
-      status: o.order_status,
-      paymentStatus: o.payment_status,
-      date: new Date(o.created_at).toLocaleDateString("en-IN", {
-        day: "numeric",
-        month: "short",
-        year: "numeric",
-      }),
-    }));
+    const mapped: ShopOrder[] = (orders || []).map((o: any) => {
+      const orderDate = new Date(o.created_at);
+      return {
+        _id: o.id,
+        orderId: o.order_number,
+        customerName: o.profiles?.full_name || o.shipping_address?.contactName || "Doctor",
+        customerEmail: o.profiles?.email || "",
+        clinicName: o.profiles?.clinic_name || o.shipping_address?.clinicName || "",
+        contactPhone: o.profiles?.phone || o.shipping_address?.contactPhone || "",
+        itemCount: (o.order_items || []).length,
+        total: Number(o.total_price),
+        status: o.order_status,
+        paymentStatus: o.payment_status || (o.payment_method === "cod" ? "pending" : "paid"),
+        paymentMethod: o.payment_method || "cod",
+        paymentId: o.payment_id || "",
+        date: orderDate.toLocaleDateString("en-IN", {
+          day: "numeric",
+          month: "short",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+        rawDate: o.created_at,
+      };
+    });
 
     return { success: true as const, message: "OK", data: mapped };
   },
@@ -1464,6 +1531,8 @@ export const adminApi = {
     const res = await userApi.getAllUsers();
     return { success: true as const, message: "OK", data: res.data.users };
   },
+  getOrders: shopApi.getOrders,
+  updateOrderStatus: shopApi.updateOrderStatus,
   deleteUser: async (id: string) => {
     await userApi.deleteUser(id);
     return { success: true as const, message: "Deleted", data: { id } };

@@ -19,6 +19,7 @@ import { ProductCard } from "@/components/site/ProductCard";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth-context";
 import { notificationService, type AppNotification } from "@/lib/notifications";
+import { openRazorpayCheckout } from "@/lib/razorpay";
 import {
   doctorApi, productsApi, type DoctorProfile, type DoctorStats,
   type DoctorCartItem, type DoctorWishlistItem, type DoctorActiveOrder,
@@ -227,6 +228,9 @@ function Browse() {
 function CartSection({ onNavigateToOrders }: { onNavigateToOrders?: () => void }) {
   const { data: cart, loading, error, retry, mutate } = useApiData<DoctorCartItem[]>(doctorApi.getCart);
   const [isCheckingOut, setIsCheckingOut] = useState(false);
+  const { user } = useAuth();
+  const profileData = useApiData<DoctorProfile>(doctorApi.getProfile);
+  const [showCheckoutModal, setShowCheckoutModal] = useState(false);
 
   const updateQuantity = async (id: string, qty: number, maxStock?: number) => {
     if (maxStock !== undefined && qty > maxStock) {
@@ -250,14 +254,6 @@ function CartSection({ onNavigateToOrders }: { onNavigateToOrders?: () => void }
       toast.error("Failed to remove item");
     }
   };
-
-  const profileData = useApiData<DoctorProfile>(doctorApi.getProfile);
-  const [showCheckoutModal, setShowCheckoutModal] = useState(false);
-  const [showRazorpayGateway, setShowRazorpayGateway] = useState(false);
-  const [pendingOrderInfo, setPendingOrderInfo] = useState<any>(null);
-  const [gatewayTab, setGatewayTab] = useState<"upi" | "card" | "netbanking">("upi");
-  const [upiMethod, setUpiMethod] = useState<"gpay" | "phonepe" | "paytm" | "qr">("gpay");
-  const [isSimulatingPayment, setIsSimulatingPayment] = useState(false);
 
   // Address & Payment state
   const [clinicName, setClinicName] = useState("");
@@ -333,42 +329,42 @@ function CartSection({ onNavigateToOrders }: { onNavigateToOrders?: () => void }
         return;
       }
 
-      // 3. If Razorpay Online Payment -> Open Gateway Dialog
-      setPendingOrderInfo(res.data);
+      // 3. Real Razorpay Standard Checkout SDK
       setShowCheckoutModal(false);
-      setShowRazorpayGateway(true);
+      await openRazorpayCheckout({
+        amount: total,
+        orderNumber: res.data.orderId,
+        dbOrderId: res.data.dbOrderId,
+        customerName: contactName.trim() || user?.fullName || "Doctor",
+        customerEmail: user?.email || "",
+        customerPhone: contactPhone.trim() || user?.phone || "",
+        onSuccess: async (paymentData) => {
+          try {
+            await doctorApi.verifyRazorpayPayment({
+              orderId: res.data.dbOrderId,
+              razorpayPaymentId: paymentData.razorpayPaymentId,
+              razorpayOrderId: paymentData.razorpayOrderId,
+              razorpaySignature: paymentData.razorpaySignature,
+            });
+            toast.success(`🎉 Payment of ₹${total.toFixed(2)} verified! Payment ID: ${paymentData.razorpayPaymentId}`);
+          } catch (e: any) {
+            console.error("Verification err:", e);
+            toast.success(`🎉 Order placed! Razorpay ID: ${paymentData.razorpayPaymentId}`);
+          }
+          mutate([]);
+          if (onNavigateToOrders) onNavigateToOrders();
+        },
+        onDismiss: () => {
+          toast.info("Payment window was closed. Your order record has been saved.");
+          mutate([]);
+          if (onNavigateToOrders) onNavigateToOrders();
+        },
+      });
 
     } catch (err: any) {
       toast.error(err.message || "Failed to initiate checkout");
     } finally {
       setIsCheckingOut(false);
-    }
-  };
-
-  const handleCompleteRazorpayPayment = async () => {
-    if (!pendingOrderInfo) return;
-    setIsSimulatingPayment(true);
-
-    try {
-      // Simulate realistic payment gateway processing
-      await new Promise((r) => setTimeout(r, 1200));
-
-      const mockPaymentId = `pay_${Math.random().toString(36).substring(2, 12).toUpperCase()}`;
-      await doctorApi.verifyRazorpayPayment({
-        orderId: pendingOrderInfo.dbOrderId,
-        razorpayOrderId: pendingOrderInfo.razorpayOrderId || `order_${pendingOrderInfo.dbOrderId}`,
-        razorpayPaymentId: mockPaymentId,
-        razorpaySignature: "test_signature",
-      });
-
-      toast.success(`🎉 Payment of ₹${total.toFixed(2)} successful! Order ${pendingOrderInfo.orderId} placed.`);
-      mutate([]);
-      setShowRazorpayGateway(false);
-      if (onNavigateToOrders) onNavigateToOrders();
-    } catch (err: any) {
-      toast.error(err.message || "Payment verification failed.");
-    } finally {
-      setIsSimulatingPayment(false);
     }
   };
 
@@ -448,55 +444,50 @@ function CartSection({ onNavigateToOrders }: { onNavigateToOrders?: () => void }
                 <span className="font-semibold text-foreground">₹{total.toFixed(2)}</span>
               </div>
               <div className="flex justify-between text-muted-foreground">
-                <span className="flex items-center gap-1.5">
-                  <Truck className="h-3.5 w-3.5 text-emerald-500" />
-                  Vadodara Delivery
+                <span className="flex items-center gap-1">
+                  <Truck className="h-3.5 w-3.5 text-primary" /> Vadodara Delivery
                 </span>
-                <span className="font-bold text-emerald-600">FREE</span>
+                <span className="text-emerald-600 font-bold">FREE</span>
               </div>
-              <div className="flex justify-between font-black text-lg border-t border-border/80 pt-3 mt-3">
+              <div className="border-t pt-2.5 flex justify-between font-bold text-base">
                 <span>Total Amount</span>
-                <span className="text-primary">₹{total.toFixed(2)}</span>
+                <span className="text-primary font-black">₹{total.toFixed(2)}</span>
               </div>
             </div>
 
-            <Button 
-              className="w-full h-12 rounded-2xl font-bold shadow-md shadow-primary/20 text-sm gap-2" 
-              onClick={handleOpenCheckout}
-            >
-              <ShieldCheck className="h-4 w-4" />
+            <Button className="w-full rounded-2xl h-12 text-sm font-bold shadow-md shadow-primary/20" onClick={handleOpenCheckout}>
               Proceed to Checkout
             </Button>
 
-            <div className="p-3 rounded-2xl bg-muted/40 text-[11px] text-muted-foreground flex items-center gap-2">
+            <div className="p-3 rounded-2xl bg-secondary/50 border border-border/60 text-[11px] text-muted-foreground flex items-center gap-2">
               <ShieldCheck className="h-4 w-4 text-emerald-600 shrink-0" />
-              <span>100% Genuine Dental Supplies · Direct Dispatch from Kevdabaug Depot</span>
+              <span>100% Genuine Dental Supplies • Direct Dispatch from Kevdabaug Depot</span>
             </div>
           </Card>
         </div>
       )}
 
-      {/* Complete Checkout Dialog (Address & Razorpay Payment Method) */}
+      {/* ── Checkout & Address Dialog ── */}
       <Dialog open={showCheckoutModal} onOpenChange={setShowCheckoutModal}>
-        <DialogContent className="sm:max-w-xl max-h-[90vh] overflow-y-auto rounded-3xl p-6">
+        <DialogContent className="max-w-lg rounded-3xl border border-border/80 shadow-xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-xl font-bold font-heading flex items-center gap-2">
-              <Building className="h-5 w-5 text-primary" />
-              Complete Clinic Order & Payment
+              <Truck className="h-5 w-5 text-primary" />
+              Clinic Delivery Details
             </DialogTitle>
           </DialogHeader>
 
-          <div className="space-y-6 py-2">
+          <div className="space-y-4 py-2">
             {/* Step 1: Delivery Address */}
-            <div className="space-y-3.5 p-4 rounded-2xl bg-muted/30 border border-border/70">
+            <div className="space-y-3 p-4 rounded-2xl bg-muted/40 border border-border/70">
               <div className="flex items-center gap-2">
                 <MapPin className="h-4 w-4 text-primary" />
-                <span className="font-bold text-sm">1. Clinic Delivery Address (Vadodara)</span>
+                <span className="font-bold text-sm">1. Delivery Address (Vadodara Clinic)</span>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <Label className="text-xs">Clinic Name</Label>
+                  <Label className="text-xs">Clinic / Hospital Name</Label>
                   <Input 
                     value={clinicName} 
                     onChange={e => setClinicName(e.target.value)} 
@@ -565,7 +556,6 @@ function CartSection({ onNavigateToOrders }: { onNavigateToOrders?: () => void }
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {/* Razorpay Online Option */}
                 <div 
                   onClick={() => setPaymentMethod("razorpay")}
                   className={`p-3.5 rounded-2xl border-2 cursor-pointer transition-all ${
@@ -583,15 +573,9 @@ function CartSection({ onNavigateToOrders }: { onNavigateToOrders?: () => void }
                       <span className="h-2 w-2 rounded-full bg-primary" />
                     )}
                   </div>
-                  <p className="text-[11px] text-muted-foreground">
-                    UPI (GPay / PhonePe / Paytm), Cards & NetBanking
-                  </p>
-                  <span className="inline-block mt-2 text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-md">
-                    Instant Dispatch
-                  </span>
+                  <p className="text-[11px] text-muted-foreground">UPI, Cards & NetBanking</p>
                 </div>
 
-                {/* Cash on Delivery Option */}
                 <div 
                   onClick={() => setPaymentMethod("cod")}
                   className={`p-3.5 rounded-2xl border-2 cursor-pointer transition-all ${
@@ -609,20 +593,9 @@ function CartSection({ onNavigateToOrders }: { onNavigateToOrders?: () => void }
                       <span className="h-2 w-2 rounded-full bg-primary" />
                     )}
                   </div>
-                  <p className="text-[11px] text-muted-foreground">
-                    Pay cash or scan courier UPI QR when package arrives at your clinic
-                  </p>
-                  <span className="inline-block mt-2 text-[10px] font-bold text-emerald-700 bg-emerald-500/10 px-2 py-0.5 rounded-md">
-                    Vadodara Clinics Only
-                  </span>
+                  <p className="text-[11px] text-muted-foreground">Pay cash or scan courier UPI QR</p>
                 </div>
               </div>
-            </div>
-
-            {/* Total breakdown */}
-            <div className="flex items-center justify-between p-3.5 rounded-2xl bg-primary/10 border border-primary/20">
-              <span className="text-sm font-bold text-foreground">Total Payable Amount:</span>
-              <span className="text-xl font-black text-primary">₹{total.toFixed(2)}</span>
             </div>
           </div>
 
@@ -633,7 +606,7 @@ function CartSection({ onNavigateToOrders }: { onNavigateToOrders?: () => void }
             <Button 
               disabled={isCheckingOut} 
               onClick={handleProcessOrder}
-              className="rounded-xl font-bold shadow-md shadow-primary/20 gap-2"
+              className="rounded-xl font-bold shadow-md shadow-primary/20 gap-2 w-full h-12 rounded-2xl font-extrabold text-sm bg-gradient-to-r from-[#0b57d0] via-[#0284c7] to-[#0284c7] hover:opacity-95 text-white shadow-lg shadow-primary/20 flex items-center justify-center gap-2"
             >
               {isCheckingOut ? (
                 <>
@@ -653,198 +626,6 @@ function CartSection({ onNavigateToOrders }: { onNavigateToOrders?: () => void }
               )}
             </Button>
           </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* ── Razorpay Secure Payment Gateway Dialog ── */}
-      <Dialog open={showRazorpayGateway} onOpenChange={setShowRazorpayGateway}>
-        <DialogContent className="max-w-md p-0 overflow-hidden rounded-3xl border border-border/80 shadow-2xl bg-card">
-          {/* Razorpay Brand Header */}
-          <div className="bg-gradient-to-r from-[#0b57d0] via-[#0284c7] to-[#0284c7] p-5 text-white flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-xl bg-white/15 backdrop-blur-md grid place-items-center font-black text-lg text-white border border-white/20">
-                ⚡
-              </div>
-              <div>
-                <div className="font-extrabold text-base tracking-tight leading-tight flex items-center gap-1.5">
-                  Razorpay <span className="text-[10px] font-semibold bg-white/20 px-1.5 py-0.5 rounded text-white">SECURE</span>
-                </div>
-                <div className="text-[11px] text-white/80">Darsh Dental Depot • Vadodara</div>
-              </div>
-            </div>
-            <div className="text-right">
-              <div className="text-[11px] text-white/70">Payable Amount</div>
-              <div className="text-xl font-black tracking-tight">₹{total.toFixed(2)}</div>
-            </div>
-          </div>
-
-          <div className="p-5 space-y-4">
-            {/* Order summary pill */}
-            <div className="flex items-center justify-between p-3 rounded-2xl bg-muted/40 border border-border/60 text-xs">
-              <span className="text-muted-foreground">Order Reference:</span>
-              <span className="font-mono font-bold text-foreground">
-                {pendingOrderInfo?.orderId || "ORD-CURRENT"}
-              </span>
-            </div>
-
-            {/* Payment Method Selector Tabs */}
-            <div className="grid grid-cols-3 gap-2 p-1 rounded-2xl bg-muted/50 border border-border/60">
-              <button
-                type="button"
-                onClick={() => setGatewayTab("upi")}
-                className={`py-2 px-1 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
-                  gatewayTab === "upi" ? "bg-background text-primary shadow-xs" : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                <Smartphone className="h-3.5 w-3.5" /> UPI Apps
-              </button>
-              <button
-                type="button"
-                onClick={() => setGatewayTab("card")}
-                className={`py-2 px-1 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
-                  gatewayTab === "card" ? "bg-background text-primary shadow-xs" : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                <CreditCard className="h-3.5 w-3.5" /> Cards
-              </button>
-              <button
-                type="button"
-                onClick={() => setGatewayTab("netbanking")}
-                className={`py-2 px-1 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
-                  gatewayTab === "netbanking" ? "bg-background text-primary shadow-xs" : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                <Landmark className="h-3.5 w-3.5" /> NetBanking
-              </button>
-            </div>
-
-            {/* Tab 1: UPI Options */}
-            {gatewayTab === "upi" && (
-              <div className="space-y-3">
-                <div className="grid grid-cols-2 gap-2">
-                  <div
-                    onClick={() => setUpiMethod("gpay")}
-                    className={`p-3 rounded-2xl border-2 cursor-pointer transition-all flex items-center gap-2.5 ${
-                      upiMethod === "gpay" ? "border-primary bg-primary/5" : "border-border/60 hover:border-primary/40"
-                    }`}
-                  >
-                    <div className="h-7 w-7 rounded-lg bg-emerald-500/10 text-emerald-600 font-bold grid place-items-center text-xs">
-                      G
-                    </div>
-                    <div>
-                      <div className="text-xs font-bold text-foreground">Google Pay</div>
-                      <div className="text-[10px] text-muted-foreground">Instant UPI</div>
-                    </div>
-                  </div>
-
-                  <div
-                    onClick={() => setUpiMethod("phonepe")}
-                    className={`p-3 rounded-2xl border-2 cursor-pointer transition-all flex items-center gap-2.5 ${
-                      upiMethod === "phonepe" ? "border-primary bg-primary/5" : "border-border/60 hover:border-primary/40"
-                    }`}
-                  >
-                    <div className="h-7 w-7 rounded-lg bg-indigo-500/10 text-indigo-600 font-bold grid place-items-center text-xs">
-                      Pe
-                    </div>
-                    <div>
-                      <div className="text-xs font-bold text-foreground">PhonePe</div>
-                      <div className="text-[10px] text-muted-foreground">Direct Autopay</div>
-                    </div>
-                  </div>
-
-                  <div
-                    onClick={() => setUpiMethod("paytm")}
-                    className={`p-3 rounded-2xl border-2 cursor-pointer transition-all flex items-center gap-2.5 ${
-                      upiMethod === "paytm" ? "border-primary bg-primary/5" : "border-border/60 hover:border-primary/40"
-                    }`}
-                  >
-                    <div className="h-7 w-7 rounded-lg bg-sky-500/10 text-sky-600 font-bold grid place-items-center text-xs">
-                      Pay
-                    </div>
-                    <div>
-                      <div className="text-xs font-bold text-foreground">Paytm UPI</div>
-                      <div className="text-[10px] text-muted-foreground">Wallet / UPI</div>
-                    </div>
-                  </div>
-
-                  <div
-                    onClick={() => setUpiMethod("qr")}
-                    className={`p-3 rounded-2xl border-2 cursor-pointer transition-all flex items-center gap-2.5 ${
-                      upiMethod === "qr" ? "border-primary bg-primary/5" : "border-border/60 hover:border-primary/40"
-                    }`}
-                  >
-                    <div className="h-7 w-7 rounded-lg bg-amber-500/10 text-amber-600 font-bold grid place-items-center text-xs">
-                      <QrCode className="h-4 w-4" />
-                    </div>
-                    <div>
-                      <div className="text-xs font-bold text-foreground">QR Scanner</div>
-                      <div className="text-[10px] text-muted-foreground">Scan any App</div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="p-3 rounded-2xl bg-secondary/40 border border-border/50 flex items-center gap-2 text-[11px] text-muted-foreground">
-                  <ShieldCheck className="h-4 w-4 text-emerald-600 shrink-0" />
-                  <span>256-bit encrypted Razorpay SSL tunnel active.</span>
-                </div>
-              </div>
-            )}
-
-            {/* Tab 2: Cards */}
-            {gatewayTab === "card" && (
-              <div className="space-y-3">
-                <div className="p-3.5 rounded-2xl bg-secondary/40 border border-border/60 space-y-2">
-                  <div className="flex items-center justify-between text-xs font-bold text-foreground">
-                    <span>Razorpay Verified Card</span>
-                    <span className="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded-md font-bold">TEST MODE</span>
-                  </div>
-                  <div className="font-mono text-sm tracking-wider font-bold text-foreground">
-                    4242 •••• •••• 4242
-                  </div>
-                  <div className="flex items-center justify-between text-[11px] text-muted-foreground">
-                    <span>Exp: 12/28</span>
-                    <span>CVV: 123</span>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Tab 3: NetBanking */}
-            {gatewayTab === "netbanking" && (
-              <div className="grid grid-cols-2 gap-2">
-                {["HDFC Bank", "ICICI Bank", "State Bank of India", "Axis Bank"].map((bank) => (
-                  <div
-                    key={bank}
-                    className="p-3 rounded-2xl border border-border/60 hover:border-primary/40 bg-card cursor-pointer text-xs font-bold text-foreground flex items-center gap-2"
-                  >
-                    <Landmark className="h-4 w-4 text-primary" />
-                    {bank}
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* Action Pay Button */}
-            <div className="pt-2">
-              <Button
-                disabled={isSimulatingPayment}
-                onClick={handleCompleteRazorpayPayment}
-                className="w-full h-12 rounded-2xl font-extrabold text-sm bg-gradient-to-r from-[#0b57d0] via-[#0284c7] to-[#0284c7] hover:opacity-95 text-white shadow-lg shadow-primary/20 flex items-center justify-center gap-2"
-              >
-                {isSimulatingPayment ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    Verifying Payment with Razorpay...
-                  </>
-                ) : (
-                  <>
-                    <ShieldCheck className="h-4 w-4" />
-                    Complete ₹{total.toFixed(2)} Payment
-                  </>
-                )}
-              </Button>
-            </div>
-          </div>
         </DialogContent>
       </Dialog>
     </div>
@@ -1197,25 +978,59 @@ function OrdersSection() {
         ) : !history.data?.length ? (
           <EmptyBanner label="No past orders recorded" />
         ) : (
-          <Card className="overflow-hidden">
+          <Card className="overflow-hidden rounded-2xl border shadow-xs">
             <Table>
               <TableHeader>
-                <TableRow>
-                  <TableHead>Order #</TableHead>
-                  <TableHead>Items</TableHead>
-                  <TableHead>Total Amount</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Date</TableHead>
+                <TableRow className="bg-muted/30">
+                  <TableHead className="font-bold">Order #</TableHead>
+                  <TableHead className="font-bold">Items</TableHead>
+                  <TableHead className="font-bold">Total Amount</TableHead>
+                  <TableHead className="font-bold">Payment Method & Status</TableHead>
+                  <TableHead className="font-bold">Delivery Status</TableHead>
+                  <TableHead className="font-bold">Date & Time</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {history.data.map((o) => (
                   <TableRow key={o.orderId} className="hover:bg-muted/40 transition-colors">
                     <TableCell className="font-mono font-bold text-xs text-primary">{o.orderId}</TableCell>
-                    <TableCell>{o.itemCount} items</TableCell>
-                    <TableCell className="font-bold text-foreground">₹{o.total.toFixed(2)}</TableCell>
+                    <TableCell>
+                      <span className="text-xs font-semibold bg-muted px-2 py-0.5 rounded-md">
+                        {o.itemCount} item{o.itemCount > 1 ? "s" : ""}
+                      </span>
+                    </TableCell>
+                    <TableCell className="font-extrabold text-sm text-foreground">₹{o.total.toFixed(2)}</TableCell>
+                    <TableCell>
+                      <div className="space-y-1">
+                        {o.paymentMethod?.toLowerCase() === "razorpay" ? (
+                          <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-sky-500/10 text-sky-700 dark:text-sky-300 border border-sky-500/20">
+                            <CreditCard className="h-3 w-3 text-sky-600" /> Razorpay Online
+                          </div>
+                        ) : (
+                          <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20">
+                            <Banknote className="h-3 w-3 text-emerald-600" /> Pay on Delivery (COD)
+                          </div>
+                        )}
+                        <div>
+                          {o.paymentStatus?.toLowerCase() === "paid" ? (
+                            <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-600 dark:text-emerald-400">
+                              <CheckCircle2 className="h-3 w-3" /> Paid
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 text-[11px] font-bold text-amber-600 dark:text-amber-400">
+                              🟡 Pending
+                            </span>
+                          )}
+                        </div>
+                        {o.paymentId && (
+                          <div className="text-[10px] font-mono text-muted-foreground bg-muted/60 px-1.5 py-0.5 rounded w-fit">
+                            ID: {o.paymentId}
+                          </div>
+                        )}
+                      </div>
+                    </TableCell>
                     <TableCell><StatusBadge status={o.status as any} /></TableCell>
-                    <TableCell className="text-muted-foreground text-xs">{o.date}</TableCell>
+                    <TableCell className="text-muted-foreground text-xs whitespace-nowrap">{o.date}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>

@@ -1,4 +1,4 @@
-import { type ReactNode, useState } from "react";
+import { type ReactNode, useState, useEffect, useCallback } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -37,10 +37,17 @@ import {
   User,
   Sparkles,
   Home,
+  ShoppingBag,
+  Package,
+  UserCheck,
+  CheckCheck,
+  Clock,
   type LucideIcon,
 } from "lucide-react";
 import { useTheme } from "@/components/theme-provider";
 import { useAuth } from "@/lib/auth-context";
+import { notificationService, type AppNotification } from "@/lib/notifications";
+import { toast } from "sonner";
 
 export type NavItem = { key: string; label: string; icon: LucideIcon };
 
@@ -68,10 +75,54 @@ export function DashboardLayout({
   const nav = useNavigate();
   const current = items.find((i) => i.key === active);
 
+  const [notifications, setNotifications] = useState<AppNotification[]>([]);
+  const [loadingNotifs, setLoadingNotifs] = useState(false);
+
+  const loadNotifications = useCallback(async () => {
+    if (!user) return;
+    setLoadingNotifs(true);
+    try {
+      const data = await notificationService.getNotifications(user);
+      setNotifications(data);
+    } catch (e) {
+      console.error("Failed to load notifications:", e);
+    } finally {
+      setLoadingNotifs(false);
+    }
+  }, [user]);
+
+  useEffect(() => {
+    loadNotifications();
+    // Poll every 30 seconds for live order & stock updates
+    const timer = setInterval(loadNotifications, 30000);
+    return () => clearInterval(timer);
+  }, [loadNotifications]);
+
   const handleSignOut = async () => {
     await logout();
     nav({ to: "/" });
   };
+
+  const handleNotificationClick = (n: AppNotification) => {
+    if (user) {
+      notificationService.markAsRead(user.id || user._id, n.id);
+      setNotifications((prev) =>
+        prev.map((item) => (item.id === n.id ? { ...item, isRead: true } : item))
+      );
+    }
+    if (n.actionTab) {
+      onChange(n.actionTab);
+    }
+  };
+
+  const handleMarkAllRead = () => {
+    if (!user) return;
+    notificationService.markAllAsRead(user.id || user._id, notifications);
+    setNotifications((prev) => prev.map((item) => ({ ...item, isRead: true })));
+    toast.success("All notifications marked as read");
+  };
+
+  const unreadCount = notifications.filter((n) => !n.isRead).length;
 
   return (
     <SidebarProvider>
@@ -102,13 +153,14 @@ export function DashboardLayout({
                 <SidebarMenu className="space-y-1">
                   {items.map((item) => {
                     const isActive = item.key === active;
+                    const isNotificationTab = item.key === "notifications";
                     return (
                       <SidebarMenuItem key={item.key}>
                         <SidebarMenuButton
                           isActive={isActive}
                           onClick={() => onChange(item.key)}
                           tooltip={item.label}
-                          className={`rounded-xl h-10 px-3 transition-all ${
+                          className={`rounded-xl h-10 px-3 transition-all relative ${
                             isActive
                               ? "bg-primary text-primary-foreground font-bold shadow-sm"
                               : "text-muted-foreground hover:text-foreground hover:bg-secondary/70"
@@ -116,6 +168,11 @@ export function DashboardLayout({
                         >
                           <item.icon className="h-4 w-4" />
                           <span className="text-xs font-medium">{item.label}</span>
+                          {isNotificationTab && unreadCount > 0 && (
+                            <Badge className="ml-auto h-4 min-w-4 px-1 text-[9px] font-bold bg-destructive text-white border-0">
+                              {unreadCount}
+                            </Badge>
+                          )}
                         </SidebarMenuButton>
                       </SidebarMenuItem>
                     );
@@ -186,7 +243,14 @@ export function DashboardLayout({
                 {theme === "dark" ? <Sun className="h-4 w-4 text-amber-400" /> : <Moon className="h-4 w-4 text-sky-600" />}
               </Button>
 
-              <NotificationsDropdown />
+              <NotificationsDropdown
+                role={role}
+                notifications={notifications}
+                unreadCount={unreadCount}
+                onNotificationClick={handleNotificationClick}
+                onMarkAllRead={handleMarkAllRead}
+                onOpenFull={() => onChange("notifications")}
+              />
 
               <ProfileDropdown
                 role={role}
@@ -215,34 +279,102 @@ export function DashboardLayout({
   );
 }
 
-function NotificationsDropdown() {
-  const items = [
-    { t: "Verified stock update: 3M Filtek Restorative in-stock", d: "10m ago" },
-    { t: "Order #DEN-8941 shipped via BlueDart Express", d: "1h ago" },
-    { t: "New GST invoice generated for download", d: "3h ago" },
-  ];
+function NotificationsDropdown({
+  role,
+  notifications,
+  unreadCount,
+  onNotificationClick,
+  onMarkAllRead,
+  onOpenFull,
+}: {
+  role: string;
+  notifications: AppNotification[];
+  unreadCount: number;
+  onNotificationClick: (n: AppNotification) => void;
+  onMarkAllRead: () => void;
+  onOpenFull: () => void;
+}) {
+  const getIcon = (type: string) => {
+    switch (type) {
+      case "order":
+        return <ShoppingBag className="h-3.5 w-3.5 text-primary shrink-0" />;
+      case "stock":
+        return <Package className="h-3.5 w-3.5 text-amber-500 shrink-0" />;
+      case "user":
+        return <UserCheck className="h-3.5 w-3.5 text-emerald-500 shrink-0" />;
+      default:
+        return <Bell className="h-3.5 w-3.5 text-primary shrink-0" />;
+    }
+  };
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="icon" className="relative rounded-xl h-9 w-9">
           <Bell className="h-4 w-4 text-muted-foreground" />
-          <Badge className="absolute -top-1 -right-1 h-4 w-4 p-0 grid place-items-center text-[9px] bg-primary text-white font-bold border-0">
-            3
-          </Badge>
+          {unreadCount > 0 && (
+            <span className="absolute -top-0.5 -right-0.5 flex h-4 min-w-4 px-1 items-center justify-center rounded-full bg-primary text-white text-[9px] font-extrabold shadow-sm animate-pulse">
+              {unreadCount}
+            </span>
+          )}
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-80 glass-card rounded-2xl p-2">
-        <DropdownMenuLabel className="font-heading font-bold text-xs uppercase tracking-wider text-muted-foreground px-3 py-2">
-          Clinical Alerts
-        </DropdownMenuLabel>
-        <DropdownMenuSeparator className="bg-border/40" />
-        {items.map((n, i) => (
-          <DropdownMenuItem key={i} className="flex flex-col items-start gap-1 p-3 rounded-xl hover:bg-secondary/70 cursor-pointer">
-            <span className="text-xs font-semibold text-foreground leading-snug">{n.t}</span>
-            <span className="text-[10px] text-muted-foreground">{n.d}</span>
-          </DropdownMenuItem>
-        ))}
+      <DropdownMenuContent align="end" className="w-80 sm:w-96 glass-card rounded-2xl p-2 shadow-2xl border-border/70">
+        <div className="flex items-center justify-between px-3 py-2">
+          <span className="font-heading font-bold text-xs uppercase tracking-wider text-muted-foreground">
+            {role === "Doctor" ? "Clinic Alerts" : role === "Shop Owner" ? "Shop Live Alerts" : "Platform Alerts"}
+          </span>
+          {unreadCount > 0 && (
+            <button
+              onClick={onMarkAllRead}
+              className="text-[11px] font-semibold text-primary hover:underline flex items-center gap-1 cursor-pointer"
+            >
+              <CheckCheck className="h-3 w-3" /> Mark all read
+            </button>
+          )}
+        </div>
+        <DropdownMenuSeparator className="bg-border/40 my-1" />
+
+        {notifications.length === 0 ? (
+          <div className="p-6 text-center text-muted-foreground space-y-1">
+            <Bell className="h-6 w-6 mx-auto opacity-40 mb-2" />
+            <p className="text-xs font-semibold">No notifications yet</p>
+            <p className="text-[10px]">Real-time orders, dispatch, and restock alerts will appear here.</p>
+          </div>
+        ) : (
+          <div className="max-h-80 overflow-y-auto space-y-1 pr-1">
+            {notifications.slice(0, 6).map((n) => (
+              <DropdownMenuItem
+                key={n.id}
+                onClick={() => onNotificationClick(n)}
+                className={`flex items-start gap-2.5 p-2.5 rounded-xl cursor-pointer transition-all ${
+                  !n.isRead ? "bg-primary/8 font-medium border-l-2 border-primary" : "hover:bg-secondary/70 opacity-80"
+                }`}
+              >
+                <div className="mt-0.5 p-1.5 rounded-lg bg-background border border-border/50">
+                  {getIcon(n.type)}
+                </div>
+                <div className="flex-1 min-w-0 text-left">
+                  <div className="flex items-center justify-between gap-1 mb-0.5">
+                    <span className="text-xs font-bold text-foreground truncate">{n.title}</span>
+                    <span className="text-[10px] text-muted-foreground shrink-0">{n.time}</span>
+                  </div>
+                  <p className="text-[11px] text-muted-foreground line-clamp-2 leading-relaxed">
+                    {n.message}
+                  </p>
+                </div>
+              </DropdownMenuItem>
+            ))}
+          </div>
+        )}
+
+        <DropdownMenuSeparator className="bg-border/40 my-1" />
+        <DropdownMenuItem
+          onClick={onOpenFull}
+          className="rounded-xl justify-center text-xs font-semibold text-primary py-2 cursor-pointer hover:bg-primary/10"
+        >
+          View All Notifications
+        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );

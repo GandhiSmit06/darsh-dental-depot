@@ -2,7 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import {
   LayoutDashboard, Users, Package, ShoppingBag, BarChart3, FileText, Settings,
-  DollarSign, TrendingUp, Activity, Download, Trash2, Loader2,
+  DollarSign, TrendingUp, Activity, Download, Trash2, Loader2, Bell, CheckCircle2,
+  RefreshCw, Clock, Check, ChevronRight, UserCheck
 } from "lucide-react";
 import {
   Area, AreaChart, Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer,
@@ -20,6 +21,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth-context";
 import { adminApi, type User } from "@/lib/api";
+import { notificationService, type AppNotification } from "@/lib/notifications";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({ meta: [{ title: "Admin Dashboard — Darsh Dental Depot" }] }),
@@ -33,6 +35,7 @@ const items: NavItem[] = [
   { key: "orders", label: "Orders", icon: ShoppingBag },
   { key: "analytics", label: "Analytics", icon: BarChart3 },
   { key: "reports", label: "Reports", icon: FileText },
+  { key: "notifications", label: "Notifications", icon: Bell },
   { key: "settings", label: "Settings", icon: Settings },
 ];
 
@@ -582,6 +585,155 @@ function AdminDashboard() {
     );
   }
 
+  function NotificationsSection() {
+    const { user } = useAuth();
+    const [notifications, setNotifications] = useState<AppNotification[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    const load = async () => {
+      if (!user) return;
+      setLoading(true);
+      try {
+        const data = await notificationService.getNotifications(user);
+        setNotifications(data);
+      } catch (e) {
+        console.error(e);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    useEffect(() => {
+      load();
+    }, [user]);
+
+    const handleMarkAllRead = () => {
+      if (!user) return;
+      notificationService.markAllAsRead(user.id || user._id, notifications);
+      setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
+      toast.success("All notifications marked as read");
+    };
+
+    const handleItemClick = (n: AppNotification) => {
+      if (user) {
+        notificationService.markAsRead(user.id || user._id, n.id);
+        setNotifications((prev) =>
+          prev.map((item) => (item.id === n.id ? { ...item, isRead: true } : item))
+        );
+      }
+      if (n.actionTab) {
+        setActive(n.actionTab);
+      }
+    };
+
+    const unreadCount = notifications.filter((n) => !n.isRead).length;
+
+    return (
+      <div className="space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <div className="flex items-center gap-2">
+              <h1 className="text-2xl font-bold font-heading">System & Platform Alerts</h1>
+              {unreadCount > 0 && (
+                <Badge className="bg-primary text-white font-bold text-xs px-2.5 py-0.5 rounded-full">
+                  {unreadCount} New
+                </Badge>
+              )}
+            </div>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Live audit events, doctor registrations, and new orders across the platform.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2">
+            {unreadCount > 0 && (
+              <Button variant="outline" size="sm" onClick={handleMarkAllRead} className="text-xs rounded-xl h-9">
+                <CheckCircle2 className="h-3.5 w-3.5 mr-1.5" /> Mark all as read
+              </Button>
+            )}
+            <Button variant="outline" size="sm" onClick={load} className="text-xs rounded-xl h-9">
+              <RefreshCw className={`h-3.5 w-3.5 mr-1.5 ${loading ? "animate-spin" : ""}`} /> Refresh
+            </Button>
+          </div>
+        </div>
+
+        {loading ? (
+          <div className="py-12 flex justify-center">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          </div>
+        ) : notifications.length === 0 ? (
+          <Card className="p-12 text-center space-y-3 rounded-3xl border-dashed">
+            <div className="h-14 w-14 rounded-2xl bg-primary/10 text-primary mx-auto grid place-items-center">
+              <Bell className="h-7 w-7 opacity-70" />
+            </div>
+            <h3 className="font-bold text-lg">No Platform Alerts</h3>
+            <p className="text-xs text-muted-foreground max-w-sm mx-auto leading-relaxed">
+              All platform systems are operational. New registrations, platform orders, and critical stock events will show here.
+            </p>
+          </Card>
+        ) : (
+          <div className="space-y-3">
+            {notifications.map((n) => (
+              <Card
+                key={n.id}
+                onClick={() => handleItemClick(n)}
+                className={`p-4 rounded-2xl border transition-all cursor-pointer hover:shadow-md hover:border-primary/40 flex flex-col sm:flex-row sm:items-center justify-between gap-4 ${
+                  !n.isRead
+                    ? "bg-primary/5 border-primary/30 shadow-xs"
+                    : "bg-card border-border/70 opacity-90"
+                }`}
+              >
+                <div className="flex items-start gap-3.5 min-w-0">
+                  <div
+                    className={`h-11 w-11 rounded-2xl grid place-items-center shrink-0 ${
+                      n.type === "order"
+                        ? "bg-primary/15 text-primary"
+                        : n.type === "stock"
+                        ? "bg-amber-500/15 text-amber-600 dark:text-amber-400"
+                        : "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400"
+                    }`}
+                  >
+                    {n.type === "order" ? (
+                      <ShoppingBag className="h-5 w-5" />
+                    ) : n.type === "stock" ? (
+                      <Package className="h-5 w-5" />
+                    ) : (
+                      <Users className="h-5 w-5" />
+                    )}
+                  </div>
+
+                  <div className="space-y-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-bold text-sm text-foreground">{n.title}</span>
+                      {!n.isRead && (
+                        <span className="h-2 w-2 rounded-full bg-primary animate-pulse" />
+                      )}
+                      <span className="text-[11px] text-muted-foreground flex items-center gap-1">
+                        {n.time}
+                      </span>
+                    </div>
+                    <p className="text-xs text-muted-foreground leading-relaxed">
+                      {n.message}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="shrink-0 flex items-center gap-2 self-end sm:self-center">
+                  {n.actionTab && (
+                    <Button variant="secondary" size="sm" className="rounded-xl text-xs h-8 px-3 font-semibold">
+                      View
+                      <ChevronRight className="h-3.5 w-3.5 ml-1" />
+                    </Button>
+                  )}
+                </div>
+              </Card>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }
+
   return (
     <DashboardLayout
       title="Admin Control Hub"
@@ -596,6 +748,7 @@ function AdminDashboard() {
       {active === "orders" && <OrdersSection />}
       {active === "analytics" && <AnalyticsSection />}
       {active === "reports" && <ReportsSection />}
+      {active === "notifications" && <NotificationsSection />}
       {active === "settings" && <SettingsSection />}
     </DashboardLayout>
   );

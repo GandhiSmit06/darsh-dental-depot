@@ -16,7 +16,8 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { ProductCard } from "@/components/site/ProductCard";
-import { toast } from "sonner";
+import { useAuth } from "@/lib/auth-context";
+import { notificationService, type AppNotification } from "@/lib/notifications";
 import {
   doctorApi, productsApi, type DoctorProfile, type DoctorStats,
   type DoctorCartItem, type DoctorWishlistItem, type DoctorActiveOrder,
@@ -107,7 +108,7 @@ function DoctorDashboard() {
       {active === "cart" && <CartSection onNavigateToOrders={() => setActive("orders")} />}
       {active === "wishlist" && <Wishlist />}
       {active === "orders" && <OrdersSection />}
-      {active === "notifications" && <NotificationsSection />}
+      {active === "notifications" && <NotificationsSection onNavigate={setActive} />}
       {active === "settings" && <SettingsSection />}
     </DashboardLayout>
   );
@@ -148,9 +149,9 @@ function Overview() {
 
       {stats.loading ? <LoadingSpinner /> : stats.error ? <ErrorBanner onRetry={stats.retry} /> : stats.data && (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <StatCard label="Active Orders" value={String(stats.data.activeOrders)} icon={ShoppingBag} />
+          <StatCard label="Active Orders" value={String(stats.data.activeOrders)} icon={Package} />
           <StatCard label="Wishlist Items" value={String(stats.data.wishlistCount)} icon={Heart} />
-          <StatCard label="Total Spent" value={stats.data.totalSpent.toLocaleString()} prefix="₹" icon={Package} change={stats.data.spentChangePercent} />
+          <StatCard label="Total Spent" value={stats.data.totalSpent.toLocaleString()} prefix="₹" icon={ShoppingBag} />
           <StatCard label="Cart Items" value={String(stats.data.cartItems)} icon={ShoppingCart} />
         </div>
       )}
@@ -1225,21 +1226,183 @@ function OrdersSection() {
   );
 }
 
-// ─── Notifications (Clean state) ───────────────────────────────────────────
+// ─── Notifications (Rich Real-Time Center) ──────────────────────────────────
 
-function NotificationsSection() {
+function NotificationsSection({ onNavigate }: { onNavigate: (tab: string) => void }) {
+  const { user } = useAuth();
+  const [filter, setFilter] = useState<"all" | "order" | "stock">("all");
+  const [notifications, setNotifications] = useState<AppNotification[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const load = useCallback(async () => {
+    if (!user) return;
+    setLoading(true);
+    try {
+      const data = await notificationService.getNotifications(user);
+      setNotifications(data);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoading(false);
+    }
+  }, [user]);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  const handleMarkAllRead = () => {
+    if (!user) return;
+    notificationService.markAllAsRead(user.id || user._id, notifications);
+    setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
+  };
+
+  const handleItemClick = (n: AppNotification) => {
+    if (user) {
+      notificationService.markAsRead(user.id || user._id, n.id);
+      setNotifications((prev) =>
+        prev.map((item) => (item.id === n.id ? { ...item, isRead: true } : item))
+      );
+    }
+    if (n.actionTab) {
+      onNavigate(n.actionTab);
+    }
+  };
+
+  const filtered = notifications.filter((n) => (filter === "all" ? true : n.type === filter));
+  const unreadCount = notifications.filter((n) => !n.isRead).length;
+
   return (
-    <div className="space-y-5">
-      <h1 className="text-2xl font-bold">Notifications</h1>
-      <Card className="p-8 text-center space-y-3">
-        <div className="h-12 w-12 rounded-2xl bg-primary/10 text-primary mx-auto grid place-items-center">
-          <Bell className="h-6 w-6" />
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl font-bold font-heading">Clinic Notifications</h1>
+            {unreadCount > 0 && (
+              <Badge className="bg-primary text-white font-bold text-xs px-2.5 py-0.5 rounded-full">
+                {unreadCount} New
+              </Badge>
+            )}
+          </div>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Live order tracking, clinic delivery milestones, and wishlist stock restock alerts.
+          </p>
         </div>
-        <h3 className="font-semibold text-lg">No New Notifications</h3>
-        <p className="text-sm text-muted-foreground max-w-sm mx-auto">
-          You're all set! Real-time order dispatch alerts and clinic delivery updates from Darsh Dental Depot will appear here.
-        </p>
-      </Card>
+
+        <div className="flex items-center gap-2">
+          {unreadCount > 0 && (
+            <Button variant="outline" size="sm" onClick={handleMarkAllRead} className="text-xs rounded-xl h-9">
+              <Check className="h-3.5 w-3.5 mr-1.5" /> Mark all as read
+            </Button>
+          )}
+          <Button variant="outline" size="sm" onClick={load} className="text-xs rounded-xl h-9">
+            <RefreshCw className={`h-3.5 w-3.5 mr-1.5 ${loading ? "animate-spin" : ""}`} /> Refresh
+          </Button>
+        </div>
+      </div>
+
+      {/* Filter Tabs */}
+      <div className="flex items-center gap-2 border-b border-border/50 pb-3">
+        <Button
+          variant={filter === "all" ? "default" : "ghost"}
+          size="sm"
+          onClick={() => setFilter("all")}
+          className="rounded-xl text-xs h-8 px-3.5"
+        >
+          All ({notifications.length})
+        </Button>
+        <Button
+          variant={filter === "order" ? "default" : "ghost"}
+          size="sm"
+          onClick={() => setFilter("order")}
+          className="rounded-xl text-xs h-8 px-3.5"
+        >
+          <ShoppingBag className="h-3.5 w-3.5 mr-1.5" /> Orders & Delivery (
+          {notifications.filter((n) => n.type === "order").length})
+        </Button>
+        <Button
+          variant={filter === "stock" ? "default" : "ghost"}
+          size="sm"
+          onClick={() => setFilter("stock")}
+          className="rounded-xl text-xs h-8 px-3.5"
+        >
+          <Package className="h-3.5 w-3.5 mr-1.5 text-amber-500" /> Wishlist & Restock (
+          {notifications.filter((n) => n.type === "stock").length})
+        </Button>
+      </div>
+
+      {/* Notifications List */}
+      {loading ? (
+        <LoadingSpinner label="Checking live alerts..." />
+      ) : filtered.length === 0 ? (
+        <Card className="p-12 text-center space-y-3 rounded-3xl border-dashed">
+          <div className="h-14 w-14 rounded-2xl bg-primary/10 text-primary mx-auto grid place-items-center">
+            <Bell className="h-7 w-7 opacity-70" />
+          </div>
+          <h3 className="font-bold text-lg">No Notifications</h3>
+          <p className="text-xs text-muted-foreground max-w-sm mx-auto leading-relaxed">
+            You're all caught up! New orders placed, Vadodara dispatch milestones, and restocked wishlist items will appear here automatically.
+          </p>
+        </Card>
+      ) : (
+        <div className="space-y-3">
+          {filtered.map((n) => (
+            <Card
+              key={n.id}
+              onClick={() => handleItemClick(n)}
+              className={`p-4 rounded-2xl border transition-all cursor-pointer hover:shadow-md hover:border-primary/40 flex flex-col sm:flex-row sm:items-center justify-between gap-4 ${
+                !n.isRead
+                  ? "bg-primary/5 border-primary/30 shadow-xs"
+                  : "bg-card border-border/70 opacity-90"
+              }`}
+            >
+              <div className="flex items-start gap-3.5 min-w-0">
+                <div
+                  className={`h-11 w-11 rounded-2xl grid place-items-center shrink-0 ${
+                    n.type === "order"
+                      ? "bg-primary/15 text-primary"
+                      : n.type === "stock"
+                      ? "bg-amber-500/15 text-amber-600 dark:text-amber-400"
+                      : "bg-secondary text-foreground"
+                  }`}
+                >
+                  {n.type === "order" ? (
+                    <ShoppingBag className="h-5 w-5" />
+                  ) : n.type === "stock" ? (
+                    <Package className="h-5 w-5" />
+                  ) : (
+                    <Bell className="h-5 w-5" />
+                  )}
+                </div>
+
+                <div className="space-y-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="font-bold text-sm text-foreground">{n.title}</span>
+                    {!n.isRead && (
+                      <span className="h-2 w-2 rounded-full bg-primary animate-pulse" />
+                    )}
+                    <span className="text-[11px] text-muted-foreground flex items-center gap-1">
+                      <Clock className="h-3 w-3" /> {n.time}
+                    </span>
+                  </div>
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    {n.message}
+                  </p>
+                </div>
+              </div>
+
+              <div className="shrink-0 flex items-center gap-2 self-end sm:self-center">
+                {n.actionTab && (
+                  <Button variant="secondary" size="sm" className="rounded-xl text-xs h-8 px-3 font-semibold">
+                    {n.actionTab === "orders" ? "Track Order" : n.actionTab === "wishlist" ? "View Wishlist" : "View"}
+                    <ChevronRight className="h-3.5 w-3.5 ml-1" />
+                  </Button>
+                )}
+              </div>
+            </Card>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

@@ -615,7 +615,14 @@ export const authApi = {
   },
 
   forgotPassword: async (email: string) => {
-    const { error } = await supabase.auth.resetPasswordForEmail(email.trim().toLowerCase());
+    const redirectUrl =
+      typeof window !== "undefined"
+        ? `${window.location.origin}/reset-password`
+        : "https://darsh-dental-depot.gsmit5605.workers.dev/reset-password";
+
+    const { error } = await supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(), {
+      redirectTo: redirectUrl,
+    });
     if (error) throw new ApiError(400, error.message);
     return { success: true, message: "Password reset link sent to your email." };
   },

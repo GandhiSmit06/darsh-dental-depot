@@ -29,7 +29,6 @@ import {
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { productsApi } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
-import { mockProducts } from "@/lib/mock-data";
 import { motion } from "framer-motion";
 
 export const Route = createFileRoute("/products")({

@@ -731,7 +731,7 @@ export const doctorApi = {
         wishlistCount: wishlist.length,
         totalSpent,
         cartItems: cart.reduce((sum, item) => sum + item.quantity, 0),
-        spentChangePercent: 12,
+        spentChangePercent: 0,
       },
     };
   },
@@ -1058,34 +1058,57 @@ export const shopApi = {
   },
 
   getStats: async () => {
-    const { data: orders } = await supabase.from("orders").select("total_price, order_status");
-    const { data: customers } = await supabase.from("profiles").select("id").eq("role", "doctor");
+    const { data: orders } = await supabase.from("orders").select("total_price, order_status, created_at");
+    const { data: customers } = await supabase.from("profiles").select("id, created_at").eq("role", "doctor");
 
-    let revenue = 0;
-    (orders || []).forEach((o) => {
-      revenue += Number(o.total_price || 0);
-    });
+    const validOrders = (orders || []).filter((o) => o.order_status !== "cancelled");
+    const revenue = validOrders.reduce((sum, o) => sum + Number(o.total_price || 0), 0);
+    const totalOrdersCount = (orders || []).length;
+    const totalCustomersCount = (customers || []).length;
+
+    // Calculate real week-over-week changes
+    const oneWeekAgo = new Date();
+    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+    const twoWeeksAgo = new Date();
+    twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
+
+    const thisWeekOrders = (orders || []).filter((o) => new Date(o.created_at) >= oneWeekAgo);
+    const prevWeekOrders = (orders || []).filter(
+      (o) => new Date(o.created_at) >= twoWeeksAgo && new Date(o.created_at) < oneWeekAgo
+    );
+
+    const thisWeekRev = thisWeekOrders.reduce((s, o) => s + Number(o.total_price || 0), 0);
+    const prevWeekRev = prevWeekOrders.reduce((s, o) => s + Number(o.total_price || 0), 0);
+
+    const calcChange = (curr: number, prev: number) => {
+      if (prev === 0) return curr > 0 ? 100 : 0;
+      return Math.round(((curr - prev) / prev) * 100);
+    };
 
     return {
       success: true as const,
       message: "OK",
       data: {
-        totalSales: (orders || []).length,
+        totalSales: validOrders.length,
         revenue,
-        orders: (orders || []).length,
-        customers: (customers || []).length,
+        orders: totalOrdersCount,
+        customers: totalCustomersCount,
         weeklyChanges: {
-          sales: 15,
-          revenue: 22,
-          orders: 8,
-          customers: 5,
+          sales: calcChange(thisWeekOrders.length, prevWeekOrders.length),
+          revenue: calcChange(thisWeekRev, prevWeekRev),
+          orders: calcChange(thisWeekOrders.length, prevWeekOrders.length),
+          customers: 0,
         },
       },
     };
   },
 
   getInventory: async () => {
-    const { data: products } = await supabase.from("products").select("id, sku, name, stock, status");
+    const { data: products } = await supabase
+      .from("products")
+      .select("id, sku, name, stock, status")
+      .order("created_at", { ascending: false });
+
     const mapped = (products || []).map((p: any) => ({
       _id: p.id,
       sku: p.sku || `DDD-${p.id.slice(0, 6)}`,
@@ -1097,63 +1120,143 @@ export const shopApi = {
   },
 
   getCustomers: async () => {
-    const { data: profiles } = await supabase.from("profiles").select("*").eq("role", "doctor");
+    const { data: profiles } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("role", "doctor")
+      .order("created_at", { ascending: false });
+
+    const { data: orders } = await supabase.from("orders").select("user_id, total_price, order_status");
+
+    // Aggregate real orders and spending per doctor
+    const ordersByUser: Record<string, { count: number; spent: number }> = {};
+    (orders || []).forEach((o: any) => {
+      if (!o.user_id) return;
+      if (!ordersByUser[o.user_id]) {
+        ordersByUser[o.user_id] = { count: 0, spent: 0 };
+      }
+      ordersByUser[o.user_id].count += 1;
+      if (o.order_status !== "cancelled") {
+        ordersByUser[o.user_id].spent += Number(o.total_price || 0);
+      }
+    });
+
     const mapped = (profiles || []).map((p: any) => ({
       _id: p.id,
-      name: p.full_name,
+      name: p.full_name || "Doctor",
       email: p.email,
-      phone: p.phone,
-      clinicName: p.clinic_name,
-      orders: 1,
-      spent: 5400,
+      phone: p.phone || "",
+      clinicName: p.clinic_name || "",
+      orders: ordersByUser[p.id]?.count || 0,
+      spent: ordersByUser[p.id]?.spent || 0,
     }));
+
     return { success: true as const, message: "OK", data: mapped };
   },
 
-  getWeeklySales: async () => ({
-    success: true as const,
-    message: "OK",
-    data: [
-      { day: "Mon", sales: 12000 },
-      { day: "Tue", sales: 18500 },
-      { day: "Wed", sales: 15000 },
-      { day: "Thu", sales: 24000 },
-      { day: "Fri", sales: 32000 },
-      { day: "Sat", sales: 28000 },
-      { day: "Sun", sales: 9000 },
-    ],
-  }),
+  getWeeklySales: async () => {
+    const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    const now = new Date();
+    const startOfWeek = new Date(now);
+    const dayIndex = now.getDay(); // 0 = Sun
+    const diffToMonday = (dayIndex + 6) % 7;
+    startOfWeek.setDate(now.getDate() - diffToMonday);
+    startOfWeek.setHours(0, 0, 0, 0);
 
-  getMonthlyTrend: async () => ({
-    success: true as const,
-    message: "OK",
-    data: [
-      { month: "Jan", sales: 120000, orders: 45 },
-      { month: "Feb", sales: 154000, orders: 58 },
-      { month: "Mar", sales: 189000, orders: 72 },
-    ],
-  }),
+    const { data: orders } = await supabase
+      .from("orders")
+      .select("total_price, created_at, order_status")
+      .gte("created_at", startOfWeek.toISOString())
+      .neq("order_status", "cancelled");
 
-  getCategoryShare: async () => ({
-    success: true as const,
-    message: "OK",
-    data: [
-      { name: "Composites", value: 40 },
-      { name: "Endodontics", value: 25 },
-      { name: "Cements", value: 20 },
-      { name: "Impression", value: 15 },
-    ],
-  }),
+    const daysOrder = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+    const salesByDay: Record<string, number> = {
+      Mon: 0, Tue: 0, Wed: 0, Thu: 0, Fri: 0, Sat: 0, Sun: 0,
+    };
 
-  getProductPerformance: async () => ({
-    success: true as const,
-    message: "OK",
-    data: [
-      { productName: "3M Filtek Z350 Composite", unitsSold: 48 },
-      { productName: "Prime & Bond Universal", unitsSold: 36 },
-      { productName: "Septodont Septanest", unitsSold: 29 },
-    ],
-  }),
+    (orders || []).forEach((o) => {
+      const d = new Date(o.created_at);
+      const name = dayNames[d.getDay()];
+      if (salesByDay[name] !== undefined) {
+        salesByDay[name] += Number(o.total_price || 0);
+      }
+    });
+
+    const result = daysOrder.map((day) => ({
+      day,
+      sales: salesByDay[day],
+    }));
+
+    return { success: true as const, message: "OK", data: result };
+  },
+
+  getMonthlyTrend: async () => {
+    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const now = new Date();
+    const resultMonths: { month: string; sales: number; orders: number; key: string }[] = [];
+
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const name = monthNames[d.getMonth()];
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+      resultMonths.push({ month: name, sales: 0, orders: 0, key });
+    }
+
+    const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 5, 1);
+    const { data: orders } = await supabase
+      .from("orders")
+      .select("total_price, created_at, order_status")
+      .gte("created_at", sixMonthsAgo.toISOString());
+
+    (orders || []).forEach((o) => {
+      const d = new Date(o.created_at);
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+      const entry = resultMonths.find((m) => m.key === key);
+      if (entry) {
+        entry.orders += 1;
+        if (o.order_status !== "cancelled") {
+          entry.sales += Number(o.total_price || 0);
+        }
+      }
+    });
+
+    const mapped = resultMonths.map(({ month, sales, orders }) => ({ month, sales, orders }));
+    return { success: true as const, message: "OK", data: mapped };
+  },
+
+  getCategoryShare: async () => {
+    const { data: products } = await supabase.from("products").select("category");
+
+    const counts: Record<string, number> = {};
+    (products || []).forEach((p) => {
+      const cat = p.category || "General";
+      counts[cat] = (counts[cat] || 0) + 1;
+    });
+
+    const mapped = Object.entries(counts).map(([name, value]) => ({ name, value }));
+    return { success: true as const, message: "OK", data: mapped };
+  },
+
+  getProductPerformance: async () => {
+    const { data: items } = await supabase.from("order_items").select("name, quantity");
+
+    const unitsByName: Record<string, number> = {};
+    (items || []).forEach((item) => {
+      unitsByName[item.name] = (unitsByName[item.name] || 0) + Number(item.quantity || 1);
+    });
+
+    let mapped = Object.entries(unitsByName)
+      .map(([productName, unitsSold]) => ({ productName, unitsSold }))
+      .sort((a, b) => b.unitsSold - a.unitsSold)
+      .slice(0, 5);
+
+    if (mapped.length === 0) {
+      const { data: prods } = await supabase.from("products").select("name").limit(3);
+      mapped = (prods || []).map((p) => ({ productName: p.name, unitsSold: 0 }));
+    }
+
+    return { success: true as const, message: "OK", data: mapped };
+  },
 
   getOrderInvoice: async (_id: string) => ({
     success: true as const,
@@ -1171,7 +1274,7 @@ export const orderApi = {
 
 export const userApi = {
   getAllUsers: async () => {
-    const { data: profiles } = await supabase.from("profiles").select("*");
+    const { data: profiles } = await supabase.from("profiles").select("*").order("created_at", { ascending: false });
     const users: User[] = (profiles || []).map((p: any) => ({
       _id: p.id,
       id: p.id,
@@ -1242,7 +1345,95 @@ export const userApi = {
 
 export const adminApi = {
   ...userApi,
-  getDashboardData: shopApi.getStats,
+  getDashboardData: async () => {
+    const { data: profiles } = await supabase.from("profiles").select("*").order("created_at", { ascending: false });
+    const { data: orders } = await supabase
+      .from("orders")
+      .select("*, profiles(full_name, email)")
+      .order("created_at", { ascending: false });
+    const { data: products } = await supabase.from("products").select("stock, low_stock_threshold");
+
+    const totalUsers = (profiles || []).length;
+    const totalOrders = (orders || []).length;
+    const totalRevenue = (orders || [])
+      .filter((o) => o.order_status !== "cancelled")
+      .reduce((sum, o) => sum + Number(o.total_price || 0), 0);
+    const lowStockCount = (products || []).filter(
+      (p) => (p.stock || 0) <= (p.low_stock_threshold || 3)
+    ).length;
+
+    // Recent orders formatted for table
+    const recentOrders = (orders || []).slice(0, 10).map((o: any) => ({
+      id: o.id,
+      orderId: o.order_number,
+      customerName: o.profiles?.full_name || "Doctor",
+      customerEmail: o.profiles?.email || "",
+      total: Number(o.total_price),
+      status: o.order_status,
+      paymentStatus: o.payment_status,
+      date: o.created_at,
+    }));
+
+    // Real Activity stream: merged recent orders & new clinic registrations
+    const activityFeed: Array<{
+      id: string;
+      type: "order" | "user";
+      message: string;
+      time: string;
+      user: { name: string; email: string };
+    }> = [];
+
+    (orders || []).slice(0, 5).forEach((o: any) => {
+      activityFeed.push({
+        id: `act-ord-${o.id}`,
+        type: "order",
+        message: `Placed order ${o.order_number} for ₹${Number(o.total_price).toLocaleString("en-IN")}`,
+        time: o.created_at,
+        user: {
+          name: o.profiles?.full_name || "Doctor",
+          email: o.profiles?.email || "",
+        },
+      });
+    });
+
+    (profiles || []).slice(0, 5).forEach((p: any) => {
+      activityFeed.push({
+        id: `act-usr-${p.id}`,
+        type: "user",
+        message: `New clinic registered ${p.clinic_name ? `(${p.clinic_name})` : ""}`,
+        time: p.created_at,
+        user: {
+          name: p.full_name,
+          email: p.email,
+        },
+      });
+    });
+
+    activityFeed.sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime());
+
+    // Real Monthly Sales
+    const monthlyTrendRes = await shopApi.getMonthlyTrend();
+    const monthlySales = monthlyTrendRes.data.map((m) => ({
+      day: m.month,
+      revenue: m.sales,
+    }));
+
+    return {
+      success: true as const,
+      message: "OK",
+      data: {
+        stats: {
+          totalUsers,
+          totalOrders,
+          totalRevenue,
+          lowStockCount,
+        },
+        recentOrders,
+        activityFeed: activityFeed.slice(0, 8),
+        monthlySales,
+      },
+    };
+  },
   getUsers: async () => {
     const res = await userApi.getAllUsers();
     return { success: true as const, message: "OK", data: res.data.users };

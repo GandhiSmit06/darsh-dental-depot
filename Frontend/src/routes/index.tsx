@@ -30,8 +30,7 @@ import { PublicLayout } from "@/components/site/PublicLayout";
 import { ProductCard } from "@/components/site/ProductCard";
 import { productsApi } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
-import { useQuery } from "@tanstack/react-query";
-import { categories, faqs, testimonials, mockProducts } from "@/lib/mock-data";
+import { categories, faqs, testimonials } from "@/lib/mock-data";
 import { useState } from "react";
 
 export const Route = createFileRoute("/")({ component: HomePage });

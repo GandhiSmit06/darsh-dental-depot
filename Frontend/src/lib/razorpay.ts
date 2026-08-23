@@ -83,6 +83,13 @@ export async function openRazorpayCheckout(options: RazorpayCheckoutOptions): Pr
     theme: {
       color: "#0284c7",
     },
+    method: {
+      upi: true,
+      card: true,
+      netbanking: true,
+      wallet: true,
+      paylater: true,
+    },
     handler: async function (response: any) {
       if (options.onSuccess) {
         await options.onSuccess({

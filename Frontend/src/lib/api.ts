@@ -496,14 +496,84 @@ export const authApi = {
   },
 
   sendLoginOtp: async (data: { identifier: string }) => {
+    let emailToUse = data.identifier.trim().toLowerCase();
+
+    // If identifier is a phone number without @, look up email
+    if (!emailToUse.includes("@")) {
+      const cleanPhone = emailToUse.replace(/\D/g, "");
+      const { data: phoneProfile } = await supabase
+        .from("profiles")
+        .select("email")
+        .eq("phone", cleanPhone)
+        .limit(1)
+        .maybeSingle();
+
+      if (phoneProfile?.email) {
+        emailToUse = phoneProfile.email;
+      }
+    }
+
+    if (!emailToUse.includes("@")) {
+      throw new ApiError(400, "Please enter a valid registered email address.");
+    }
+
+    const { error } = await supabase.auth.signInWithOtp({
+      email: emailToUse,
+      options: {
+        shouldCreateUser: false,
+      },
+    });
+
+    if (error) {
+      throw new ApiError(400, error.message || "Failed to send OTP. Please check if your account exists.");
+    }
+
     return {
       success: true,
-      message: "Please sign in with your email and password.",
+      message: `A 6-digit login code has been sent to ${emailToUse}.`,
     };
   },
 
   verifyLoginOtp: async (data: { identifier: string; otp: string }) => {
-    throw new ApiError(400, "Please use password login for fast and direct access.");
+    let emailToUse = data.identifier.trim().toLowerCase();
+
+    if (!emailToUse.includes("@")) {
+      const cleanPhone = emailToUse.replace(/\D/g, "");
+      const { data: phoneProfile } = await supabase
+        .from("profiles")
+        .select("email")
+        .eq("phone", cleanPhone)
+        .limit(1)
+        .maybeSingle();
+
+      if (phoneProfile?.email) {
+        emailToUse = phoneProfile.email;
+      }
+    }
+
+    const { data: authData, error } = await supabase.auth.verifyOtp({
+      email: emailToUse,
+      token: data.otp.trim(),
+      type: "email",
+    });
+
+    if (error || !authData.user || !authData.session) {
+      throw new ApiError(400, error?.message || "Invalid or expired OTP code.");
+    }
+
+    const { data: prof } = await supabase.from("profiles").select("*").eq("id", authData.user.id).maybeSingle();
+    const user = mapProfileToUser(prof || {}, authData.user.email);
+    setTokens(authData.session.access_token, authData.session.refresh_token);
+
+    return {
+      success: true,
+      message: "Login successful",
+      data: {
+        user,
+        accessToken: authData.session.access_token,
+        refreshToken: authData.session.refresh_token,
+      },
+    };
   },
 
   logout: async () => {

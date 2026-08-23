@@ -307,4 +307,40 @@
   .btn-shine:hover::after {
     left: 140%;
   }
+
+  /* ─── Uiverse yellow-dolphin-16 Page Loader Animation ─── */
+  .dolphin-loader {
+    display: block;
+    width: 84px;
+    height: 84px;
+    position: relative;
+  }
+
+  .dolphin-loader:before,
+  .dolphin-loader:after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    bottom: 0;
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #0284c7 0%, #38bdf8 50%, #6366f1 100%);
+    box-shadow: 0 0 25px rgba(56, 189, 248, 0.6);
+    transform: translate(-50%, -100%) scale(0);
+    animation: dolphin_push 2s infinite linear;
+  }
+
+  .dolphin-loader:after {
+    animation-delay: 1s;
+  }
+
+  @keyframes dolphin_push {
+    0%, 50% {
+      transform: translate(-50%, 0%) scale(1);
+    }
+    100% {
+      transform: translate(-50%, -100%) scale(0);
+    }
+  }
 }

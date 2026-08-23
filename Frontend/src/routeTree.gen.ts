@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as ShopRouteImport } from './routes/shop'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as RegisterRouteImport } from './routes/register'
 import { Route as ProductsRouteImport } from './routes/products'
 import { Route as LoginRouteImport } from './routes/login'
@@ -25,6 +26,11 @@ import { Route as ProductsIdRouteImport } from './routes/products.$id'
 const ShopRoute = ShopRouteImport.update({
   id: '/shop',
   path: '/shop',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
   getParentRoute: () => rootRouteImport,
 } as any)
 const RegisterRoute = RegisterRouteImport.update({
@@ -73,9 +79,9 @@ const IndexRoute = IndexRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const ResetPasswordTokenRoute = ResetPasswordTokenRouteImport.update({
-  id: '/reset-password/$token',
-  path: '/reset-password/$token',
-  getParentRoute: () => rootRouteImport,
+  id: '/$token',
+  path: '/$token',
+  getParentRoute: () => ResetPasswordRoute,
 } as any)
 const ProductsIdRoute = ProductsIdRouteImport.update({
   id: '/$id',
@@ -93,6 +99,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/products': typeof ProductsRouteWithChildren
   '/register': typeof RegisterRoute
+  '/reset-password': typeof ResetPasswordRouteWithChildren
   '/shop': typeof ShopRoute
   '/products/$id': typeof ProductsIdRoute
   '/reset-password/$token': typeof ResetPasswordTokenRoute
@@ -107,6 +114,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/products': typeof ProductsRouteWithChildren
   '/register': typeof RegisterRoute
+  '/reset-password': typeof ResetPasswordRouteWithChildren
   '/shop': typeof ShopRoute
   '/products/$id': typeof ProductsIdRoute
   '/reset-password/$token': typeof ResetPasswordTokenRoute
@@ -122,6 +130,7 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/products': typeof ProductsRouteWithChildren
   '/register': typeof RegisterRoute
+  '/reset-password': typeof ResetPasswordRouteWithChildren
   '/shop': typeof ShopRoute
   '/products/$id': typeof ProductsIdRoute
   '/reset-password/$token': typeof ResetPasswordTokenRoute
@@ -138,6 +147,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/products'
     | '/register'
+    | '/reset-password'
     | '/shop'
     | '/products/$id'
     | '/reset-password/$token'
@@ -152,6 +162,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/products'
     | '/register'
+    | '/reset-password'
     | '/shop'
     | '/products/$id'
     | '/reset-password/$token'
@@ -166,6 +177,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/products'
     | '/register'
+    | '/reset-password'
     | '/shop'
     | '/products/$id'
     | '/reset-password/$token'
@@ -181,8 +193,8 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   ProductsRoute: typeof ProductsRouteWithChildren
   RegisterRoute: typeof RegisterRoute
+  ResetPasswordRoute: typeof ResetPasswordRouteWithChildren
   ShopRoute: typeof ShopRoute
-  ResetPasswordTokenRoute: typeof ResetPasswordTokenRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -192,6 +204,13 @@ declare module '@tanstack/react-router' {
       path: '/shop'
       fullPath: '/shop'
       preLoaderRoute: typeof ShopRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/register': {
@@ -259,10 +278,10 @@ declare module '@tanstack/react-router' {
     }
     '/reset-password/$token': {
       id: '/reset-password/$token'
-      path: '/reset-password/$token'
+      path: '/$token'
       fullPath: '/reset-password/$token'
       preLoaderRoute: typeof ResetPasswordTokenRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof ResetPasswordRoute
     }
     '/products/$id': {
       id: '/products/$id'
@@ -286,6 +305,18 @@ const ProductsRouteWithChildren = ProductsRoute._addFileChildren(
   ProductsRouteChildren,
 )
 
+interface ResetPasswordRouteChildren {
+  ResetPasswordTokenRoute: typeof ResetPasswordTokenRoute
+}
+
+const ResetPasswordRouteChildren: ResetPasswordRouteChildren = {
+  ResetPasswordTokenRoute: ResetPasswordTokenRoute,
+}
+
+const ResetPasswordRouteWithChildren = ResetPasswordRoute._addFileChildren(
+  ResetPasswordRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
@@ -296,8 +327,8 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   ProductsRoute: ProductsRouteWithChildren,
   RegisterRoute: RegisterRoute,
+  ResetPasswordRoute: ResetPasswordRouteWithChildren,
   ShopRoute: ShopRoute,
-  ResetPasswordTokenRoute: ResetPasswordTokenRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

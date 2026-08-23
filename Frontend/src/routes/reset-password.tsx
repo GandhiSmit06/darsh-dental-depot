@@ -9,7 +9,7 @@ import { authApi } from "@/lib/api";
 import { toast } from "sonner";
 import { Lock, ArrowLeft, CheckCircle2 } from "lucide-react";
 
-export const Route = createFileRoute("/reset-password" as any)({
+export const Route = createFileRoute("/reset-password")({
   head: () => ({ meta: [{ title: "Reset Password — Darsh Dental Depot" }] }),
   component: ResetPasswordPage,
 });

@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import {
   LayoutDashboard, ShoppingCart, Heart, ShoppingBag, Bell, Settings, Package,
   CheckCircle2, Truck, Plus, Minus, Trash2, Loader2, Phone, MapPin, Clock, Sparkles, RefreshCw,
-  CreditCard, Banknote, ShieldCheck, Building, QrCode, Smartphone, Landmark, Check
+  CreditCard, Banknote, ShieldCheck, Building, QrCode, Smartphone, Landmark, Check, ChevronRight
 } from "lucide-react";
 import { DashboardLayout, type NavItem } from "@/components/dashboard/DashboardLayout";
 import { StatCard, StatusBadge } from "@/components/dashboard/widgets";
@@ -16,6 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { ProductCard } from "@/components/site/ProductCard";
+import { toast } from "sonner";
 import { useAuth } from "@/lib/auth-context";
 import { notificationService, type AppNotification } from "@/lib/notifications";
 import {

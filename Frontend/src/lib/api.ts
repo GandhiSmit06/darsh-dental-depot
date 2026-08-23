@@ -203,6 +203,8 @@ export interface ShopInventoryItem {
   stock: number;
   status: string;
 }
+export type InventoryItem = ShopInventoryItem;
+
 export interface ShopOrder {
   _id: string;
   orderId: string;
@@ -214,6 +216,7 @@ export interface ShopOrder {
   paymentStatus: string;
   date: string;
 }
+
 export interface ShopCustomer {
   _id: string;
   name: string;
@@ -223,6 +226,29 @@ export interface ShopCustomer {
   orders: number;
   spent: number;
 }
+export type CustomerItem = ShopCustomer;
+
+export interface WeeklySalesItem {
+  day: string;
+  sales: number;
+}
+
+export interface MonthlyTrendItem {
+  month: string;
+  sales: number;
+  orders: number;
+}
+
+export interface CategoryShareItem {
+  name: string;
+  value: number;
+}
+
+export interface ProductPerformanceItem {
+  productName: string;
+  unitsSold: number;
+}
+
 export interface ShopStats {
   totalSales: number;
   revenue: number;

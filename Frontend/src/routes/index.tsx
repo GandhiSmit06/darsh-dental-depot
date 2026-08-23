@@ -30,6 +30,7 @@ import { PublicLayout } from "@/components/site/PublicLayout";
 import { ProductCard } from "@/components/site/ProductCard";
 import { productsApi } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
+import { useQuery } from "@tanstack/react-query";
 import { categories, faqs, testimonials } from "@/lib/mock-data";
 import { useState } from "react";
 
@@ -82,7 +83,7 @@ function HomePage() {
   });
 
   const apiProducts = featuredResponse?.data || [];
-  const displayProducts = apiProducts.length > 0 ? apiProducts : mockProducts;
+  const displayProducts = apiProducts;
 
   const filteredProducts = displayProducts.filter((p: any) => {
     const matchesCategory =

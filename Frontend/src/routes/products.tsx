@@ -163,7 +163,7 @@ function ProductsPage() {
   });
 
   const apiProducts = response?.data || [];
-  const products = apiProducts.length > 0 ? apiProducts : mockProducts;
+  const products = apiProducts;
 
   const categories = useMemo(
     () => Array.from(new Set(products.map((p: any) => p.category))).filter(Boolean),

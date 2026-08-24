@@ -129,12 +129,18 @@ export function DashboardLayout({
       <div className="min-h-screen flex w-full bg-background text-foreground relative">
         <Sidebar collapsible="icon" className="border-r border-border/50 bg-card/60 backdrop-blur-xl">
           <SidebarHeader className="p-3 border-b border-border/40">
-            <Link to="/" className="flex items-center gap-2.5 px-2 py-1.5 group">
-              <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-primary to-indigo-600 text-white grid place-items-center text-xs font-bold shadow-md shrink-0 group-hover:scale-105 transition-transform">
-                <Sparkles className="h-4 w-4" />
+            <Link to="/" className="flex items-center gap-3 px-2 py-1.5 group select-none">
+              <div className="relative shrink-0">
+                <div className="h-9 w-9 rounded-xl overflow-hidden bg-white/95 dark:bg-slate-900 border border-white/60 dark:border-slate-700/60 shadow-md transform group-hover:scale-105 transition-all duration-300 flex items-center justify-center p-0.5">
+                  <img
+                    src="/logo.jpg"
+                    alt="Darsh Dental"
+                    className="w-full h-full object-cover rounded-[inherit]"
+                  />
+                </div>
               </div>
               <div className="flex flex-col leading-tight group-data-[collapsible=icon]:hidden">
-                <span className="font-extrabold text-sm font-heading tracking-tight text-foreground">
+                <span className="font-extrabold text-sm font-heading tracking-tight text-foreground group-hover:text-primary transition-colors">
                   Darsh Dental
                 </span>
                 <span className="text-[10px] font-bold uppercase tracking-widest text-primary">

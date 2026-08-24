@@ -24,16 +24,20 @@ const links = [
   { to: "/contact", label: "Vadodara Location & Contact" },
 ];
 
-export function Logo() {
+export function Logo({ className }: { className?: string }) {
   return (
-    <Link to="/" className="flex items-center gap-2.5 group">
-      <div className="relative">
-        <div className="absolute -inset-1 bg-gradient-to-r from-cyan-500 to-primary rounded-xl blur-sm opacity-60 group-hover:opacity-100 transition duration-300" />
-        <div className="relative h-10 w-10 rounded-xl bg-gradient-to-br from-primary via-sky-600 to-indigo-600 text-white grid place-items-center shadow-md transform group-hover:scale-105 transition-transform duration-300">
-          <Sparkles className="h-5 w-5 animate-pulse" />
+    <Link to="/" className={`flex items-center gap-3 group select-none ${className || ""}`}>
+      <div className="relative shrink-0">
+        <div className="absolute -inset-1 bg-gradient-to-r from-cyan-500 via-sky-500 to-indigo-500 rounded-2xl blur-sm opacity-50 group-hover:opacity-100 transition duration-300 pointer-events-none" />
+        <div className="relative h-10 w-10 rounded-xl overflow-hidden bg-white/95 dark:bg-slate-900 border border-white/60 dark:border-slate-700/60 shadow-md transform group-hover:scale-105 transition-all duration-300 flex items-center justify-center p-0.5">
+          <img
+            src="/logo.jpg"
+            alt="Darsh Dental Depot"
+            className="w-full h-full object-cover rounded-[inherit] transform group-hover:scale-110 transition-transform duration-500"
+          />
         </div>
       </div>
-      <div className="leading-none flex flex-col">
+      <div className="leading-none flex flex-col justify-center">
         <span className="font-extrabold text-base tracking-tight font-heading bg-gradient-to-r from-foreground via-foreground to-primary bg-clip-text text-transparent group-hover:to-cyan-500 transition-colors">
           DARSH DENTAL
         </span>

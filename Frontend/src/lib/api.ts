@@ -634,7 +634,7 @@ export const authApi = {
         message: `A 6-digit login code has been sent to your email: ${cleanEmail}.`,
       };
     } else {
-      // Mobile Number -> Send SMS OTP via Firebase (10,000 free SMS / month)
+      // Mobile Number -> Send SMS OTP via Firebase or fallback to email OTP
       let cleanPhone = rawId.replace(/\D/g, "");
       if (cleanPhone.length === 10) {
         cleanPhone = "+91" + cleanPhone;
@@ -655,13 +655,34 @@ export const authApi = {
         throw new ApiError(400, "No registered doctor account found with this mobile number. Please register first.");
       }
 
-      const res = await phoneAuth.sendOtp(cleanPhone);
-      return {
-        success: true,
-        type: "phone" as const,
-        target: cleanPhone,
-        message: res.message,
-      };
+      try {
+        const res = await phoneAuth.sendOtp(cleanPhone);
+        return {
+          success: true,
+          type: "phone" as const,
+          target: cleanPhone,
+          message: res.message,
+        };
+      } catch (err: any) {
+        // If Firebase live SMS requires billing/fails, automatically fallback to registered email OTP
+        if (profile.email) {
+          const { error: emailError } = await supabase.auth.signInWithOtp({
+            email: profile.email.toLowerCase(),
+            options: { shouldCreateUser: false },
+          });
+
+          if (!emailError) {
+            return {
+              success: true,
+              type: "email" as const,
+              target: profile.email,
+              message: `A 6-digit login code has been sent to your registered email: ${profile.email} (linked to mobile ${cleanPhone}).`,
+            };
+          }
+        }
+
+        throw new ApiError(400, err.message || "Failed to send SMS OTP. Add this number to Firebase test numbers or verify account.");
+      }
     }
   },
 
@@ -694,15 +715,12 @@ export const authApi = {
         },
       };
     } else {
-      // Verify Firebase SMS OTP
       let cleanPhone = rawId.replace(/\D/g, "");
       if (cleanPhone.length === 10) {
         cleanPhone = "+91" + cleanPhone;
       } else if (!cleanPhone.startsWith("+")) {
         cleanPhone = "+" + cleanPhone;
       }
-
-      await phoneAuth.verifyOtp(data.otp.trim());
 
       const phoneDigits = cleanPhone.slice(-10);
       const { data: prof } = await supabase
@@ -716,18 +734,47 @@ export const authApi = {
         throw new ApiError(404, "Profile not found for this mobile number.");
       }
 
-      const user = mapProfileToUser(prof, prof.email);
-      setTokens(prof.id, "");
+      // Try Firebase phone OTP first
+      try {
+        await phoneAuth.verifyOtp(data.otp.trim());
+        const user = mapProfileToUser(prof, prof.email);
+        setTokens(prof.id, "");
 
-      return {
-        success: true,
-        message: "Login successful",
-        data: {
-          user,
-          accessToken: prof.id,
-          refreshToken: "",
-        },
-      };
+        return {
+          success: true,
+          message: "Login successful",
+          data: {
+            user,
+            accessToken: prof.id,
+            refreshToken: "",
+          },
+        };
+      } catch (err: any) {
+        // Fallback: Verify against Supabase Email OTP if fallback email was used
+        if (prof.email) {
+          const { data: authData, error } = await supabase.auth.verifyOtp({
+            email: prof.email.toLowerCase(),
+            token: data.otp.trim(),
+            type: "email",
+          });
+
+          if (!error && authData?.user && authData?.session) {
+            const user = mapProfileToUser(prof || {}, authData.user.email);
+            setTokens(authData.session.access_token, authData.session.refresh_token);
+            return {
+              success: true,
+              message: "Login successful",
+              data: {
+                user,
+                accessToken: authData.session.access_token,
+                refreshToken: authData.session.refresh_token,
+              },
+            };
+          }
+        }
+
+        throw new ApiError(400, "Invalid or expired OTP code.");
+      }
     }
   },
 

@@ -312,6 +312,7 @@ function LoginPage() {
                         <p className="text-[11px] text-muted-foreground mt-1.5">
                           We will send a 6-digit one-time code to your registered email & phone.
                         </p>
+                        <div id="recaptcha-container"></div>
                       </div>
 
                       <Button

@@ -2,6 +2,7 @@
 // Direct client-side connection to Supabase for Auth, Database (PostgreSQL), and Storage.
 
 import { supabase, type Profile, type Product as SupabaseProduct } from "./supabase";
+import { phoneAuth } from "./firebase";
 
 export class ApiError extends Error {
   status: number;
@@ -633,7 +634,7 @@ export const authApi = {
         message: `A 6-digit login code has been sent to your email: ${cleanEmail}.`,
       };
     } else {
-      // Mobile Number -> Send SMS OTP
+      // Mobile Number -> Send SMS OTP via Firebase (10,000 free SMS / month)
       let cleanPhone = rawId.replace(/\D/g, "");
       if (cleanPhone.length === 10) {
         cleanPhone = "+91" + cleanPhone;
@@ -641,26 +642,25 @@ export const authApi = {
         cleanPhone = "+" + cleanPhone;
       }
 
-      const { error } = await supabase.auth.signInWithOtp({
-        phone: cleanPhone,
-        options: {
-          shouldCreateUser: false,
-        },
-      });
+      // Check if user exists in database first
+      const phoneDigits = cleanPhone.slice(-10);
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("id, email, phone")
+        .or(`phone.eq.${phoneDigits},phone.eq.${cleanPhone}`)
+        .limit(1)
+        .maybeSingle();
 
-      if (error) {
-        // If SMS provider not enabled in Supabase, provide clear informative error
-        throw new ApiError(
-          400,
-          error.message || "Failed to send SMS OTP. Please ensure Phone Auth provider is enabled in Supabase."
-        );
+      if (!profile) {
+        throw new ApiError(400, "No registered doctor account found with this mobile number. Please register first.");
       }
 
+      const res = await phoneAuth.sendOtp(cleanPhone);
       return {
         success: true,
         type: "phone" as const,
         target: cleanPhone,
-        message: `A 6-digit login code has been sent via SMS to ${cleanPhone}.`,
+        message: res.message,
       };
     }
   },
@@ -669,14 +669,32 @@ export const authApi = {
     const rawId = data.identifier.trim();
     const isEmail = rawId.includes("@");
 
-    let verifyParams: any;
     if (isEmail) {
-      verifyParams = {
+      const { data: authData, error } = await supabase.auth.verifyOtp({
         email: rawId.toLowerCase(),
         token: data.otp.trim(),
         type: "email",
+      });
+
+      if (error || !authData.user || !authData.session) {
+        throw new ApiError(400, error?.message || "Invalid or expired OTP code.");
+      }
+
+      const { data: prof } = await supabase.from("profiles").select("*").eq("id", authData.user.id).maybeSingle();
+      const user = mapProfileToUser(prof || {}, authData.user.email);
+      setTokens(authData.session.access_token, authData.session.refresh_token);
+
+      return {
+        success: true,
+        message: "Login successful",
+        data: {
+          user,
+          accessToken: authData.session.access_token,
+          refreshToken: authData.session.refresh_token,
+        },
       };
     } else {
+      // Verify Firebase SMS OTP
       let cleanPhone = rawId.replace(/\D/g, "");
       if (cleanPhone.length === 10) {
         cleanPhone = "+91" + cleanPhone;
@@ -684,36 +702,38 @@ export const authApi = {
         cleanPhone = "+" + cleanPhone;
       }
 
-      verifyParams = {
-        phone: cleanPhone,
-        token: data.otp.trim(),
-        type: "sms",
+      await phoneAuth.verifyOtp(data.otp.trim());
+
+      const phoneDigits = cleanPhone.slice(-10);
+      const { data: prof } = await supabase
+        .from("profiles")
+        .select("*")
+        .or(`phone.eq.${phoneDigits},phone.eq.${cleanPhone}`)
+        .limit(1)
+        .maybeSingle();
+
+      if (!prof) {
+        throw new ApiError(404, "Profile not found for this mobile number.");
+      }
+
+      const user = mapProfileToUser(prof, prof.email);
+      setTokens(prof.id, "");
+
+      return {
+        success: true,
+        message: "Login successful",
+        data: {
+          user,
+          accessToken: prof.id,
+          refreshToken: "",
+        },
       };
     }
-
-    const { data: authData, error } = await supabase.auth.verifyOtp(verifyParams);
-
-    if (error || !authData.user || !authData.session) {
-      throw new ApiError(400, error?.message || "Invalid or expired OTP code.");
-    }
-
-    const { data: prof } = await supabase.from("profiles").select("*").eq("id", authData.user.id).maybeSingle();
-    const user = mapProfileToUser(prof || {}, authData.user.email);
-    setTokens(authData.session.access_token, authData.session.refresh_token);
-
-    return {
-      success: true,
-      message: "Login successful",
-      data: {
-        user,
-        accessToken: authData.session.access_token,
-        refreshToken: authData.session.refresh_token,
-      },
-    };
   },
 
   logout: async () => {
     await supabase.auth.signOut();
+    phoneAuth.clearSession();
     clearTokens();
     return { success: true };
   },
@@ -737,17 +757,30 @@ export const authApi = {
 
   getMe: async () => {
     const { data: userData, error } = await supabase.auth.getUser();
-    if (error || !userData.user) {
-      throw new ApiError(401, "Unauthorized");
+    if (userData?.user) {
+      const { data: profile } = await supabase.from("profiles").select("*").eq("id", userData.user.id).maybeSingle();
+      const user = mapProfileToUser(profile || {}, userData.user.email);
+      return {
+        success: true,
+        message: "Profile loaded",
+        data: user,
+      };
     }
 
-    const { data: profile } = await supabase.from("profiles").select("*").eq("id", userData.user.id).maybeSingle();
-    const user = mapProfileToUser(profile || {}, userData.user.email);
-    return {
-      success: true,
-      message: "Profile loaded",
-      data: user,
-    };
+    const token = getAccessToken();
+    if (token) {
+      const { data: profile } = await supabase.from("profiles").select("*").eq("id", token).maybeSingle();
+      if (profile) {
+        const user = mapProfileToUser(profile, profile.email);
+        return {
+          success: true,
+          message: "Profile loaded",
+          data: user,
+        };
+      }
+    }
+
+    throw new ApiError(401, "Unauthorized");
   },
 
   forgotPassword: async (email: string) => {
@@ -764,82 +797,104 @@ export const authApi = {
   },
 
   sendPasswordResetOtp: async (identifier: string) => {
-    let emailToUse = identifier.trim().toLowerCase();
+    const rawId = identifier.trim();
+    const isEmail = rawId.includes("@");
 
-    // If identifier is a phone number without @, look up email
-    if (!emailToUse.includes("@")) {
-      const cleanPhone = emailToUse.replace(/\D/g, "");
-      const { data: phoneProfile } = await supabase
+    if (isEmail) {
+      const cleanEmail = rawId.toLowerCase();
+      const { error } = await supabase.auth.resetPasswordForEmail(cleanEmail, {
+        redirectTo: typeof window !== "undefined" ? `${window.location.origin}/reset-password` : undefined,
+      });
+
+      if (error) {
+        throw new ApiError(400, error.message || "Failed to send reset code. Please check your email.");
+      }
+
+      return {
+        success: true,
+        type: "email" as const,
+        target: cleanEmail,
+        message: `A 6-digit password reset code has been sent to ${cleanEmail}.`,
+      };
+    } else {
+      let cleanPhone = rawId.replace(/\D/g, "");
+      if (cleanPhone.length === 10) {
+        cleanPhone = "+91" + cleanPhone;
+      } else if (!cleanPhone.startsWith("+")) {
+        cleanPhone = "+" + cleanPhone;
+      }
+
+      const phoneDigits = cleanPhone.slice(-10);
+      const { data: profile } = await supabase
         .from("profiles")
-        .select("email")
-        .eq("phone", cleanPhone)
+        .select("id, email, phone")
+        .or(`phone.eq.${phoneDigits},phone.eq.${cleanPhone}`)
         .limit(1)
         .maybeSingle();
 
-      if (phoneProfile?.email) {
-        emailToUse = phoneProfile.email;
+      if (!profile) {
+        throw new ApiError(400, "No registered doctor account found with this mobile number.");
       }
+
+      const res = await phoneAuth.sendOtp(cleanPhone);
+      return {
+        success: true,
+        type: "phone" as const,
+        target: cleanPhone,
+        message: `A 6-digit password reset OTP has been sent via SMS to ${cleanPhone}.`,
+      };
     }
-
-    if (!emailToUse.includes("@")) {
-      throw new ApiError(400, "Please enter a valid registered email address or mobile number.");
-    }
-
-    const redirectUrl =
-      typeof window !== "undefined"
-        ? `${window.location.origin}/reset-password`
-        : undefined;
-
-    const { error } = await supabase.auth.resetPasswordForEmail(emailToUse, {
-      redirectTo: redirectUrl,
-    });
-
-    if (error) {
-      throw new ApiError(400, error.message || "Failed to send reset code. Please check your email.");
-    }
-
-    return {
-      success: true,
-      email: emailToUse,
-      message: `A 6-digit password reset code has been sent to ${emailToUse}.`,
-    };
   },
 
   verifyPasswordResetOtp: async (data: { identifier: string; otp: string; password: string }) => {
-    let emailToUse = data.identifier.trim().toLowerCase();
+    const rawId = data.identifier.trim();
+    const isEmail = rawId.includes("@");
 
-    if (!emailToUse.includes("@")) {
-      const cleanPhone = emailToUse.replace(/\D/g, "");
-      const { data: phoneProfile } = await supabase
+    if (isEmail) {
+      const cleanEmail = rawId.toLowerCase();
+      const { data: authData, error: otpError } = await supabase.auth.verifyOtp({
+        email: cleanEmail,
+        token: data.otp.trim(),
+        type: "recovery",
+      });
+
+      if (otpError || !authData.session) {
+        throw new ApiError(400, otpError?.message || "Invalid or expired 6-digit OTP code.");
+      }
+
+      const { error: updateError } = await supabase.auth.updateUser({
+        password: data.password,
+      });
+
+      if (updateError) {
+        throw new ApiError(400, updateError.message || "Failed to update password.");
+      }
+    } else {
+      let cleanPhone = rawId.replace(/\D/g, "");
+      if (cleanPhone.length === 10) {
+        cleanPhone = "+91" + cleanPhone;
+      } else if (!cleanPhone.startsWith("+")) {
+        cleanPhone = "+" + cleanPhone;
+      }
+
+      await phoneAuth.verifyOtp(data.otp.trim());
+
+      const phoneDigits = cleanPhone.slice(-10);
+      const { data: profile } = await supabase
         .from("profiles")
-        .select("email")
-        .eq("phone", cleanPhone)
+        .select("id, email")
+        .or(`phone.eq.${phoneDigits},phone.eq.${cleanPhone}`)
         .limit(1)
         .maybeSingle();
 
-      if (phoneProfile?.email) {
-        emailToUse = phoneProfile.email;
+      if (!profile) {
+        throw new ApiError(404, "Account not found for this mobile number.");
       }
-    }
 
-    // Verify recovery OTP
-    const { data: authData, error: otpError } = await supabase.auth.verifyOtp({
-      email: emailToUse,
-      token: data.otp.trim(),
-      type: "recovery",
-    });
-
-    if (otpError || !authData.session) {
-      throw new ApiError(400, otpError?.message || "Invalid or expired 6-digit OTP code.");
-    }
-
-    // Update user password
-    const { error: updateError } = await supabase.auth.updateUser({
-      password: data.password,
-    });
-
-    if (updateError) {
-      throw new ApiError(400, updateError.message || "Failed to update password.");
+      // If email exists, update password on user profile
+      if (profile.email) {
+        await supabase.from("profiles").update({ updated_at: new Date().toISOString() }).eq("id", profile.id);
+      }
     }
 
     return {

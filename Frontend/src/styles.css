@@ -137,6 +137,8 @@
 html {
   scroll-behavior: smooth;
   font-family: var(--font-sans);
+  /* Smooth scroll momentum on iOS */
+  -webkit-overflow-scrolling: touch;
 }
 
 body {
@@ -145,6 +147,18 @@ body {
   font-family: var(--font-sans);
   font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   overflow-x: hidden;
+  /* Prevent content shift on scroll-animation trigger */
+  overflow-anchor: auto;
+}
+
+/* ─── Reduced Motion Accessibility ─── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 h1, h2, h3, h4, h5, h6 {

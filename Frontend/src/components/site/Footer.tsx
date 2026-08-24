@@ -17,6 +17,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { useState } from "react";
+import {
+  ScrollReveal,
+  StaggerContainer,
+  StaggerItem,
+} from "@/components/animations/ScrollReveal";
 
 export function Footer() {
   const [email, setEmail] = useState("");
@@ -35,52 +40,60 @@ export function Footer() {
 
       {/* Trust & Guarantee Highlights Bar */}
       <div className="border-b border-border/40 py-8 bg-secondary/30 backdrop-blur-md">
-        <div className="container mx-auto px-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          <div className="flex items-center gap-3.5 p-3 rounded-2xl bg-background/50 border border-border/30">
-            <div className="h-10 w-10 rounded-xl bg-primary/10 text-primary grid place-items-center shrink-0">
-              <ShieldCheck className="h-5 w-5" />
+        <StaggerContainer staggerDelay={0.1} className="container mx-auto px-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <StaggerItem>
+            <div className="flex items-center gap-3.5 p-3 rounded-2xl bg-background/50 border border-border/30">
+              <div className="h-10 w-10 rounded-xl bg-primary/10 text-primary grid place-items-center shrink-0">
+                <ShieldCheck className="h-5 w-5" />
+              </div>
+              <div>
+                <div className="font-bold text-xs uppercase tracking-wider">100% Genuine Guaranteed</div>
+                <div className="text-xs text-muted-foreground">Direct manufacturer authentic batch</div>
+              </div>
             </div>
-            <div>
-              <div className="font-bold text-xs uppercase tracking-wider">100% Genuine Guaranteed</div>
-              <div className="text-xs text-muted-foreground">Direct manufacturer authentic batch</div>
-            </div>
-          </div>
+          </StaggerItem>
 
-          <div className="flex items-center gap-3.5 p-3 rounded-2xl bg-background/50 border border-border/30">
-            <div className="h-10 w-10 rounded-xl bg-sky-500/10 text-sky-500 grid place-items-center shrink-0">
-              <Truck className="h-5 w-5" />
+          <StaggerItem>
+            <div className="flex items-center gap-3.5 p-3 rounded-2xl bg-background/50 border border-border/30">
+              <div className="h-10 w-10 rounded-xl bg-sky-500/10 text-sky-500 grid place-items-center shrink-0">
+                <Truck className="h-5 w-5" />
+              </div>
+              <div>
+                <div className="font-bold text-xs uppercase tracking-wider">Same-Day Vadodara Delivery</div>
+                <div className="text-xs text-muted-foreground">Direct to your dental clinic</div>
+              </div>
             </div>
-            <div>
-              <div className="font-bold text-xs uppercase tracking-wider">Same-Day Vadodara Delivery</div>
-              <div className="text-xs text-muted-foreground">Direct to your dental clinic</div>
-            </div>
-          </div>
+          </StaggerItem>
 
-          <div className="flex items-center gap-3.5 p-3 rounded-2xl bg-background/50 border border-border/30">
-            <div className="h-10 w-10 rounded-xl bg-indigo-500/10 text-indigo-500 grid place-items-center shrink-0">
-              <Clock className="h-5 w-5" />
+          <StaggerItem>
+            <div className="flex items-center gap-3.5 p-3 rounded-2xl bg-background/50 border border-border/30">
+              <div className="h-10 w-10 rounded-xl bg-indigo-500/10 text-indigo-500 grid place-items-center shrink-0">
+                <Clock className="h-5 w-5" />
+              </div>
+              <div>
+                <div className="font-bold text-xs uppercase tracking-wider">Mon–Sat: 10AM – 8:30PM</div>
+                <div className="text-xs text-muted-foreground">Sunday: Emergency on call</div>
+              </div>
             </div>
-            <div>
-              <div className="font-bold text-xs uppercase tracking-wider">Mon–Sat: 10AM – 8:30PM</div>
-              <div className="text-xs text-muted-foreground">Sunday: Emergency on call</div>
-            </div>
-          </div>
+          </StaggerItem>
 
-          <div className="flex items-center gap-3.5 p-3 rounded-2xl bg-background/50 border border-border/30">
-            <div className="h-10 w-10 rounded-xl bg-emerald-500/10 text-emerald-500 grid place-items-center shrink-0">
-              <CheckCircle2 className="h-5 w-5" />
+          <StaggerItem>
+            <div className="flex items-center gap-3.5 p-3 rounded-2xl bg-background/50 border border-border/30">
+              <div className="h-10 w-10 rounded-xl bg-emerald-500/10 text-emerald-500 grid place-items-center shrink-0">
+                <CheckCircle2 className="h-5 w-5" />
+              </div>
+              <div>
+                <div className="font-bold text-xs uppercase tracking-wider">Direct Depot Wholesale Rates</div>
+                <div className="text-xs text-muted-foreground">Special pricing for Vadodara doctors</div>
+              </div>
             </div>
-            <div>
-              <div className="font-bold text-xs uppercase tracking-wider">Direct Depot Wholesale Rates</div>
-              <div className="text-xs text-muted-foreground">Special pricing for Vadodara doctors</div>
-            </div>
-          </div>
-        </div>
+          </StaggerItem>
+        </StaggerContainer>
       </div>
 
-      <div className="container mx-auto px-4 py-16 grid gap-10 md:grid-cols-2 lg:grid-cols-5">
+      <StaggerContainer staggerDelay={0.12} className="container mx-auto px-4 py-16 grid gap-10 md:grid-cols-2 lg:grid-cols-5">
         {/* Brand Column */}
-        <div className="lg:col-span-2 space-y-4">
+        <StaggerItem className="lg:col-span-2 space-y-4">
           <Logo />
           <p className="text-sm text-muted-foreground leading-relaxed max-w-sm">
             Darsh Dental Depot is Vadodara's premier physical & digital dental supply depot, providing local dentists with factory-certified composites, instruments, and consumables with prompt local clinic delivery.
@@ -104,10 +117,10 @@ export function Footer() {
               Subscribe for Vadodara clinic offers & fresh material batch arrivals.
             </span>
           </div>
-        </div>
+        </StaggerItem>
 
         {/* Quick Links */}
-        <div>
+        <StaggerItem>
           <h4 className="font-heading font-bold text-sm mb-4 tracking-wide text-foreground uppercase text-[11px]">
             Dental Catalog
           </h4>
@@ -118,10 +131,10 @@ export function Footer() {
             <li><Link to="/products" className="hover:text-primary transition-colors flex items-center gap-1.5">Impression Materials</Link></li>
             <li><Link to="/products" className="hover:text-primary transition-colors flex items-center gap-1.5">Sterilization & Disposables</Link></li>
           </ul>
-        </div>
+        </StaggerItem>
 
         {/* Quick Links */}
-        <div>
+        <StaggerItem>
           <h4 className="font-heading font-bold text-sm mb-4 tracking-wide text-foreground uppercase text-[11px]">
             Vadodara Doctor Portal
           </h4>
@@ -131,10 +144,10 @@ export function Footer() {
             <li><Link to="/login" className="hover:text-primary transition-colors">Doctor Portal Login</Link></li>
             <li><Link to="/register" className="hover:text-primary transition-colors">Register Clinic (Vadodara)</Link></li>
           </ul>
-        </div>
+        </StaggerItem>
 
         {/* Store Location & Timings */}
-        <div>
+        <StaggerItem>
           <h4 className="font-heading font-bold text-sm mb-4 tracking-wide text-foreground uppercase text-[11px]">
             Store & Contact Info
           </h4>
@@ -181,8 +194,8 @@ export function Footer() {
               </div>
             </li>
           </ul>
-        </div>
-      </div>
+        </StaggerItem>
+      </StaggerContainer>
 
       <div className="border-t border-border/40 py-6 text-center text-xs text-muted-foreground flex flex-col sm:flex-row items-center justify-between container mx-auto px-4 gap-3">
         <div>

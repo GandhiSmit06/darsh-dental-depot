@@ -33,6 +33,14 @@ import { useAuth } from "@/lib/auth-context";
 import { useQuery } from "@tanstack/react-query";
 import { categories, faqs, testimonials } from "@/lib/mock-data";
 import { useState } from "react";
+import {
+  ScrollReveal,
+  StaggerContainer,
+  StaggerItem,
+  ScaleReveal,
+  TextReveal,
+  SectionHeading,
+} from "@/components/animations/ScrollReveal";
 
 export const Route = createFileRoute("/")({ component: HomePage });
 
@@ -56,21 +64,6 @@ const vadodaraAreas = [
   "Nizampura",
   "Subhanpura",
 ];
-
-const containerVariants: Variants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.1,
-    },
-  },
-};
-
-const itemFade: Variants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
-};
 
 function HomePage() {
   const { isAuthenticated } = useAuth();
@@ -117,7 +110,7 @@ function HomePage() {
               <motion.h1
                 initial={{ opacity: 0, y: 24 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.1 }}
+                transition={{ duration: 0.7, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
                 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight font-heading leading-[1.08] text-foreground"
               >
                 Vadodara's Trusted <span className="text-gradient block sm:inline">Dental Depot</span>
@@ -126,7 +119,7 @@ function HomePage() {
               <motion.p
                 initial={{ opacity: 0, y: 24 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.2 }}
+                transition={{ duration: 0.7, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
                 className="text-base sm:text-lg text-muted-foreground max-w-2xl leading-relaxed"
               >
                 Direct procurement from <strong>Darsh Dental Depot</strong> (Shiyabaug / Kevdabaug, Vadodara). Genuine composites, endodontic rotary files, impression materials, and clinic consumables with <strong>same-day 2-hour clinic delivery</strong> across Vadodara.
@@ -136,7 +129,7 @@ function HomePage() {
               <motion.div
                 initial={{ opacity: 0, y: 24 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.3 }}
+                transition={{ duration: 0.7, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
                 className="flex flex-wrap gap-4 pt-2"
               >
                 <Button
@@ -163,7 +156,7 @@ function HomePage() {
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                transition={{ duration: 0.8, delay: 0.4 }}
+                transition={{ duration: 0.8, delay: 0.5 }}
                 className="pt-6 border-t border-border/40 flex flex-wrap items-center gap-4 sm:gap-6 text-xs sm:text-sm font-medium text-muted-foreground"
               >
                 <a
@@ -203,9 +196,9 @@ function HomePage() {
             {/* Right Column: 3D Floating Hero Showcase */}
             <div className="lg:col-span-5 relative">
               <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.8, delay: 0.2 }}
+                initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                transition={{ duration: 0.9, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
                 className="relative mx-auto max-w-md lg:max-w-none"
               >
                 {/* Glow Backdrop */}
@@ -274,7 +267,7 @@ function HomePage() {
       </section>
 
       {/* ─── Store Location & Operational Timings Bar ────────────────────────────── */}
-      <section className="container mx-auto px-4 py-8 -mt-10 relative z-20">
+      <ScaleReveal className="container mx-auto px-4 py-8 -mt-10 relative z-20">
         <Card className="p-6 glass-card rounded-3xl border border-border/80 shadow-xl bg-card/90">
           <div className="grid md:grid-cols-3 gap-6 items-center">
             <div className="flex items-start gap-3.5">
@@ -331,10 +324,10 @@ function HomePage() {
             </div>
           </div>
         </Card>
-      </section>
+      </ScaleReveal>
 
       {/* ─── Vadodara Clinic Delivery Coverage ────────────────────────────── */}
-      <section className="container mx-auto px-4 py-12">
+      <ScrollReveal className="container mx-auto px-4 py-12">
         <div className="p-6 rounded-3xl bg-secondary/40 border border-border/50">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-4">
             <div className="flex items-center gap-2.5">
@@ -348,49 +341,44 @@ function HomePage() {
             </Badge>
           </div>
 
-          <div className="flex flex-wrap gap-2">
+          <StaggerContainer staggerDelay={0.04} className="flex flex-wrap gap-2">
             {vadodaraAreas.map((area) => (
-              <span
-                key={area}
-                className="px-3 py-1 rounded-full bg-background border border-border/60 text-xs font-medium text-foreground"
-              >
-                📍 {area}
-              </span>
+              <StaggerItem key={area}>
+                <span className="px-3 py-1 rounded-full bg-background border border-border/60 text-xs font-medium text-foreground inline-block">
+                  📍 {area}
+                </span>
+              </StaggerItem>
             ))}
-          </div>
+          </StaggerContainer>
         </div>
-      </section>
+      </ScrollReveal>
 
       {/* ─── Shop By Specialty ────────────────────────────────────────────── */}
       <section className="container mx-auto px-4 py-16">
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4">
-          <div>
-            <Badge variant="outline" className="mb-2 text-primary border-primary/30">
-              Structured Catalog
-            </Badge>
-            <h2 className="text-3xl sm:text-4xl font-bold font-heading tracking-tight">
-              Explore by Clinical Specialty
-            </h2>
-            <p className="text-muted-foreground mt-1.5 text-sm sm:text-base">
-              Original dental materials and equipment organized for clinical precision.
-            </p>
+        <ScrollReveal>
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4">
+            <div>
+              <Badge variant="outline" className="mb-2 text-primary border-primary/30">
+                Structured Catalog
+              </Badge>
+              <h2 className="text-3xl sm:text-4xl font-bold font-heading tracking-tight">
+                Explore by Clinical Specialty
+              </h2>
+              <p className="text-muted-foreground mt-1.5 text-sm sm:text-base">
+                Original dental materials and equipment organized for clinical precision.
+              </p>
+            </div>
+            <Button variant="ghost" asChild className="rounded-full hover:text-primary font-semibold text-sm">
+              <Link to="/products">
+                View Complete Catalog <ArrowRight className="ml-1.5 h-4 w-4" />
+              </Link>
+            </Button>
           </div>
-          <Button variant="ghost" asChild className="rounded-full hover:text-primary font-semibold text-sm">
-            <Link to="/products">
-              View Complete Catalog <ArrowRight className="ml-1.5 h-4 w-4" />
-            </Link>
-          </Button>
-        </div>
+        </ScrollReveal>
 
-        <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
-          className="grid gap-4 sm:gap-6 grid-cols-2 md:grid-cols-4"
-        >
+        <StaggerContainer staggerDelay={0.08} className="grid gap-4 sm:gap-6 grid-cols-2 md:grid-cols-4">
           {categories.slice(0, 8).map((cat) => (
-            <motion.div key={cat} variants={itemFade}>
+            <StaggerItem key={cat} scale>
               <Link to="/products" className="block group">
                 <Card className="p-5 glass-card glass-card-hover border border-border/60 hover:border-primary/50 rounded-2xl transition-all duration-300">
                   <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-primary/15 to-sky-500/10 text-primary grid place-items-center mb-4 group-hover:scale-110 group-hover:bg-primary group-hover:text-white transition-all duration-300 shadow-sm">
@@ -405,52 +393,56 @@ function HomePage() {
                   </div>
                 </Card>
               </Link>
-            </motion.div>
+            </StaggerItem>
           ))}
-        </motion.div>
+        </StaggerContainer>
       </section>
 
       {/* ─── Featured Products Section ───────────────────────────────────── */}
       <section className="container mx-auto px-4 py-16">
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
-          <div>
-            <Badge variant="outline" className="mb-2 text-primary border-primary/30">
-              Verified Depot
-            </Badge>
-            <h2 className="text-3xl sm:text-4xl font-bold font-heading tracking-tight">
-              Featured Dental Materials
-            </h2>
-            <p className="text-muted-foreground mt-1.5 text-sm">
-              Factory-certified composites, files, and adhesives ready for immediate Vadodara dispatch.
-            </p>
-          </div>
+        <ScrollReveal>
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
+            <div>
+              <Badge variant="outline" className="mb-2 text-primary border-primary/30">
+                Verified Depot
+              </Badge>
+              <h2 className="text-3xl sm:text-4xl font-bold font-heading tracking-tight">
+                Featured Dental Materials
+              </h2>
+              <p className="text-muted-foreground mt-1.5 text-sm">
+                Factory-certified composites, files, and adhesives ready for immediate Vadodara dispatch.
+              </p>
+            </div>
 
-          {/* Category Filter Pills */}
-          <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
-            {["All", "Restorative", "Endodontics", "Impression"].map((tab) => (
-              <button
-                key={tab}
-                onClick={() => setSelectedCategory(tab)}
-                className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all shrink-0 ${
-                  selectedCategory === tab
-                    ? "bg-primary text-primary-foreground shadow-md shadow-primary/25"
-                    : "bg-secondary hover:bg-secondary/80 text-muted-foreground hover:text-foreground border border-border/50"
-                }`}
-              >
-                {tab}
-              </button>
-            ))}
+            {/* Category Filter Pills */}
+            <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
+              {["All", "Restorative", "Endodontics", "Impression"].map((tab) => (
+                <button
+                  key={tab}
+                  onClick={() => setSelectedCategory(tab)}
+                  className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all shrink-0 ${
+                    selectedCategory === tab
+                      ? "bg-primary text-primary-foreground shadow-md shadow-primary/25"
+                      : "bg-secondary hover:bg-secondary/80 text-muted-foreground hover:text-foreground border border-border/50"
+                  }`}
+                >
+                  {tab}
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
+        </ScrollReveal>
 
         {/* Product Grid */}
-        <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+        <StaggerContainer staggerDelay={0.1} className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
           {filteredProducts.slice(0, 8).map((product: any) => (
-            <ProductCard key={product._id || product.id} product={product} />
+            <StaggerItem key={product._id || product.id} scale>
+              <ProductCard product={product} />
+            </StaggerItem>
           ))}
-        </div>
+        </StaggerContainer>
 
-        <div className="mt-12 text-center">
+        <ScrollReveal delay={0.2} className="mt-12 text-center">
           <Button
             size="lg"
             asChild
@@ -460,141 +452,146 @@ function HomePage() {
               Browse All Dental Supplies <ArrowRight className="ml-2 h-4 w-4" />
             </Link>
           </Button>
-        </div>
+        </ScrollReveal>
       </section>
 
       {/* ─── Why Choose Us: Feature Cards ────────────────────────────────── */}
       <section className="bg-secondary/30 border-y border-border/50 py-20 relative">
         <div className="container mx-auto px-4">
-          <div className="text-center max-w-2xl mx-auto mb-16 space-y-3">
-            <Badge variant="outline" className="text-primary border-primary/30">
-              Why Vadodara Doctors Choose Us
-            </Badge>
-            <h2 className="text-3xl sm:text-4xl font-bold font-heading tracking-tight">
-              Local Excellence & Authentic Sourcing
-            </h2>
-            <p className="text-muted-foreground text-sm sm:text-base">
-              Direct physical store in Vadodara with fast same-day clinic deliveries.
-            </p>
-          </div>
+          <SectionHeading
+            badge="Why Vadodara Doctors Choose Us"
+            title="Local Excellence & Authentic Sourcing"
+            subtitle="Direct physical store in Vadodara with fast same-day clinic deliveries."
+            className="mb-16"
+          />
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <Card className="p-6 glass-card glass-card-hover rounded-2xl border border-border/60">
-              <div className="h-12 w-12 rounded-2xl bg-primary/10 text-primary grid place-items-center mb-5">
-                <ShieldCheck className="h-6 w-6" />
-              </div>
-              <h3 className="font-heading font-bold text-lg text-foreground">100% Genuine Batches</h3>
-              <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
-                Direct manufacturer authorization from 3M, Ivoclar, GC, Mani, Dentsply Sirona, and Septodont.
-              </p>
-            </Card>
+          <StaggerContainer staggerDelay={0.1} className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <StaggerItem scale>
+              <Card className="p-6 glass-card glass-card-hover rounded-2xl border border-border/60 h-full">
+                <div className="h-12 w-12 rounded-2xl bg-primary/10 text-primary grid place-items-center mb-5">
+                  <ShieldCheck className="h-6 w-6" />
+                </div>
+                <h3 className="font-heading font-bold text-lg text-foreground">100% Genuine Batches</h3>
+                <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
+                  Direct manufacturer authorization from 3M, Ivoclar, GC, Mani, Dentsply Sirona, and Septodont.
+                </p>
+              </Card>
+            </StaggerItem>
 
-            <Card className="p-6 glass-card glass-card-hover rounded-2xl border border-border/60">
-              <div className="h-12 w-12 rounded-2xl bg-sky-500/10 text-sky-500 grid place-items-center mb-5">
-                <Truck className="h-6 w-6" />
-              </div>
-              <h3 className="font-heading font-bold text-lg text-foreground">Same-Day Local Transit</h3>
-              <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
-                Immediate delivery directly to your dental clinic across Alkapuri, Akota, Gotri, Karelibaug and all Vadodara areas.
-              </p>
-            </Card>
+            <StaggerItem scale>
+              <Card className="p-6 glass-card glass-card-hover rounded-2xl border border-border/60 h-full">
+                <div className="h-12 w-12 rounded-2xl bg-sky-500/10 text-sky-500 grid place-items-center mb-5">
+                  <Truck className="h-6 w-6" />
+                </div>
+                <h3 className="font-heading font-bold text-lg text-foreground">Same-Day Local Transit</h3>
+                <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
+                  Immediate delivery directly to your dental clinic across Alkapuri, Akota, Gotri, Karelibaug and all Vadodara areas.
+                </p>
+              </Card>
+            </StaggerItem>
 
-            <Card className="p-6 glass-card glass-card-hover rounded-2xl border border-border/60">
-              <div className="h-12 w-12 rounded-2xl bg-indigo-500/10 text-indigo-500 grid place-items-center mb-5">
-                <Clock className="h-6 w-6" />
-              </div>
-              <h3 className="font-heading font-bold text-lg text-foreground">Depot Timings (Mon–Sat)</h3>
-              <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
-                Open Monday to Saturday, 10:00 AM to 8:30 PM. Available on call for emergency Sunday clinical procedures.
-              </p>
-            </Card>
+            <StaggerItem scale>
+              <Card className="p-6 glass-card glass-card-hover rounded-2xl border border-border/60 h-full">
+                <div className="h-12 w-12 rounded-2xl bg-indigo-500/10 text-indigo-500 grid place-items-center mb-5">
+                  <Clock className="h-6 w-6" />
+                </div>
+                <h3 className="font-heading font-bold text-lg text-foreground">Depot Timings (Mon–Sat)</h3>
+                <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
+                  Open Monday to Saturday, 10:00 AM to 8:30 PM. Available on call for emergency Sunday clinical procedures.
+                </p>
+              </Card>
+            </StaggerItem>
 
-            <Card className="p-6 glass-card glass-card-hover rounded-2xl border border-border/60">
-              <div className="h-12 w-12 rounded-2xl bg-emerald-500/10 text-emerald-500 grid place-items-center mb-5">
-                <FileCheck className="h-6 w-6" />
-              </div>
-              <h3 className="font-heading font-bold text-lg text-foreground">GST Invoicing</h3>
-              <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
-                Instant digital and printed tax invoices with GST input credit for clinic accounts.
-              </p>
-            </Card>
-          </div>
+            <StaggerItem scale>
+              <Card className="p-6 glass-card glass-card-hover rounded-2xl border border-border/60 h-full">
+                <div className="h-12 w-12 rounded-2xl bg-emerald-500/10 text-emerald-500 grid place-items-center mb-5">
+                  <FileCheck className="h-6 w-6" />
+                </div>
+                <h3 className="font-heading font-bold text-lg text-foreground">GST Invoicing</h3>
+                <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
+                  Instant digital and printed tax invoices with GST input credit for clinic accounts.
+                </p>
+              </Card>
+            </StaggerItem>
+          </StaggerContainer>
         </div>
       </section>
 
       {/* ─── Doctor Testimonials ─────────────────────────────────────────── */}
       <section className="container mx-auto px-4 py-20">
-        <div className="text-center max-w-2xl mx-auto mb-14 space-y-3">
-          <Badge variant="outline" className="text-primary border-primary/30">
-            Vadodara Dentist Feedback
-          </Badge>
-          <h2 className="text-3xl sm:text-4xl font-bold font-heading tracking-tight">
-            Trusted by Practicing Dental Surgeons
-          </h2>
-          <p className="text-muted-foreground text-sm">
-            Read what doctors across Vadodara have to say about Darsh Dental Depot.
-          </p>
-        </div>
+        <SectionHeading
+          badge="Vadodara Dentist Feedback"
+          title="Trusted by Practicing Dental Surgeons"
+          subtitle="Read what doctors across Vadodara have to say about Darsh Dental Depot."
+          className="mb-14"
+        />
 
-        <div className="grid md:grid-cols-3 gap-6">
+        <StaggerContainer staggerDelay={0.12} className="grid md:grid-cols-3 gap-6">
           {testimonials.map((t) => (
-            <Card key={t.name} className="p-6 glass-card rounded-2xl border border-border/60 flex flex-col justify-between">
-              <div>
-                <div className="flex text-amber-400 mb-4">
-                  {[...Array(5)].map((_, idx) => (
-                    <Star key={idx} className="h-4 w-4 fill-current" />
-                  ))}
-                </div>
-                <p className="text-sm text-muted-foreground leading-relaxed italic">
-                  "{t.quote}"
-                </p>
-              </div>
-
-              <div className="mt-6 pt-4 border-t border-border/40 flex items-center gap-3">
-                <div className="h-10 w-10 rounded-full bg-gradient-to-br from-primary to-sky-600 text-white font-bold text-sm grid place-items-center shadow-sm">
-                  {t.name.split(" ")[1]?.[0] || t.name[0]}
-                </div>
+            <StaggerItem key={t.name} scale>
+              <Card className="p-6 glass-card rounded-2xl border border-border/60 flex flex-col justify-between h-full">
                 <div>
-                  <div className="font-bold text-sm text-foreground">{t.name}</div>
-                  <div className="text-xs text-primary font-medium">{t.clinic} (Vadodara)</div>
+                  <div className="flex text-amber-400 mb-4">
+                    {[...Array(5)].map((_, idx) => (
+                      <Star key={idx} className="h-4 w-4 fill-current" />
+                    ))}
+                  </div>
+                  <p className="text-sm text-muted-foreground leading-relaxed italic">
+                    "{t.quote}"
+                  </p>
                 </div>
-              </div>
-            </Card>
+
+                <div className="mt-6 pt-4 border-t border-border/40 flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-full bg-gradient-to-br from-primary to-sky-600 text-white font-bold text-sm grid place-items-center shadow-sm">
+                    {t.name.split(" ")[1]?.[0] || t.name[0]}
+                  </div>
+                  <div>
+                    <div className="font-bold text-sm text-foreground">{t.name}</div>
+                    <div className="text-xs text-primary font-medium">{t.clinic} (Vadodara)</div>
+                  </div>
+                </div>
+              </Card>
+            </StaggerItem>
           ))}
-        </div>
+        </StaggerContainer>
       </section>
 
       {/* ─── FAQ Section ─────────────────────────────────────────────────── */}
       <section className="container mx-auto px-4 py-16 max-w-3xl">
-        <div className="text-center mb-10 space-y-2">
-          <h2 className="text-2xl sm:text-3xl font-bold font-heading tracking-tight">
-            Frequently Asked Questions
-          </h2>
-          <p className="text-muted-foreground text-sm">
-            Depot location, opening hours, Vadodara clinic delivery, and ordering.
-          </p>
-        </div>
+        <ScrollReveal>
+          <div className="text-center mb-10 space-y-2">
+            <h2 className="text-2xl sm:text-3xl font-bold font-heading tracking-tight">
+              Frequently Asked Questions
+            </h2>
+            <p className="text-muted-foreground text-sm">
+              Depot location, opening hours, Vadodara clinic delivery, and ordering.
+            </p>
+          </div>
+        </ScrollReveal>
 
-        <Accordion type="single" collapsible className="w-full space-y-3">
-          {faqs.map((f, i) => (
-            <AccordionItem
-              key={f.q}
-              value={`faq-${i}`}
-              className="glass-card border border-border/60 rounded-2xl px-5 overflow-hidden"
-            >
-              <AccordionTrigger className="text-left font-semibold text-sm sm:text-base hover:no-underline py-4">
-                {f.q}
-              </AccordionTrigger>
-              <AccordionContent className="text-sm text-muted-foreground leading-relaxed pb-4">
-                {f.a}
-              </AccordionContent>
-            </AccordionItem>
-          ))}
-        </Accordion>
+        <StaggerContainer staggerDelay={0.08}>
+          <Accordion type="single" collapsible className="w-full space-y-3">
+            {faqs.map((f, i) => (
+              <StaggerItem key={f.q}>
+                <AccordionItem
+                  value={`faq-${i}`}
+                  className="glass-card border border-border/60 rounded-2xl px-5 overflow-hidden"
+                >
+                  <AccordionTrigger className="text-left font-semibold text-sm sm:text-base hover:no-underline py-4">
+                    {f.q}
+                  </AccordionTrigger>
+                  <AccordionContent className="text-sm text-muted-foreground leading-relaxed pb-4">
+                    {f.a}
+                  </AccordionContent>
+                </AccordionItem>
+              </StaggerItem>
+            ))}
+          </Accordion>
+        </StaggerContainer>
       </section>
 
       {/* ─── Bottom CTA Banner ───────────────────────────────── */}
-      <section className="container mx-auto px-4 pb-20">
+      <ScaleReveal className="container mx-auto px-4 pb-20">
         <div className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-primary via-sky-600 to-indigo-700 p-8 sm:p-14 text-white shadow-2xl">
           {/* Decorative floating blur orb */}
           <div className="absolute top-0 right-0 w-96 h-96 bg-white/10 rounded-full blur-3xl pointer-events-none" />
@@ -636,7 +633,7 @@ function HomePage() {
             </div>
           </div>
         </div>
-      </section>
+      </ScaleReveal>
     </PublicLayout>
   );
 }

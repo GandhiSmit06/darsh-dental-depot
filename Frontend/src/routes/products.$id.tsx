@@ -27,6 +27,11 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
+import {
+  ScrollReveal,
+  StaggerContainer,
+  StaggerItem,
+} from "@/components/animations/ScrollReveal";
 
 export const Route = createFileRoute("/products/$id")({
   component: ProductDetail,
@@ -170,7 +175,7 @@ function ProductDetail() {
         {/* Product Hero Details Grid */}
         <div className="grid lg:grid-cols-12 gap-10 items-start">
           {/* Left Column: Gallery */}
-          <div className="lg:col-span-6 space-y-4">
+          <ScrollReveal direction="left" className="lg:col-span-6 space-y-4">
             <Card className="overflow-hidden aspect-[4/3] glass-card border border-border/70 rounded-3xl relative shadow-lg">
               <img
                 src={gallery[activeImg]}
@@ -201,10 +206,10 @@ function ProductDetail() {
                 ))}
               </div>
             )}
-          </div>
+          </ScrollReveal>
 
           {/* Right Column: Information & Actions */}
-          <div className="lg:col-span-6 space-y-6">
+          <ScrollReveal direction="right" delay={0.1} className="lg:col-span-6 space-y-6">
             <div>
               <div className="flex items-center justify-between gap-2">
                 <Badge variant="outline" className="text-primary font-bold text-xs border-primary/30 uppercase tracking-wider">
@@ -349,12 +354,12 @@ function ProductDetail() {
                 </div>
               </div>
             </div>
-          </div>
+          </ScrollReveal>
         </div>
 
         {/* Related Products */}
         {related.length > 0 && (
-          <section className="mt-20 pt-10 border-t border-border/50">
+          <ScrollReveal className="mt-20 pt-10 border-t border-border/50">
             <div className="flex items-center justify-between mb-8">
               <div>
                 <h2 className="text-2xl sm:text-3xl font-bold font-heading">Frequently Paired Supplies</h2>
@@ -364,12 +369,14 @@ function ProductDetail() {
                 <Link to="/products">View All</Link>
               </Button>
             </div>
-            <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+            <StaggerContainer staggerDelay={0.08} className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
               {related.map((p: any) => (
-                <ProductCard key={p._id} product={p} />
+                <StaggerItem key={p._id} scale>
+                  <ProductCard product={p} />
+                </StaggerItem>
               ))}
-            </div>
-          </section>
+            </StaggerContainer>
+          </ScrollReveal>
         )}
       </div>
     </PublicLayout>

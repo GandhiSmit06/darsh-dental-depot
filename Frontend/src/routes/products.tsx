@@ -30,6 +30,11 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { productsApi } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
 import { motion } from "framer-motion";
+import {
+  ScrollReveal,
+  StaggerContainer,
+  StaggerItem,
+} from "@/components/animations/ScrollReveal";
 
 export const Route = createFileRoute("/products")({
   head: () => ({
@@ -240,7 +245,12 @@ function ProductsPage() {
     <PublicLayout>
       <div className="container mx-auto px-4 py-12">
         {/* Page Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 pb-6 border-b border-border/50 gap-4">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+          className="flex flex-col md:flex-row md:items-end justify-between mb-8 pb-6 border-b border-border/50 gap-4"
+        >
           <div>
             <Badge variant="outline" className="text-primary border-primary/30 mb-2">
               <Sparkles className="h-3 w-3 mr-1 text-amber-500" /> Authorized Dental Material Depot
@@ -258,16 +268,16 @@ function ProductsPage() {
               <CheckCircle className="h-3.5 w-3.5 mr-1 text-emerald-500" /> Genuine Stock Verified
             </Badge>
           </div>
-        </div>
+        </motion.div>
 
         {/* Main Grid: Filters + Catalog */}
         <div className="grid md:grid-cols-[280px_1fr] gap-8 items-start">
           {/* Desktop Filters Sidebar */}
-          <aside className="hidden md:block">
+          <ScrollReveal direction="left" className="hidden md:block">
             <Card className="p-6 glass-card rounded-3xl border border-border/60 sticky top-24 shadow-sm">
               <Filters {...filterProps} />
             </Card>
-          </aside>
+          </ScrollReveal>
 
           {/* Product Listing Main Area */}
           <div>
@@ -334,11 +344,13 @@ function ProductsPage() {
                 </Button>
               </Card>
             ) : (
-              <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3">
+              <StaggerContainer staggerDelay={0.07} className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3">
                 {paged.map((p: any) => (
-                  <ProductCard key={p._id || p.id} product={p} />
+                  <StaggerItem key={p._id || p.id} scale>
+                    <ProductCard product={p} />
+                  </StaggerItem>
                 ))}
-              </div>
+              </StaggerContainer>
             )}
 
             {/* Pagination Controls */}

@@ -17,6 +17,13 @@ import {
   ExternalLink,
   CheckCircle2,
 } from "lucide-react";
+import {
+  ScrollReveal,
+  StaggerContainer,
+  StaggerItem,
+  ScaleReveal,
+  SectionHeading,
+} from "@/components/animations/ScrollReveal";
 
 export const Route = createFileRoute("/about")({
   head: () => ({
@@ -76,23 +83,39 @@ function AboutPage() {
       {/* ─── Hero Section ────────────────────────────────────────────────── */}
       <section className="hero-gradient py-20 text-center relative overflow-hidden">
         <div className="container mx-auto px-4 max-w-4xl space-y-6">
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+          >
             <Badge variant="outline" className="text-primary border-primary/30 mb-3 px-3 py-1">
               <Sparkles className="h-3.5 w-3.5 mr-1.5 text-amber-500" /> Vadodara's Exclusive Dental Supply Depot
             </Badge>
-            <h1 className="text-4xl sm:text-6xl font-extrabold font-heading tracking-tight text-foreground">
-              Dedicated Solely To <span className="text-gradient">Vadodara's Dentists</span>
-            </h1>
-            <p className="mt-6 text-base sm:text-lg text-muted-foreground leading-relaxed max-w-2xl mx-auto">
-              Founded and managed in Vadodara, Darsh Dental Depot provides local dental doctors with 100% genuine consumables, instruments, and materials with instant local delivery.
-            </p>
           </motion.div>
+
+          <motion.h1
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+            className="text-4xl sm:text-6xl font-extrabold font-heading tracking-tight text-foreground"
+          >
+            Dedicated Solely To <span className="text-gradient">Vadodara's Dentists</span>
+          </motion.h1>
+
+          <motion.p
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+            className="mt-6 text-base sm:text-lg text-muted-foreground leading-relaxed max-w-2xl mx-auto"
+          >
+            Founded and managed in Vadodara, Darsh Dental Depot provides local dental doctors with 100% genuine consumables, instruments, and materials with instant local delivery.
+          </motion.p>
         </div>
       </section>
 
       {/* ─── Store Highlights Cards ───────────────────────────────────────────── */}
       <section className="container mx-auto px-4 py-12">
-        <div className="grid md:grid-cols-3 gap-6">
+        <StaggerContainer staggerDelay={0.12} className="grid md:grid-cols-3 gap-6">
           {[
             {
               icon: Target,
@@ -110,44 +133,47 @@ function AboutPage() {
               desc: "Every composite, file, and cement comes with original batch numbers and manufacturer warranty support.",
             },
           ].map((v) => (
-            <Card key={v.title} className="p-7 glass-card glass-card-hover rounded-2xl border border-border/60">
-              <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-primary/15 to-sky-500/10 text-primary grid place-items-center mb-5 shadow-sm">
-                <v.icon className="h-6 w-6" />
-              </div>
-              <h3 className="font-heading font-bold text-xl text-foreground">{v.title}</h3>
-              <p className="text-sm text-muted-foreground mt-2.5 leading-relaxed">{v.desc}</p>
-            </Card>
+            <StaggerItem key={v.title} scale>
+              <Card className="p-7 glass-card glass-card-hover rounded-2xl border border-border/60 h-full">
+                <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-primary/15 to-sky-500/10 text-primary grid place-items-center mb-5 shadow-sm">
+                  <v.icon className="h-6 w-6" />
+                </div>
+                <h3 className="font-heading font-bold text-xl text-foreground">{v.title}</h3>
+                <p className="text-sm text-muted-foreground mt-2.5 leading-relaxed">{v.desc}</p>
+              </Card>
+            </StaggerItem>
           ))}
-        </div>
+        </StaggerContainer>
       </section>
 
       {/* ─── Journey Timeline ────────────────────────────────────────────── */}
       <section className="bg-secondary/30 border-y border-border/50 py-20">
         <div className="container mx-auto px-4 max-w-4xl">
-          <div className="text-center mb-14 space-y-2">
-            <Badge variant="outline" className="text-primary border-primary/30">
-              Our Journey
-            </Badge>
-            <h2 className="text-3xl font-bold font-heading">Growing With Vadodara's Dental Community</h2>
-            <p className="text-sm text-muted-foreground">Serving local clinics with dedication and precision.</p>
-          </div>
+          <SectionHeading
+            badge="Our Journey"
+            title="Growing With Vadodara's Dental Community"
+            subtitle="Serving local clinics with dedication and precision."
+            className="mb-14"
+          />
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <StaggerContainer staggerDelay={0.12} className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {milestones.map((m) => (
-              <Card key={m.year} className="p-5 glass-card rounded-2xl border border-border/60 relative">
-                <div className="text-2xl font-extrabold font-heading text-primary">{m.year}</div>
-                <div className="font-bold text-sm text-foreground mt-1">{m.title}</div>
-                <div className="text-xs text-muted-foreground mt-2 leading-relaxed">{m.desc}</div>
-              </Card>
+              <StaggerItem key={m.year} direction="left" scale>
+                <Card className="p-5 glass-card rounded-2xl border border-border/60 relative h-full">
+                  <div className="text-2xl font-extrabold font-heading text-primary">{m.year}</div>
+                  <div className="font-bold text-sm text-foreground mt-1">{m.title}</div>
+                  <div className="text-xs text-muted-foreground mt-2 leading-relaxed">{m.desc}</div>
+                </Card>
+              </StaggerItem>
             ))}
-          </div>
+          </StaggerContainer>
         </div>
       </section>
 
       {/* ─── Physical Store & Delivery Coverage ─────────────────────────────────────── */}
       <section className="container mx-auto px-4 py-20">
         <div className="grid lg:grid-cols-12 gap-10 items-center">
-          <div className="lg:col-span-6 space-y-6">
+          <ScrollReveal direction="left" className="lg:col-span-6 space-y-6">
             <Badge variant="outline" className="text-primary border-primary/30">
               Physical Depot Location
             </Badge>
@@ -200,9 +226,9 @@ function AboutPage() {
                 </Link>
               </Button>
             </div>
-          </div>
+          </ScrollReveal>
 
-          <div className="lg:col-span-6">
+          <ScrollReveal direction="right" delay={0.15} className="lg:col-span-6">
             <Card className="p-6 glass-card rounded-3xl border border-border/60 space-y-4">
               <h3 className="font-heading font-bold text-lg text-foreground flex items-center gap-2">
                 <CheckCircle2 className="h-5 w-5 text-emerald-500" /> Same-Day Delivery Across Vadodara
@@ -211,19 +237,18 @@ function AboutPage() {
                 We deliver directly to dental clinics across all major Vadodara sectors:
               </p>
 
-              <div className="grid grid-cols-2 gap-2.5 pt-2">
+              <StaggerContainer staggerDelay={0.06} className="grid grid-cols-2 gap-2.5 pt-2">
                 {vadodaraZones.map((z) => (
-                  <div
-                    key={z}
-                    className="p-2.5 rounded-xl bg-background/80 border border-border/40 text-xs font-semibold text-foreground flex items-center gap-2"
-                  >
-                    <div className="h-2 w-2 rounded-full bg-primary" />
-                    <span>{z}</span>
-                  </div>
+                  <StaggerItem key={z}>
+                    <div className="p-2.5 rounded-xl bg-background/80 border border-border/40 text-xs font-semibold text-foreground flex items-center gap-2">
+                      <div className="h-2 w-2 rounded-full bg-primary" />
+                      <span>{z}</span>
+                    </div>
+                  </StaggerItem>
                 ))}
-              </div>
+              </StaggerContainer>
             </Card>
-          </div>
+          </ScrollReveal>
         </div>
       </section>
     </PublicLayout>

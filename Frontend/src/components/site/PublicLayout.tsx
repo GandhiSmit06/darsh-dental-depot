@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { Navbar } from "./Navbar";
 import { Footer } from "./Footer";
 import { Sparkles, ShieldCheck, MapPin, Phone, MessageSquare } from "lucide-react";
+import { PageTransition } from "@/components/animations/PageTransition";
 
 export function PublicLayout({ children }: { children: ReactNode }) {
   return (
@@ -47,8 +48,11 @@ export function PublicLayout({ children }: { children: ReactNode }) {
       </div>
 
       <Navbar />
-      <main className="flex-1 relative z-10">{children}</main>
+      <main className="flex-1 relative z-10">
+        <PageTransition>{children}</PageTransition>
+      </main>
       <Footer />
     </div>
   );
 }
+

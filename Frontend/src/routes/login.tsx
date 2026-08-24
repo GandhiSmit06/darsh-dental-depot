@@ -17,6 +17,8 @@ import {
   Mail,
   ArrowRight,
   CheckCircle2,
+  KeyRound,
+  RotateCcw,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 

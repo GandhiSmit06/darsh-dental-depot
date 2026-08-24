@@ -50,10 +50,9 @@ export async function openRazorpayCheckout(options: RazorpayCheckoutOptions): Pr
     throw new Error("Failed to load Razorpay payment gateway. Please check your internet connection.");
   }
 
-  const razorpayKey = (import.meta.env.VITE_RAZORPAY_KEY_ID || "").trim();
-  if (!razorpayKey) {
-    throw new Error("Payment gateway is not configured. Please set VITE_RAZORPAY_KEY_ID in your environment variables.");
-  }
+  const razorpayKey = (
+    import.meta.env.VITE_RAZORPAY_KEY_ID || "rzp_test_SFzmfX5h9YP6WP"
+  ).trim();
 
   // Sanitize contact phone: must be exact 10 digits for Indian numbers
   const rawDigits = (options.customerPhone || "").replace(/\D/g, "");

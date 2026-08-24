@@ -377,6 +377,148 @@ export class ShopService {
 
     return Array.from(customerMap.values());
   }
+
+  // ── Customer History: Complete purchase timeline from inception to date ──
+  async getCustomerHistory(customerId: string, shopOwnerId: string) {
+    const ownerId = new Types.ObjectId(shopOwnerId);
+    const custId = new Types.ObjectId(customerId);
+
+    const customer = await User.findById(custId).lean();
+    if (!customer) throw ApiError.notFound('Customer not found');
+
+    const orders = await Order.find({ customerId: custId })
+      .sort({ createdAt: -1 })
+      .lean();
+
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const monthMap: Record<string, any> = {};
+    const yearMap: Record<string, any> = {};
+
+    const transactions = orders.map((o: any) => {
+      const items = (o.products || []).map((p: any) => ({
+        name: p.name,
+        quantity: p.quantity || 1,
+        price: p.price || 0,
+        total: (p.quantity || 1) * (p.price || 0),
+      }));
+
+      return {
+        id: o._id.toString(),
+        orderId: `ORD-${o._id.toString().slice(-6).toUpperCase()}`,
+        date: o.createdAt.toISOString().split('T')[0],
+        rawDate: o.createdAt.toISOString(),
+        totalPrice: o.totalPrice || 0,
+        subtotal: o.totalPrice || 0,
+        taxAmount: 0,
+        orderStatus: o.orderStatus || 'pending',
+        paymentStatus: o.paymentStatus || 'pending',
+        paymentMethod: o.paymentMethod || 'cod',
+        paymentId: o.paymentId,
+        shippingAddress: o.address,
+        notes: o.notes,
+        items,
+      };
+    });
+
+    const totalOrders = transactions.length;
+    const validOrders = transactions.filter((t) => t.orderStatus !== 'cancelled');
+    const ltv = validOrders.reduce((sum, t) => sum + t.totalPrice, 0);
+    const aov = validOrders.length > 0 ? Math.round(ltv / validOrders.length) : 0;
+    const completedOrders = transactions.filter((t) => t.orderStatus === 'delivered').length;
+    const pendingOrders = transactions.filter((t) => t.orderStatus !== 'delivered' && t.orderStatus !== 'cancelled').length;
+    const cancelledOrders = transactions.filter((t) => t.orderStatus === 'cancelled').length;
+
+    // Monthly & yearly breakdown
+    const chronoOrders = [...transactions].reverse();
+    chronoOrders.forEach((o) => {
+      const d = new Date(o.rawDate);
+      const year = d.getFullYear();
+      const month = d.getMonth() + 1;
+      const monthKey = `${year}-${String(month).padStart(2, '0')}`;
+      const yearKey = `${year}`;
+
+      if (!monthMap[monthKey]) {
+        monthMap[monthKey] = {
+          year,
+          month,
+          monthName: monthNames[month - 1],
+          label: `${monthNames[month - 1]} ${year}`,
+          totalSpent: 0,
+          ordersCount: 0,
+          itemsPurchased: [],
+        };
+      }
+
+      if (!yearMap[yearKey]) {
+        yearMap[yearKey] = {
+          year,
+          totalSpent: 0,
+          ordersCount: 0,
+          months: [],
+        };
+      }
+
+      monthMap[monthKey].ordersCount += 1;
+      yearMap[yearKey].ordersCount += 1;
+
+      if (o.orderStatus !== 'cancelled') {
+        monthMap[monthKey].totalSpent += o.totalPrice;
+        yearMap[yearKey].totalSpent += o.totalPrice;
+      }
+
+      o.items.forEach((item: any) => {
+        const existingItem = monthMap[monthKey].itemsPurchased.find((i: any) => i.name === item.name);
+        if (existingItem) {
+          existingItem.quantity += item.quantity;
+          existingItem.total += item.total;
+        } else {
+          monthMap[monthKey].itemsPurchased.push({ ...item });
+        }
+      });
+    });
+
+    const monthlyTimeline = Object.values(monthMap).sort((a: any, b: any) => {
+      if (a.year !== b.year) return b.year - a.year;
+      return b.month - a.month;
+    });
+
+    Object.values(yearMap).forEach((y: any) => {
+      y.months = monthlyTimeline.filter((m: any) => m.year === y.year);
+    });
+
+    const yearlyBreakdown = Object.values(yearMap).sort((a: any, b: any) => b.year - a.year);
+
+    return {
+      profile: {
+        _id: customer._id.toString(),
+        name: customer.fullName,
+        email: customer.email,
+        phone: customer.phone || '',
+        clinicName: customer.clinicName || '',
+        address: customer.address || '',
+        medicalRegistrationNumber: customer.medicalRegistrationNumber || '',
+        isVerified: customer.isVerified ?? false,
+        createdAt: customer.createdAt,
+        memberSince: customer.createdAt ? new Date(customer.createdAt).toLocaleDateString('en-IN') : '—',
+        orders: totalOrders,
+        spent: ltv,
+        aov,
+      },
+      lifetimeStats: {
+        ltv,
+        totalOrders,
+        aov,
+        completedOrders,
+        pendingOrders,
+        cancelledOrders,
+        firstOrderDate: transactions.length > 0 ? transactions[transactions.length - 1].date : undefined,
+        lastOrderDate: transactions.length > 0 ? transactions[0].date : undefined,
+      },
+      yearlyBreakdown,
+      monthlyTimeline,
+      transactions,
+    };
+  }
 }
 
 export const shopService = new ShopService();

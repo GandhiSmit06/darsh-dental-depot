@@ -26,7 +26,18 @@ import {
   Banknote,
   Building,
   Phone,
+  Calendar,
+  ShieldCheck,
+  History,
+  Eye,
+  ArrowUpDown,
+  UserCheck,
+  MapPin,
+  Mail,
+  Receipt,
+  Search,
 } from "lucide-react";
+import { CustomerHistoryModal } from "@/components/dashboard/CustomerHistoryModal";
 import {
   Bar,
   BarChart,
@@ -1359,9 +1370,9 @@ function OrdersSection({ search }: { search?: string }) {
   );
 }
 
-// ─── Customers (Real API Data) ──────────────────────────────────────────────
+// ─── Customers (Real API Data with 360° History Ledger) ─────────────────────
 
-function CustomersSection({ search }: { search?: string }) {
+function CustomersSection({ search: globalSearch }: { search?: string }) {
   const {
     data: customers,
     loading,
@@ -1369,68 +1380,350 @@ function CustomersSection({ search }: { search?: string }) {
     retry,
   } = useApiData<ShopCustomer[]>(shopApi.getCustomers);
 
-  const filteredCustomers =
-    customers?.filter((c) => {
-      if (!search) return true;
-      const s = search.toLowerCase();
-      return (
-        c.name.toLowerCase().includes(s) ||
-        c.email.toLowerCase().includes(s) ||
-        c.clinicName?.toLowerCase().includes(s) ||
-        c.phone?.includes(s)
-      );
-    }) || [];
+  const [localSearch, setLocalSearch] = useState("");
+  const [filterType, setFilterType] = useState<"all" | "active" | "high_value" | "new">("all");
+  const [sortBy, setSortBy] = useState<"spent" | "orders" | "newest" | "name">("spent");
+  const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(null);
+
+  const activeSearch = localSearch || globalSearch || "";
+
+  // Summary Metrics
+  const totalClinics = customers?.length || 0;
+  const activeClinics = customers?.filter((c) => (c.orders ?? 0) > 0).length || 0;
+  const totalSpentAll = customers?.reduce((sum, c) => sum + (c.spent ?? 0), 0) || 0;
+  const avgClinicValue = activeClinics > 0 ? Math.round(totalSpentAll / activeClinics) : 0;
+
+  const filteredAndSortedCustomers = useMemo(() => {
+    if (!customers) return [];
+
+    let list = customers.filter((c) => {
+      // Search filter
+      if (activeSearch) {
+        const s = activeSearch.toLowerCase();
+        const matchesName = c.name?.toLowerCase().includes(s);
+        const matchesEmail = c.email?.toLowerCase().includes(s);
+        const matchesClinic = c.clinicName?.toLowerCase().includes(s);
+        const matchesPhone = c.phone?.includes(s);
+        const matchesAddress = c.address?.toLowerCase().includes(s);
+        if (!matchesName && !matchesEmail && !matchesClinic && !matchesPhone && !matchesAddress) {
+          return false;
+        }
+      }
+
+      // Tab filter
+      if (filterType === "active") return (c.orders ?? 0) > 0;
+      if (filterType === "high_value") return (c.spent ?? 0) >= 2000;
+      if (filterType === "new") return (c.orders ?? 0) === 0;
+      return true;
+    });
+
+    // Sorting
+    list.sort((a, b) => {
+      if (sortBy === "spent") return (b.spent ?? 0) - (a.spent ?? 0);
+      if (sortBy === "orders") return (b.orders ?? 0) - (a.orders ?? 0);
+      if (sortBy === "newest") {
+        const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+        const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+        return dateB - dateA;
+      }
+      if (sortBy === "name") return (a.name || "").localeCompare(b.name || "");
+      return 0;
+    });
+
+    return list;
+  }, [customers, activeSearch, filterType, sortBy]);
 
   return (
-    <div className="space-y-5">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Registered Doctors & Clinics</h1>
-        <Badge variant="outline" className="border-primary/40 text-primary font-mono text-xs">
-          Vadodara Clinic Directory
-        </Badge>
+    <div className="space-y-6">
+      {/* Top Header & Vadodara Tag */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold font-heading">Registered Doctors & Clinics</h1>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Complete clinic intelligence, lifetime order tracking, and month-by-month purchase history.
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Badge variant="outline" className="border-primary/40 bg-primary/5 text-primary font-mono text-xs py-1 px-3">
+            <Building className="h-3 w-3 mr-1.5" /> Vadodara Dental Network
+          </Badge>
+          <Button variant="outline" size="sm" onClick={retry} className="text-xs rounded-xl h-8">
+            <RefreshCw className={`h-3.5 w-3.5 mr-1.5 ${loading ? "animate-spin" : ""}`} /> Refresh
+          </Button>
+        </div>
       </div>
 
+      {/* Overview Stat Ribbons */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
+        <Card className="p-4 rounded-2xl bg-card border border-border shadow-xs">
+          <div className="text-xs text-muted-foreground font-medium">Total Registered Clinics</div>
+          <div className="text-2xl font-extrabold font-heading text-foreground mt-1">
+            {totalClinics}
+          </div>
+          <div className="text-[11px] text-muted-foreground mt-0.5">Verified dental doctors</div>
+        </Card>
+
+        <Card className="p-4 rounded-2xl bg-card border border-border shadow-xs">
+          <div className="text-xs text-muted-foreground font-medium">Active Depot Buyers</div>
+          <div className="text-2xl font-extrabold font-heading text-primary mt-1">
+            {activeClinics}
+          </div>
+          <div className="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold mt-0.5">
+            {totalClinics > 0 ? `${Math.round((activeClinics / totalClinics) * 100)}% active rate` : "0%"}
+          </div>
+        </Card>
+
+        <Card className="p-4 rounded-2xl bg-gradient-to-br from-primary/10 via-background to-background border border-primary/20 shadow-xs">
+          <div className="text-xs text-muted-foreground font-medium">Total Customer LTV</div>
+          <div className="text-2xl font-extrabold font-heading text-foreground mt-1">
+            ₹{totalSpentAll.toFixed(2)}
+          </div>
+          <div className="text-[11px] text-muted-foreground mt-0.5">All-time clinic purchases</div>
+        </Card>
+
+        <Card className="p-4 rounded-2xl bg-card border border-border shadow-xs">
+          <div className="text-xs text-muted-foreground font-medium">Avg. Active Clinic Value</div>
+          <div className="text-2xl font-extrabold font-heading text-foreground mt-1">
+            ₹{avgClinicValue.toFixed(2)}
+          </div>
+          <div className="text-[11px] text-muted-foreground mt-0.5">Mean spend per active buyer</div>
+        </Card>
+      </div>
+
+      {/* Search, Filter Pills & Sort Controls */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 bg-card p-3 rounded-2xl border border-border/70">
+        {/* Search Bar */}
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+          <Input
+            value={localSearch}
+            onChange={(e) => setLocalSearch(e.target.value)}
+            placeholder="Search by Doctor name, Clinic name, Phone, Email, or Address..."
+            className="pl-8.5 text-xs h-9 rounded-xl bg-background border-border/60"
+          />
+        </div>
+
+        {/* Filter Pills */}
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0 text-xs">
+          <Button
+            size="sm"
+            variant={filterType === "all" ? "default" : "ghost"}
+            onClick={() => setFilterType("all")}
+            className="rounded-xl text-xs h-8 px-3"
+          >
+            All ({totalClinics})
+          </Button>
+          <Button
+            size="sm"
+            variant={filterType === "active" ? "default" : "ghost"}
+            onClick={() => setFilterType("active")}
+            className="rounded-xl text-xs h-8 px-3"
+          >
+            Active Buyers ({activeClinics})
+          </Button>
+          <Button
+            size="sm"
+            variant={filterType === "high_value" ? "default" : "ghost"}
+            onClick={() => setFilterType("high_value")}
+            className="rounded-xl text-xs h-8 px-3"
+          >
+            High Value ({customers?.filter((c) => (c.spent ?? 0) >= 2000).length || 0})
+          </Button>
+          <Button
+            size="sm"
+            variant={filterType === "new" ? "default" : "ghost"}
+            onClick={() => setFilterType("new")}
+            className="rounded-xl text-xs h-8 px-3"
+          >
+            New ({customers?.filter((c) => (c.orders ?? 0) === 0).length || 0})
+          </Button>
+        </div>
+
+        {/* Sort Selector */}
+        <div className="flex items-center gap-2 shrink-0">
+          <span className="text-xs font-semibold text-muted-foreground whitespace-nowrap">Sort:</span>
+          <Select value={sortBy} onValueChange={(val: any) => setSortBy(val)}>
+            <SelectTrigger className="h-8.5 w-40 text-xs font-semibold rounded-xl bg-background border-border/60">
+              <SelectValue placeholder="Sort By" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="spent">💰 Highest Spent (LTV)</SelectItem>
+              <SelectItem value="orders">📦 Most Orders Placed</SelectItem>
+              <SelectItem value="newest">🕒 Newest Registered</SelectItem>
+              <SelectItem value="name">🔤 Doctor Name (A-Z)</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      {/* Customer Directory Table */}
       {loading ? (
-        <LoadingSpinner label="Loading clinic accounts..." />
+        <LoadingSpinner label="Loading clinic accounts and historical ledgers..." />
       ) : error ? (
         <ErrorBanner onRetry={retry} />
-      ) : !filteredCustomers.length ? (
+      ) : !filteredAndSortedCustomers.length ? (
         <EmptyBanner
-          label={search ? "No clinics found matching your search." : "No registered doctors yet."}
+          label={
+            activeSearch || filterType !== "all"
+              ? "No clinics found matching your search and filter criteria."
+              : "No registered doctors yet."
+          }
         />
       ) : (
-        <Card className="overflow-hidden">
+        <Card className="overflow-hidden rounded-2xl border border-border/80 shadow-xs">
           <Table>
             <TableHeader>
-              <TableRow>
-                <TableHead>Doctor / Clinic</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Phone</TableHead>
-                <TableHead>Orders Placed</TableHead>
-                <TableHead>Total Spent</TableHead>
+              <TableRow className="bg-muted/30">
+                <TableHead className="font-bold text-xs">Doctor & Clinic</TableHead>
+                <TableHead className="font-bold text-xs">Contact Details</TableHead>
+                <TableHead className="font-bold text-xs">Member Since</TableHead>
+                <TableHead className="font-bold text-xs">Order Summary</TableHead>
+                <TableHead className="font-bold text-xs">Total Lifetime Spent</TableHead>
+                <TableHead className="text-right font-bold text-xs">Action</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredCustomers.map((c) => (
-                <TableRow key={c._id}>
-                  <TableCell>
-                    <div className="font-semibold text-foreground">{c.name || "Doctor"}</div>
-                    <div className="text-xs text-muted-foreground">
-                      {c.clinicName || "Dental Practice"}
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-muted-foreground text-xs">{c.email || "—"}</TableCell>
-                  <TableCell className="text-muted-foreground text-xs">{c.phone || "—"}</TableCell>
-                  <TableCell className="font-medium">{c.orders ?? 0}</TableCell>
-                  <TableCell className="font-semibold text-primary">
-                    ₹{(c.spent ?? 0).toFixed(2)}
-                  </TableCell>
-                </TableRow>
-              ))}
+              {filteredAndSortedCustomers.map((c) => {
+                const ordersCount = c.orders ?? 0;
+                const spentAmount = c.spent ?? 0;
+                const aov = c.aov ?? (ordersCount > 0 ? Math.round(spentAmount / ordersCount) : 0);
+
+                return (
+                  <TableRow
+                    key={c._id}
+                    className="hover:bg-muted/30 transition-colors cursor-pointer"
+                    onClick={() => setSelectedCustomerId(c._id)}
+                  >
+                    {/* Doctor & Clinic */}
+                    <TableCell>
+                      <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-primary via-sky-600 to-indigo-600 text-white grid place-items-center font-extrabold text-sm shadow-xs shrink-0">
+                          {c.name ? c.name.charAt(0).toUpperCase() : "D"}
+                        </div>
+                        <div className="space-y-0.5 min-w-0">
+                          <div className="font-bold text-sm text-foreground flex items-center gap-1.5">
+                            <span className="truncate">{c.name || "Doctor"}</span>
+                            {c.isVerified && (
+                              <ShieldCheck className="h-3.5 w-3.5 text-emerald-500 shrink-0" title="Verified Doctor" />
+                            )}
+                          </div>
+                          <div className="text-xs text-primary font-semibold flex items-center gap-1">
+                            <Building className="h-3 w-3 shrink-0" />
+                            <span className="truncate">{c.clinicName || "Dental Practice"}</span>
+                          </div>
+                          {c.address && (
+                            <div className="text-[11px] text-muted-foreground flex items-center gap-1 truncate max-w-xs">
+                              <MapPin className="h-2.5 w-2.5 shrink-0" />
+                              <span className="truncate">{c.address}</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </TableCell>
+
+                    {/* Contact Details */}
+                    <TableCell onClick={(e) => e.stopPropagation()}>
+                      <div className="space-y-1">
+                        {c.phone ? (
+                          <div className="flex items-center gap-1.5 text-xs font-mono font-medium text-foreground">
+                            <Phone className="h-3 w-3 text-muted-foreground shrink-0" />
+                            <a
+                              href={`tel:${c.phone}`}
+                              className="hover:text-primary hover:underline"
+                            >
+                              {c.phone}
+                            </a>
+                            <a
+                              href={`https://wa.me/91${c.phone.replace(/[^0-9]/g, "").replace(/^91/, "")}`}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="text-[10px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-1.5 py-0.5 rounded hover:bg-emerald-500/20"
+                              title="Chat on WhatsApp"
+                            >
+                              WA
+                            </a>
+                          </div>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">—</span>
+                        )}
+                        {c.email && (
+                          <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground truncate max-w-xs">
+                            <Mail className="h-3 w-3 shrink-0" />
+                            <a href={`mailto:${c.email}`} className="hover:text-foreground truncate">
+                              {c.email}
+                            </a>
+                          </div>
+                        )}
+                      </div>
+                    </TableCell>
+
+                    {/* Member Since */}
+                    <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
+                      <div className="flex items-center gap-1.5">
+                        <Calendar className="h-3.5 w-3.5 text-muted-foreground/70" />
+                        <span>{c.memberSince || "—"}</span>
+                      </div>
+                    </TableCell>
+
+                    {/* Order Summary */}
+                    <TableCell>
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-1.5">
+                          <Badge
+                            variant={ordersCount > 0 ? "default" : "secondary"}
+                            className="text-xs font-bold px-2 py-0.5 rounded-lg"
+                          >
+                            {ordersCount} {ordersCount === 1 ? "Order" : "Orders"}
+                          </Badge>
+                        </div>
+                        {c.lastOrderDate && (
+                          <div className="text-[10px] text-muted-foreground">
+                            Last: {c.lastOrderDate}
+                          </div>
+                        )}
+                      </div>
+                    </TableCell>
+
+                    {/* Total Spent (LTV) */}
+                    <TableCell>
+                      <div>
+                        <div className="font-extrabold text-sm text-foreground font-heading">
+                          ₹{spentAmount.toFixed(2)}
+                        </div>
+                        {ordersCount > 0 && (
+                          <div className="text-[10px] text-muted-foreground">
+                            AOV: ₹{aov.toFixed(2)}
+                          </div>
+                        )}
+                      </div>
+                    </TableCell>
+
+                    {/* Action */}
+                    <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setSelectedCustomerId(c._id)}
+                        className="rounded-xl text-xs h-8 px-3 gap-1.5 font-semibold hover:bg-primary hover:text-white hover:border-primary transition-colors"
+                      >
+                        <History className="h-3.5 w-3.5 text-primary group-hover:text-white" />
+                        <span>View History</span>
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
             </TableBody>
           </Table>
         </Card>
       )}
+
+      {/* Customer Full Purchase History Modal */}
+      <CustomerHistoryModal
+        customerId={selectedCustomerId}
+        isOpen={!!selectedCustomerId}
+        onClose={() => setSelectedCustomerId(null)}
+      />
     </div>
   );
 }

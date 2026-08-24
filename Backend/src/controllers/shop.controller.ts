@@ -52,3 +52,8 @@ export const getCustomers = asyncHandler(async (req: Request, res: Response) => 
   const data = await shopService.getCustomers(req.user!._id.toString());
   res.json(ApiResponse.ok('Shop customers', data));
 });
+
+export const getCustomerHistory = asyncHandler(async (req: Request, res: Response) => {
+  const data = await shopService.getCustomerHistory(req.params.id as string, req.user!._id.toString());
+  res.json(ApiResponse.ok('Customer history data', data));
+});

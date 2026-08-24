@@ -220,9 +220,74 @@ export interface ShopOrder {
   status: string;
   paymentStatus: string;
   paymentMethod: string;
-  paymentId?: string;
   date: string;
   rawDate?: string;
+}
+
+export interface CustomerTransactionItem {
+  id?: string;
+  productId?: string;
+  name: string;
+  quantity: number;
+  price: number;
+  total: number;
+  image?: string;
+}
+
+export interface CustomerOrderTransaction {
+  id: string;
+  orderId: string;
+  date: string;
+  rawDate: string;
+  totalPrice: number;
+  subtotal: number;
+  taxAmount: number;
+  orderStatus: string;
+  paymentStatus: string;
+  paymentMethod: string;
+  paymentId?: string;
+  shippingAddress?: any;
+  notes?: string;
+  items: CustomerTransactionItem[];
+}
+
+export interface CustomerMonthlySpending {
+  year: number;
+  month: number;
+  monthName: string;
+  label: string;
+  totalSpent: number;
+  ordersCount: number;
+  itemsPurchased: Array<{
+    name: string;
+    quantity: number;
+    total: number;
+  }>;
+}
+
+export interface CustomerYearlySpending {
+  year: number;
+  totalSpent: number;
+  ordersCount: number;
+  months: CustomerMonthlySpending[];
+}
+
+export interface CustomerHistoryData {
+  profile: ShopCustomer;
+  lifetimeStats: {
+    ltv: number;
+    totalOrders: number;
+    aov: number;
+    firstOrderDate?: string;
+    lastOrderDate?: string;
+    completedOrders: number;
+    pendingOrders: number;
+    cancelledOrders: number;
+    preferredPaymentMethod?: string;
+  };
+  yearlyBreakdown: CustomerYearlySpending[];
+  monthlyTimeline: CustomerMonthlySpending[];
+  transactions: CustomerOrderTransaction[];
 }
 
 export interface ShopCustomer {
@@ -231,8 +296,22 @@ export interface ShopCustomer {
   email: string;
   phone?: string;
   clinicName?: string;
+  address?: string;
+  medicalRegistrationNumber?: string;
+  isVerified?: boolean;
+  createdAt?: string;
+  memberSince?: string;
   orders: number;
   spent: number;
+  aov?: number;
+  lastOrderDate?: string;
+  statusBreakdown?: {
+    delivered: number;
+    pending: number;
+    processing: number;
+    shipped: number;
+    cancelled: number;
+  };
 }
 export type CustomerItem = ShopCustomer;
 
@@ -1264,32 +1343,324 @@ export const shopApi = {
       .eq("role", "doctor")
       .order("created_at", { ascending: false });
 
-    const { data: orders } = await supabase.from("orders").select("user_id, total_price, order_status");
+    const { data: orders } = await supabase
+      .from("orders")
+      .select("user_id, total_price, order_status, created_at")
+      .order("created_at", { ascending: false });
 
     // Aggregate real orders and spending per doctor
-    const ordersByUser: Record<string, { count: number; spent: number }> = {};
+    const ordersByUser: Record<
+      string,
+      {
+        count: number;
+        spent: number;
+        lastOrderDate?: string;
+        delivered: number;
+        pending: number;
+        processing: number;
+        shipped: number;
+        cancelled: number;
+      }
+    > = {};
+
     (orders || []).forEach((o: any) => {
       if (!o.user_id) return;
       if (!ordersByUser[o.user_id]) {
-        ordersByUser[o.user_id] = { count: 0, spent: 0 };
+        ordersByUser[o.user_id] = {
+          count: 0,
+          spent: 0,
+          lastOrderDate: o.created_at,
+          delivered: 0,
+          pending: 0,
+          processing: 0,
+          shipped: 0,
+          cancelled: 0,
+        };
       }
       ordersByUser[o.user_id].count += 1;
+      const status = (o.order_status || "pending").toLowerCase();
+      if (status === "delivered") ordersByUser[o.user_id].delivered += 1;
+      else if (status === "cancelled") ordersByUser[o.user_id].cancelled += 1;
+      else if (status === "shipped") ordersByUser[o.user_id].shipped += 1;
+      else if (status === "processing") ordersByUser[o.user_id].processing += 1;
+      else ordersByUser[o.user_id].pending += 1;
+
       if (o.order_status !== "cancelled") {
         ordersByUser[o.user_id].spent += Number(o.total_price || 0);
       }
     });
 
-    const mapped = (profiles || []).map((p: any) => ({
-      _id: p.id,
-      name: p.full_name || "Doctor",
-      email: p.email,
-      phone: p.phone || "",
-      clinicName: p.clinic_name || "",
-      orders: ordersByUser[p.id]?.count || 0,
-      spent: ordersByUser[p.id]?.spent || 0,
-    }));
+    const mapped: ShopCustomer[] = (profiles || []).map((p: any) => {
+      const stats = ordersByUser[p.id] || {
+        count: 0,
+        spent: 0,
+        delivered: 0,
+        pending: 0,
+        processing: 0,
+        shipped: 0,
+        cancelled: 0,
+      };
+      const aov = stats.count > 0 ? Math.round(stats.spent / stats.count) : 0;
+      const memberSince = p.created_at
+        ? new Date(p.created_at).toLocaleDateString("en-IN", {
+            day: "numeric",
+            month: "short",
+            year: "numeric",
+          })
+        : "—";
+
+      return {
+        _id: p.id,
+        name: p.full_name || "Doctor",
+        email: p.email,
+        phone: p.phone || "",
+        clinicName: p.clinic_name || "",
+        address: p.address || "",
+        medicalRegistrationNumber: p.medical_registration_number || "",
+        isVerified: p.is_verified ?? false,
+        createdAt: p.created_at,
+        memberSince,
+        orders: stats.count,
+        spent: stats.spent,
+        aov,
+        lastOrderDate: stats.lastOrderDate
+          ? new Date(stats.lastOrderDate).toLocaleDateString("en-IN", {
+              day: "numeric",
+              month: "short",
+              year: "numeric",
+            })
+          : undefined,
+        statusBreakdown: {
+          delivered: stats.delivered,
+          pending: stats.pending,
+          processing: stats.processing,
+          shipped: stats.shipped,
+          cancelled: stats.cancelled,
+        },
+      };
+    });
 
     return { success: true as const, message: "OK", data: mapped };
+  },
+
+  getCustomerHistory: async (customerId: string) => {
+    // 1. Fetch profile
+    const { data: profile, error: profileErr } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", customerId)
+      .single();
+
+    if (profileErr || !profile) {
+      throw new ApiError(404, "Customer not found");
+    }
+
+    // 2. Fetch all orders with order_items
+    const { data: orders, error: ordersErr } = await supabase
+      .from("orders")
+      .select("*, order_items(*)")
+      .eq("user_id", customerId)
+      .order("created_at", { ascending: false });
+
+    if (ordersErr) {
+      throw new ApiError(500, "Failed to load customer orders");
+    }
+
+    // 3. Map transactions
+    const transactions: CustomerOrderTransaction[] = (orders || []).map((o: any) => {
+      const items: CustomerTransactionItem[] = (o.order_items || []).map((item: any) => ({
+        id: item.id,
+        productId: item.product_id,
+        name: item.name,
+        quantity: Number(item.quantity || 1),
+        price: Number(item.price || 0),
+        total: Number(item.quantity || 1) * Number(item.price || 0),
+        image: item.image,
+      }));
+
+      return {
+        id: o.id,
+        orderId: o.order_number,
+        date: new Date(o.created_at).toLocaleDateString("en-IN", {
+          day: "numeric",
+          month: "short",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+        rawDate: o.created_at,
+        totalPrice: Number(o.total_price || 0),
+        subtotal: Number(o.subtotal || o.total_price || 0),
+        taxAmount: Number(o.tax_amount || 0),
+        orderStatus: o.order_status || "pending",
+        paymentStatus: o.payment_status || (o.payment_method === "cod" ? "pending" : "paid"),
+        paymentMethod: o.payment_method || "cod",
+        paymentId: o.payment_id || undefined,
+        shippingAddress: o.shipping_address,
+        notes: o.notes,
+        items,
+      };
+    });
+
+    // 4. Calculate Lifetime Stats
+    const totalOrders = transactions.length;
+    const validOrders = transactions.filter((t) => t.orderStatus !== "cancelled");
+    const ltv = validOrders.reduce((sum, t) => sum + t.totalPrice, 0);
+    const aov = validOrders.length > 0 ? Math.round(ltv / validOrders.length) : 0;
+    const completedOrders = transactions.filter((t) => t.orderStatus === "delivered").length;
+    const pendingOrders = transactions.filter(
+      (t) => t.orderStatus === "pending" || t.orderStatus === "processing" || t.orderStatus === "shipped"
+    ).length;
+    const cancelledOrders = transactions.filter((t) => t.orderStatus === "cancelled").length;
+
+    // Payment methods counts
+    const methodCounts: Record<string, number> = {};
+    transactions.forEach((t) => {
+      methodCounts[t.paymentMethod] = (methodCounts[t.paymentMethod] || 0) + 1;
+    });
+    const preferredPaymentMethod = Object.entries(methodCounts).sort((a, b) => b[1] - a[1])[0]?.[0];
+
+    const firstOrderDate =
+      transactions.length > 0
+        ? new Date(transactions[transactions.length - 1].rawDate).toLocaleDateString("en-IN", {
+            day: "numeric",
+            month: "short",
+            year: "numeric",
+          })
+        : undefined;
+
+    const lastOrderDate =
+      transactions.length > 0
+        ? new Date(transactions[0].rawDate).toLocaleDateString("en-IN", {
+            day: "numeric",
+            month: "short",
+            year: "numeric",
+          })
+        : undefined;
+
+    // 5. Month-by-Month & Year-by-Year Aggregations
+    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const monthMap: Record<string, CustomerMonthlySpending> = {};
+    const yearMap: Record<string, CustomerYearlySpending> = {};
+
+    // Sort chronologically ascending for timeline grouping
+    const chronoOrders = [...transactions].reverse();
+
+    chronoOrders.forEach((o) => {
+      const d = new Date(o.rawDate);
+      const year = d.getFullYear();
+      const month = d.getMonth() + 1;
+      const monthKey = `${year}-${String(month).padStart(2, "0")}`;
+      const yearKey = `${year}`;
+
+      // Initialize monthly bucket
+      if (!monthMap[monthKey]) {
+        monthMap[monthKey] = {
+          year,
+          month,
+          monthName: monthNames[month - 1],
+          label: `${monthNames[month - 1]} ${year}`,
+          totalSpent: 0,
+          ordersCount: 0,
+          itemsPurchased: [],
+        };
+      }
+
+      // Initialize yearly bucket
+      if (!yearMap[yearKey]) {
+        yearMap[yearKey] = {
+          year,
+          totalSpent: 0,
+          ordersCount: 0,
+          months: [],
+        };
+      }
+
+      monthMap[monthKey].ordersCount += 1;
+      yearMap[yearKey].ordersCount += 1;
+
+      if (o.orderStatus !== "cancelled") {
+        monthMap[monthKey].totalSpent += o.totalPrice;
+        yearMap[yearKey].totalSpent += o.totalPrice;
+      }
+
+      // Aggregate items purchased in that month
+      o.items.forEach((item) => {
+        const existingItem = monthMap[monthKey].itemsPurchased.find((i) => i.name === item.name);
+        if (existingItem) {
+          existingItem.quantity += item.quantity;
+          existingItem.total += item.total;
+        } else {
+          monthMap[monthKey].itemsPurchased.push({
+            name: item.name,
+            quantity: item.quantity,
+            total: item.total,
+          });
+        }
+      });
+    });
+
+    const monthlyTimeline = Object.values(monthMap).sort((a, b) => {
+      if (a.year !== b.year) return b.year - a.year;
+      return b.month - a.month;
+    });
+
+    // Populate yearly months
+    Object.values(yearMap).forEach((y) => {
+      y.months = monthlyTimeline.filter((m) => m.year === y.year);
+    });
+
+    const yearlyBreakdown = Object.values(yearMap).sort((a, b) => b.year - a.year);
+
+    const customerProfile: ShopCustomer = {
+      _id: profile.id,
+      name: profile.full_name || "Doctor",
+      email: profile.email,
+      phone: profile.phone || "",
+      clinicName: profile.clinic_name || "",
+      address: profile.address || "",
+      medicalRegistrationNumber: profile.medical_registration_number || "",
+      isVerified: profile.is_verified ?? false,
+      createdAt: profile.created_at,
+      memberSince: profile.created_at
+        ? new Date(profile.created_at).toLocaleDateString("en-IN", {
+            day: "numeric",
+            month: "short",
+            year: "numeric",
+          })
+        : "—",
+      orders: totalOrders,
+      spent: ltv,
+      aov,
+      lastOrderDate,
+      statusBreakdown: {
+        delivered: completedOrders,
+        pending: pendingOrders,
+        processing: 0,
+        shipped: 0,
+        cancelled: cancelledOrders,
+      },
+    };
+
+    const historyData: CustomerHistoryData = {
+      profile: customerProfile,
+      lifetimeStats: {
+        ltv,
+        totalOrders,
+        aov,
+        firstOrderDate,
+        lastOrderDate,
+        completedOrders,
+        pendingOrders,
+        cancelledOrders,
+        preferredPaymentMethod,
+      },
+      yearlyBreakdown,
+      monthlyTimeline,
+      transactions,
+    };
+
+    return { success: true as const, message: "OK", data: historyData };
   },
 
   getWeeklySales: async () => {

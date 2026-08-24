@@ -18,5 +18,6 @@ router.get('/analytics/monthly-trend', shopCtrl.getMonthlyTrend);
 router.get('/analytics/category-share', shopCtrl.getCategoryShare);
 router.get('/analytics/product-performance', shopCtrl.getProductPerformance);
 router.get('/customers', shopCtrl.getCustomers);
+router.get('/customers/:id/history', shopCtrl.getCustomerHistory);
 
 export default router;

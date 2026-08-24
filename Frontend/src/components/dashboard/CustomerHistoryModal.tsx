@@ -46,6 +46,7 @@ import {
   FileText,
   Layers,
   Sparkles,
+  AlertCircle,
 } from "lucide-react";
 import {
   BarChart,
@@ -325,7 +326,9 @@ export function CustomerHistoryModal({
                 <DialogTitle className="text-xl font-extrabold font-heading text-foreground flex items-center gap-2">
                   <span>{data?.profile.name || "Doctor Details"}</span>
                   {data?.profile.isVerified && (
-                    <ShieldCheck className="h-4 w-4 text-emerald-500 shrink-0" title="Verified Vadodara Clinic" />
+                    <span title="Verified Vadodara Clinic">
+                      <ShieldCheck className="h-4 w-4 text-emerald-500 shrink-0" />
+                    </span>
                   )}
                 </DialogTitle>
                 <div className="flex items-center gap-2 flex-wrap text-xs text-muted-foreground mt-0.5">

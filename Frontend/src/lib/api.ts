@@ -220,6 +220,7 @@ export interface ShopOrder {
   status: string;
   paymentStatus: string;
   paymentMethod: string;
+  paymentId?: string;
   date: string;
   rawDate?: string;
 }

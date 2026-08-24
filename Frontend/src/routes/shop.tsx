@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import {
   LayoutDashboard,
   Package,
@@ -1527,7 +1527,7 @@ function CustomersSection({ search: globalSearch }: { search?: string }) {
             onClick={() => setFilterType("high_value")}
             className="rounded-xl text-xs h-8 px-3"
           >
-            High Value ({customers?.filter((c) => (c.spent ?? 0) >= 2000).length || 0})
+            High Value ({customers?.filter((c: ShopCustomer) => (c.spent ?? 0) >= 2000).length || 0})
           </Button>
           <Button
             size="sm"
@@ -1535,7 +1535,7 @@ function CustomersSection({ search: globalSearch }: { search?: string }) {
             onClick={() => setFilterType("new")}
             className="rounded-xl text-xs h-8 px-3"
           >
-            New ({customers?.filter((c) => (c.orders ?? 0) === 0).length || 0})
+            New ({customers?.filter((c: ShopCustomer) => (c.orders ?? 0) === 0).length || 0})
           </Button>
         </div>
 
@@ -1583,7 +1583,7 @@ function CustomersSection({ search: globalSearch }: { search?: string }) {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredAndSortedCustomers.map((c) => {
+              {filteredAndSortedCustomers.map((c: ShopCustomer) => {
                 const ordersCount = c.orders ?? 0;
                 const spentAmount = c.spent ?? 0;
                 const aov = c.aov ?? (ordersCount > 0 ? Math.round(spentAmount / ordersCount) : 0);
@@ -1604,7 +1604,9 @@ function CustomersSection({ search: globalSearch }: { search?: string }) {
                           <div className="font-bold text-sm text-foreground flex items-center gap-1.5">
                             <span className="truncate">{c.name || "Doctor"}</span>
                             {c.isVerified && (
-                              <ShieldCheck className="h-3.5 w-3.5 text-emerald-500 shrink-0" title="Verified Doctor" />
+                              <span title="Verified Doctor">
+                                <ShieldCheck className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
+                              </span>
                             )}
                           </div>
                           <div className="text-xs text-primary font-semibold flex items-center gap-1">

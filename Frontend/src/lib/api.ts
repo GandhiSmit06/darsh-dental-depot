@@ -644,6 +644,7 @@ export const authApi = {
 
     return {
       success: true,
+      email: emailToUse,
       message: `A 6-digit login code has been sent to ${emailToUse}.`,
     };
   },
@@ -738,7 +739,92 @@ export const authApi = {
       redirectTo: redirectUrl,
     });
     if (error) throw new ApiError(400, error.message);
-    return { success: true, message: "Password reset link sent to your email." };
+    return { success: true, message: "Password reset OTP sent to your email." };
+  },
+
+  sendPasswordResetOtp: async (identifier: string) => {
+    let emailToUse = identifier.trim().toLowerCase();
+
+    // If identifier is a phone number without @, look up email
+    if (!emailToUse.includes("@")) {
+      const cleanPhone = emailToUse.replace(/\D/g, "");
+      const { data: phoneProfile } = await supabase
+        .from("profiles")
+        .select("email")
+        .eq("phone", cleanPhone)
+        .limit(1)
+        .maybeSingle();
+
+      if (phoneProfile?.email) {
+        emailToUse = phoneProfile.email;
+      }
+    }
+
+    if (!emailToUse.includes("@")) {
+      throw new ApiError(400, "Please enter a valid registered email address or mobile number.");
+    }
+
+    const redirectUrl =
+      typeof window !== "undefined"
+        ? `${window.location.origin}/reset-password`
+        : undefined;
+
+    const { error } = await supabase.auth.resetPasswordForEmail(emailToUse, {
+      redirectTo: redirectUrl,
+    });
+
+    if (error) {
+      throw new ApiError(400, error.message || "Failed to send reset code. Please check your email.");
+    }
+
+    return {
+      success: true,
+      email: emailToUse,
+      message: `A 6-digit password reset code has been sent to ${emailToUse}.`,
+    };
+  },
+
+  verifyPasswordResetOtp: async (data: { identifier: string; otp: string; password: string }) => {
+    let emailToUse = data.identifier.trim().toLowerCase();
+
+    if (!emailToUse.includes("@")) {
+      const cleanPhone = emailToUse.replace(/\D/g, "");
+      const { data: phoneProfile } = await supabase
+        .from("profiles")
+        .select("email")
+        .eq("phone", cleanPhone)
+        .limit(1)
+        .maybeSingle();
+
+      if (phoneProfile?.email) {
+        emailToUse = phoneProfile.email;
+      }
+    }
+
+    // Verify recovery OTP
+    const { data: authData, error: otpError } = await supabase.auth.verifyOtp({
+      email: emailToUse,
+      token: data.otp.trim(),
+      type: "recovery",
+    });
+
+    if (otpError || !authData.session) {
+      throw new ApiError(400, otpError?.message || "Invalid or expired 6-digit OTP code.");
+    }
+
+    // Update user password
+    const { error: updateError } = await supabase.auth.updateUser({
+      password: data.password,
+    });
+
+    if (updateError) {
+      throw new ApiError(400, updateError.message || "Failed to update password.");
+    }
+
+    return {
+      success: true,
+      message: "Your password has been successfully reset! You can now log in.",
+    };
   },
 
   resetPassword: async (_token: string, password: string, _confirm: string) => {

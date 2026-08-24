@@ -51,7 +51,7 @@ function getDashboardRoute(role: string): string {
 
 function LoginPage() {
   const nav = useNavigate();
-  const { login, setSession } = useAuth();
+  const { user, isAuthenticated, login, setSession } = useAuth();
   
   // Login mode: "password" | "otp"
   const [mode, setMode] = useState<"password" | "otp">("password");
@@ -61,6 +61,7 @@ function LoginPage() {
 
   // OTP Login state
   const [otpIdentifier, setOtpIdentifier] = useState("");
+  const [targetEmail, setTargetEmail] = useState("");
   const [otpStep, setOtpStep] = useState<"enter_id" | "enter_otp">("enter_id");
   const [otpCode, setOtpCode] = useState("");
   const [otpSending, setOtpSending] = useState(false);
@@ -75,10 +76,17 @@ function LoginPage() {
     resolver: zodResolver(passwordLoginSchema),
   });
 
+  // Auto-redirect if already authenticated
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      nav({ to: getDashboardRoute(user.role) });
+    }
+  }, [isAuthenticated, user, nav]);
+
   // Resend countdown timer
   useEffect(() => {
     if (otpStep === "enter_otp" && countdown > 0) {
-      const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
+      const timer = setTimeout(() => setCountdown((c) => c - 1), 1000);
       return () => clearTimeout(timer);
     }
   }, [otpStep, countdown]);
@@ -117,6 +125,7 @@ function LoginPage() {
     setOtpSending(true);
     try {
       const res = await authApi.sendLoginOtp({ identifier: cleanId });
+      setTargetEmail(res.email || cleanId);
       setOtpStep("enter_otp");
       setCountdown(60);
       toast.success(res.message || "Login OTP sent successfully!");
@@ -322,7 +331,7 @@ function LoginPage() {
                           Enter the 6-digit OTP code sent to:
                         </p>
                         <span className="text-xs font-bold text-foreground bg-secondary px-3 py-1 rounded-full border border-border/60 inline-block">
-                          {otpIdentifier}
+                          {targetEmail || otpIdentifier}
                         </span>
                       </div>
 

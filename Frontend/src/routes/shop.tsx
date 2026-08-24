@@ -184,8 +184,8 @@ function useApiData<T>(fetcher: () => Promise<{ data: T }>) {
     fetcherRef.current = fetcher;
   }, [fetcher]);
 
-  const load = useCallback(async () => {
-    setLoading(true);
+  const load = useCallback(async (isSilent = false) => {
+    if (!isSilent) setLoading(true);
     setError(false);
     try {
       const res = await fetcherRef.current();
@@ -193,15 +193,17 @@ function useApiData<T>(fetcher: () => Promise<{ data: T }>) {
     } catch {
       setError(true);
     } finally {
-      setLoading(false);
+      if (!isSilent) setLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    load();
+    load(false);
   }, [load]);
 
-  return { data, loading, error, retry: load };
+  const silentRetry = useCallback(() => load(true), [load]);
+
+  return { data, loading, error, retry: load, silentRetry };
 }
 
 // ─── Main layout ────────────────────────────────────────────────────────────
@@ -1081,17 +1083,18 @@ function InventorySection({ search }: { search?: string }) {
 // ─── PAGE 4: Orders & Payment Records ──────────────────────────────────────
 
 function OrdersSection({ search }: { search?: string }) {
-  const { data: orders, loading, error, retry } = useApiData<ShopOrder[]>(shopApi.getOrders);
+  const { data: orders, loading, error, retry, silentRetry } = useApiData<ShopOrder[]>(shopApi.getOrders);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [paymentFilter, setPaymentFilter] = useState<"all" | "razorpay" | "cod" | "paid" | "pending">("all");
 
-  // Real-time live polling every 4 seconds
+  // Real-time live polling every 10 seconds (silent background refresh)
+  const silentOrders = silentRetry;
   useEffect(() => {
     const interval = setInterval(() => {
-      retry();
-    }, 4000);
+      silentOrders();
+    }, 10000);
     return () => clearInterval(interval);
-  }, [retry]);
+  }, [silentOrders]);
 
   const handleStatusChange = async (orderId: string, orderNumber: string, newStatus: string) => {
     setUpdatingId(orderId);

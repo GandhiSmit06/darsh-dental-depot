@@ -81,8 +81,8 @@ function useApiData<T>(fetcher: () => Promise<{ data: T } | { products: T }>) {
     fetcherRef.current = fetcher;
   }, [fetcher]);
 
-  const load = useCallback(async () => {
-    setLoading(true);
+  const load = useCallback(async (isSilent = false) => {
+    if (!isSilent) setLoading(true);
     setError(false);
     try {
       const res = await fetcherRef.current();
@@ -90,13 +90,15 @@ function useApiData<T>(fetcher: () => Promise<{ data: T } | { products: T }>) {
     } catch {
       setError(true);
     } finally {
-      setLoading(false);
+      if (!isSilent) setLoading(false);
     }
   }, []);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => { load(false); }, [load]);
 
-  return { data, loading, error, retry: load, mutate: setData };
+  const silentRetry = useCallback(() => load(true), [load]);
+
+  return { data, loading, error, retry: load, silentRetry, mutate: setData };
 }
 
 // ─── Main layout ────────────────────────────────────────────────────────────
@@ -680,14 +682,16 @@ function OrdersSection() {
   const [isCanceling, setIsCanceling] = useState(false);
   const previousStatusRef = useRef<string | null>(null);
 
-  // Real-time asynchronous live polling every 3 seconds (like Zomato / Swiggy live delivery)
+  // Real-time asynchronous live polling every 10 seconds (silent background refresh)
+  const silentActiveOrder = activeOrder.silentRetry;
+  const silentHistory = history.silentRetry;
   useEffect(() => {
     const interval = setInterval(() => {
-      activeOrder.retry();
-      history.retry();
-    }, 3000);
+      silentActiveOrder();
+      silentHistory();
+    }, 10000);
     return () => clearInterval(interval);
-  }, [activeOrder.retry, history.retry]);
+  }, [silentActiveOrder, silentHistory]);
 
   // Trigger real-time notifications on status transition
   useEffect(() => {

@@ -474,20 +474,21 @@ function AdminDashboard() {
     const [paymentFilter, setPaymentFilter] = useState<"all" | "razorpay" | "cod" | "paid" | "pending">("all");
     const [search, setSearch] = useState("");
 
-    const loadOrders = async () => {
+    const loadOrders = async (isSilent = false) => {
+      if (!isSilent) setLoading(true);
       try {
         const res = await adminApi.getOrders();
         setOrders(res.data || []);
       } catch (err: any) {
-        toast.error(err.message || "Failed to load orders");
+        if (!isSilent) toast.error(err.message || "Failed to load orders");
       } finally {
-        setLoading(false);
+        if (!isSilent) setLoading(false);
       }
     };
 
     useEffect(() => {
-      loadOrders();
-      const interval = setInterval(loadOrders, 5000);
+      loadOrders(false);
+      const interval = setInterval(() => loadOrders(true), 10000);
       return () => clearInterval(interval);
     }, []);
 

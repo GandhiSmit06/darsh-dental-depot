@@ -610,67 +610,88 @@ export const authApi = {
   },
 
   sendLoginOtp: async (data: { identifier: string }) => {
-    let emailToUse = data.identifier.trim().toLowerCase();
+    const rawId = data.identifier.trim();
+    const isEmail = rawId.includes("@");
 
-    // If identifier is a phone number without @, look up email
-    if (!emailToUse.includes("@")) {
-      const cleanPhone = emailToUse.replace(/\D/g, "");
-      const { data: phoneProfile } = await supabase
-        .from("profiles")
-        .select("email")
-        .eq("phone", cleanPhone)
-        .limit(1)
-        .maybeSingle();
+    if (isEmail) {
+      const cleanEmail = rawId.toLowerCase();
+      const { error } = await supabase.auth.signInWithOtp({
+        email: cleanEmail,
+        options: {
+          shouldCreateUser: false,
+        },
+      });
 
-      if (phoneProfile?.email) {
-        emailToUse = phoneProfile.email;
+      if (error) {
+        throw new ApiError(400, error.message || "Failed to send OTP. Please check if your account exists.");
       }
+
+      return {
+        success: true,
+        type: "email" as const,
+        target: cleanEmail,
+        message: `A 6-digit login code has been sent to your email: ${cleanEmail}.`,
+      };
+    } else {
+      // Mobile Number -> Send SMS OTP
+      let cleanPhone = rawId.replace(/\D/g, "");
+      if (cleanPhone.length === 10) {
+        cleanPhone = "+91" + cleanPhone;
+      } else if (!cleanPhone.startsWith("+")) {
+        cleanPhone = "+" + cleanPhone;
+      }
+
+      const { error } = await supabase.auth.signInWithOtp({
+        phone: cleanPhone,
+        options: {
+          shouldCreateUser: false,
+        },
+      });
+
+      if (error) {
+        // If SMS provider not enabled in Supabase, provide clear informative error
+        throw new ApiError(
+          400,
+          error.message || "Failed to send SMS OTP. Please ensure Phone Auth provider is enabled in Supabase."
+        );
+      }
+
+      return {
+        success: true,
+        type: "phone" as const,
+        target: cleanPhone,
+        message: `A 6-digit login code has been sent via SMS to ${cleanPhone}.`,
+      };
     }
-
-    if (!emailToUse.includes("@")) {
-      throw new ApiError(400, "Please enter a valid registered email address.");
-    }
-
-    const { error } = await supabase.auth.signInWithOtp({
-      email: emailToUse,
-      options: {
-        shouldCreateUser: false,
-      },
-    });
-
-    if (error) {
-      throw new ApiError(400, error.message || "Failed to send OTP. Please check if your account exists.");
-    }
-
-    return {
-      success: true,
-      email: emailToUse,
-      message: `A 6-digit login code has been sent to ${emailToUse}.`,
-    };
   },
 
   verifyLoginOtp: async (data: { identifier: string; otp: string }) => {
-    let emailToUse = data.identifier.trim().toLowerCase();
+    const rawId = data.identifier.trim();
+    const isEmail = rawId.includes("@");
 
-    if (!emailToUse.includes("@")) {
-      const cleanPhone = emailToUse.replace(/\D/g, "");
-      const { data: phoneProfile } = await supabase
-        .from("profiles")
-        .select("email")
-        .eq("phone", cleanPhone)
-        .limit(1)
-        .maybeSingle();
-
-      if (phoneProfile?.email) {
-        emailToUse = phoneProfile.email;
+    let verifyParams: any;
+    if (isEmail) {
+      verifyParams = {
+        email: rawId.toLowerCase(),
+        token: data.otp.trim(),
+        type: "email",
+      };
+    } else {
+      let cleanPhone = rawId.replace(/\D/g, "");
+      if (cleanPhone.length === 10) {
+        cleanPhone = "+91" + cleanPhone;
+      } else if (!cleanPhone.startsWith("+")) {
+        cleanPhone = "+" + cleanPhone;
       }
+
+      verifyParams = {
+        phone: cleanPhone,
+        token: data.otp.trim(),
+        type: "sms",
+      };
     }
 
-    const { data: authData, error } = await supabase.auth.verifyOtp({
-      email: emailToUse,
-      token: data.otp.trim(),
-      type: "email",
-    });
+    const { data: authData, error } = await supabase.auth.verifyOtp(verifyParams);
 
     if (error || !authData.user || !authData.session) {
       throw new ApiError(400, error?.message || "Invalid or expired OTP code.");

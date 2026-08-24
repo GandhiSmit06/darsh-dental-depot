@@ -125,7 +125,7 @@ function LoginPage() {
     setOtpSending(true);
     try {
       const res = await authApi.sendLoginOtp({ identifier: cleanId });
-      setTargetEmail(res.email || cleanId);
+      setTargetEmail((res as any).target || res.email || cleanId);
       setOtpStep("enter_otp");
       setCountdown(60);
       toast.success(res.message || "Login OTP sent successfully!");

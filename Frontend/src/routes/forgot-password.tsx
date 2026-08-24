@@ -161,7 +161,7 @@ function ForgotPasswordPage() {
                         Forgot Password?
                       </h1>
                       <p className="text-xs text-muted-foreground">
-                        Enter your registered email or mobile number to receive a 6-digit reset OTP.
+                        Enter your registered email or mobile number to receive a reset OTP code.
                       </p>
                     </div>
 
@@ -188,7 +188,7 @@ function ForgotPasswordPage() {
                         disabled={isSending}
                         className="w-full rounded-2xl h-12 text-sm font-bold bg-gradient-to-r from-primary via-sky-600 to-indigo-600 hover:opacity-95 text-white shadow-lg shadow-primary/20 btn-shine mt-2"
                       >
-                        {isSending ? "Sending OTP Code..." : "Send 6-Digit Reset OTP"}
+                        {isSending ? "Sending OTP Code..." : "Send Reset OTP Code"}
                       </Button>
                     </form>
 
@@ -227,15 +227,15 @@ function ForgotPasswordPage() {
                       {/* OTP Input */}
                       <div>
                         <Label className="text-xs font-semibold mb-1.5 block">
-                          6-Digit OTP Code *
+                          OTP Verification Code *
                         </Label>
                         <Input
                           type="text"
                           inputMode="numeric"
-                          maxLength={6}
-                          placeholder="••••••"
+                          maxLength={8}
+                          placeholder="••••••••"
                           value={otp}
-                          onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                          onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 8))}
                           className="rounded-xl bg-background/80 border-border/60 text-center text-lg font-mono tracking-[0.5em] h-12 focus:border-primary font-bold"
                           autoFocus
                           required

@@ -328,7 +328,7 @@ function LoginPage() {
                     <form onSubmit={handleVerifyOtp} className="space-y-5 text-center">
                       <div className="space-y-1">
                         <p className="text-xs text-muted-foreground">
-                          Enter the 6-digit OTP code sent to:
+                          Enter the OTP verification code sent to:
                         </p>
                         <span className="text-xs font-bold text-foreground bg-secondary px-3 py-1 rounded-full border border-border/60 inline-block">
                           {targetEmail || otpIdentifier}
@@ -339,10 +339,10 @@ function LoginPage() {
                         <Input
                           type="text"
                           inputMode="numeric"
-                          maxLength={6}
+                          maxLength={8}
                           value={otpCode}
-                          onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ""))}
-                          placeholder="••••••"
+                          onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, "").slice(0, 8))}
+                          placeholder="••••••••"
                           className="text-center text-2xl font-mono tracking-widest h-12 rounded-2xl bg-background/90 border-2 border-primary/40 focus:border-primary shadow-inner font-bold"
                           autoFocus
                         />

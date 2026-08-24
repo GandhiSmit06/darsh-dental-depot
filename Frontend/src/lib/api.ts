@@ -1191,9 +1191,10 @@ export const doctorApi = {
     const cart = getLocalCart();
     if (cart.length === 0) throw new ApiError(400, "Your cart is empty");
 
-    const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-    const taxAmount = Math.round(subtotal * 0.18);
-    const totalPrice = subtotal + taxAmount;
+    // Product selling prices are already GST-inclusive (calculated from purchase price + GST or manually overridden)
+    const totalPrice = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    const subtotal = totalPrice;
+    const taxAmount = 0;
     const orderNumber = `ORD-${new Date().toISOString().slice(0, 10).replace(/-/g, "")}-${Math.random().toString(36).substr(2, 4).toUpperCase()}`;
 
     // 1. Insert Order

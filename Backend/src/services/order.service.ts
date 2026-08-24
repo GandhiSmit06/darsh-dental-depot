@@ -72,8 +72,8 @@ export class OrderService {
           },
           items: orderItems.map((i) => ({ name: i.name, quantity: i.quantity, price: i.price })),
           subtotal: totalPrice,
-          tax: totalPrice * 0.18,
-          total: totalPrice * 1.18,
+          tax: 0,
+          total: totalPrice,
         });
 
         const pdfUrl = await uploadInvoiceToCloudinary(pdfBuffer, invoiceNumber);
@@ -82,8 +82,8 @@ export class OrderService {
           orderId: order._id,
           invoiceNumber,
           pdfUrl,
-          totalAmount: totalPrice * 1.18,
-          taxAmount: totalPrice * 0.18,
+          totalAmount: totalPrice,
+          taxAmount: 0,
         });
 
         order.invoice = invoice._id;

@@ -1,5 +1,4 @@
-@import "tailwindcss" source(none);
-@source "../src";
+@import "tailwindcss";
 @import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
@@ -131,27 +130,29 @@
   --sidebar-ring: #38bdf8;
 }
 
-@layer base {
-  * {
-    border-color: var(--color-border);
-  }
-  html {
-    scroll-behavior: smooth;
-    font-family: var(--font-sans);
-  }
-  body {
-    background-color: var(--color-background);
-    color: var(--color-foreground);
-    font-family: var(--font-sans);
-    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
-    overflow-x: hidden;
-  }
-  h1, h2, h3, h4, h5, h6 {
-    font-family: var(--font-heading);
-    letter-spacing: -0.025em;
-  }
+* {
+  border-color: var(--color-border);
 }
 
+html {
+  scroll-behavior: smooth;
+  font-family: var(--font-sans);
+}
+
+body {
+  background-color: var(--color-background);
+  color: var(--color-foreground);
+  font-family: var(--font-sans);
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  overflow-x: hidden;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  letter-spacing: -0.025em;
+}
+
+/* Animations */
 @keyframes float {
   0%, 100% { transform: translateY(0px) rotate(0deg); }
   50% { transform: translateY(-12px) rotate(1deg); }
@@ -172,9 +173,10 @@
   100% { background-position: 200% 0; }
 }
 
-@keyframes border-beam {
-  0% { offset-distance: 0%; }
-  100% { offset-distance: 100%; }
+@keyframes routeBar {
+  0% { transform: scaleX(0); opacity: 1; }
+  60% { transform: scaleX(0.7); opacity: 1; }
+  100% { transform: scaleX(1); opacity: 0; }
 }
 
 .animate-float {
@@ -189,169 +191,160 @@
   animation: pulse-slow 8s ease-in-out infinite;
 }
 
-@layer utilities {
-  /* Gradients & Text effects */
-  .text-gradient {
-    background: linear-gradient(135deg, #0284c7 0%, #38bdf8 50%, #6366f1 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-  }
+/* Gradients & Text effects */
+.text-gradient {
+  background: linear-gradient(135deg, #0284c7 0%, #38bdf8 50%, #6366f1 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
 
-  .text-gradient-cyan {
-    background: linear-gradient(135deg, #06b6d4 0%, #38bdf8 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-  }
+.text-gradient-cyan {
+  background: linear-gradient(135deg, #06b6d4 0%, #38bdf8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
 
-  .text-gradient-gold {
-    background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-  }
+.text-gradient-gold {
+  background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
 
-  /* Trendy Background Gradients */
-  .hero-gradient {
-    position: relative;
-    background: 
-      radial-gradient(ellipse 80% 50% at 50% -20%, rgba(2, 132, 199, 0.18), transparent 70%),
-      radial-gradient(circle at 90% 30%, rgba(99, 102, 241, 0.12), transparent 50%),
-      radial-gradient(circle at 10% 40%, rgba(6, 182, 212, 0.12), transparent 50%);
-  }
+/* Trendy Background Gradients */
+.hero-gradient {
+  position: relative;
+  background: 
+    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(2, 132, 199, 0.18), transparent 70%),
+    radial-gradient(circle at 90% 30%, rgba(99, 102, 241, 0.12), transparent 50%),
+    radial-gradient(circle at 10% 40%, rgba(6, 182, 212, 0.12), transparent 50%);
+}
 
-  .mesh-bg {
-    background: 
-      radial-gradient(at 0% 0%, rgba(56, 189, 248, 0.1) 0px, transparent 50%),
-      radial-gradient(at 100% 0%, rgba(99, 102, 241, 0.1) 0px, transparent 50%),
-      radial-gradient(at 100% 100%, rgba(6, 182, 212, 0.08) 0px, transparent 50%),
-      radial-gradient(at 0% 100%, rgba(139, 92, 246, 0.08) 0px, transparent 50%);
-  }
+.mesh-bg {
+  background: 
+    radial-gradient(at 0% 0%, rgba(56, 189, 248, 0.1) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(99, 102, 241, 0.1) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(6, 182, 212, 0.08) 0px, transparent 50%),
+    radial-gradient(at 0% 100%, rgba(139, 92, 246, 0.08) 0px, transparent 50%);
+}
 
-  /* Glassmorphism */
-  .glass-card {
-    background: rgba(255, 255, 255, 0.7);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(226, 232, 240, 0.7);
-    box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.04), 0 2px 6px -1px rgba(0, 0, 0, 0.02);
-  }
+/* Glassmorphism */
+.glass-card {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(226, 232, 240, 0.7);
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.04), 0 2px 6px -1px rgba(0, 0, 0, 0.02);
+}
 
-  .dark .glass-card {
-    background: rgba(15, 23, 42, 0.6);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-  }
+.dark .glass-card {
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
 
-  .glass-card-hover {
-    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  }
+.glass-card-hover {
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
 
-  .glass-card-hover:hover {
-    transform: translateY(-4px);
-    border-color: rgba(56, 189, 248, 0.4);
-    box-shadow: 0 12px 30px -4px rgba(2, 132, 199, 0.15);
-  }
+.glass-card-hover:hover {
+  transform: translateY(-4px);
+  border-color: rgba(56, 189, 248, 0.4);
+  box-shadow: 0 12px 30px -4px rgba(2, 132, 199, 0.15);
+}
 
-  .dark .glass-card-hover:hover {
-    border-color: rgba(56, 189, 248, 0.3);
-    box-shadow: 0 12px 30px -4px rgba(56, 189, 248, 0.2);
-  }
+.dark .glass-card-hover:hover {
+  border-color: rgba(56, 189, 248, 0.3);
+  box-shadow: 0 12px 30px -4px rgba(56, 189, 248, 0.2);
+}
 
-  /* Glow effects */
-  .glow-cyan {
-    box-shadow: 0 0 25px -5px rgba(6, 182, 212, 0.4);
-  }
+/* Glow effects */
+.glow-cyan {
+  box-shadow: 0 0 25px -5px rgba(6, 182, 212, 0.4);
+}
 
-  .glow-primary {
-    box-shadow: 0 0 30px -5px rgba(2, 132, 199, 0.35);
-  }
+.glow-primary {
+  box-shadow: 0 0 30px -5px rgba(2, 132, 199, 0.35);
+}
 
-  /* Subtle grid pattern */
-  .grid-pattern {
-    background-size: 32px 32px;
-    background-image: 
-      linear-gradient(to right, rgba(148, 163, 184, 0.07) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(148, 163, 184, 0.07) 1px, transparent 1px);
-  }
+/* Subtle grid pattern */
+.grid-pattern {
+  background-size: 32px 32px;
+  background-image: 
+    linear-gradient(to right, rgba(148, 163, 184, 0.07) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(148, 163, 184, 0.07) 1px, transparent 1px);
+}
 
-  .dark .grid-pattern {
-    background-image: 
-      linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-  }
+.dark .grid-pattern {
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+}
 
-  /* Button Shine */
-  .btn-shine {
-    position: relative;
-    overflow: hidden;
-  }
+/* Button Shine */
+.btn-shine {
+  position: relative;
+  overflow: hidden;
+}
 
-  .btn-shine::after {
-    content: '';
-    position: absolute;
-    top: -50%;
-    left: -60%;
-    width: 20%;
-    height: 200%;
-    background: linear-gradient(
-      to right,
-      rgba(255, 255, 255, 0) 0%,
-      rgba(255, 255, 255, 0.3) 50%,
-      rgba(255, 255, 255, 0) 100%
-    );
-    transform: rotate(30deg);
-    transition: all 0.75s ease;
-  }
+.btn-shine::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -60%;
+  width: 20%;
+  height: 200%;
+  background: linear-gradient(
+    to right,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.3) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  transform: rotate(30deg);
+  transition: all 0.75s ease;
+}
 
-  .btn-shine:hover::after {
-    left: 140%;
-  }
+.btn-shine:hover::after {
+  left: 140%;
+}
 
-  /* ─── NeoLeaf-Style Wave Text Loader ─── */
-  .neoleaf-loader-overlay {
-    position: fixed;
-    inset: 0;
-    z-index: 9999;
-    background-color: #0a0a0f;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    transition: opacity 1s cubic-bezier(0.25, 0, 0.15, 1),
-                visibility 1s cubic-bezier(0.25, 0, 0.15, 1);
-  }
+/* NeoLeaf-Style Wave Text Loader */
+.neoleaf-loader-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background-color: #0a0a0f;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: opacity 1s cubic-bezier(0.25, 0, 0.15, 1),
+              visibility 1s cubic-bezier(0.25, 0, 0.15, 1);
+}
 
-  .neoleaf-loader-overlay.neoleaf-fade-out {
-    opacity: 0;
-    visibility: hidden;
-  }
+.neoleaf-loader-overlay.neoleaf-fade-out {
+  opacity: 0;
+  visibility: hidden;
+}
 
-  .neoleaf-progress {
-    position: fixed;
-    bottom: clamp(28px, 5vh, 60px);
-    right: clamp(28px, 5vw, 80px);
-    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
-    font-size: clamp(12px, 1.2vw, 16px);
-    font-weight: 500;
-    color: rgba(255, 255, 255, 0.5);
-    letter-spacing: 1.5px;
-    text-transform: lowercase;
-    z-index: 10000;
-  }
+.neoleaf-progress {
+  position: fixed;
+  bottom: clamp(28px, 5vh, 60px);
+  right: clamp(28px, 5vw, 80px);
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  font-size: clamp(12px, 1.2vw, 16px);
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.5);
+  letter-spacing: 1.5px;
+  text-transform: lowercase;
+  z-index: 10000;
+}
 
-  .neoleaf-progress-num {
-    font-variant-numeric: tabular-nums;
-    font-weight: 600;
-    color: rgba(255, 255, 255, 0.8);
-    min-width: 2ch;
-    display: inline-block;
-    text-align: right;
-  }
-
-  /* Route-change thin progress bar */
-  @keyframes routeBar {
-    0% { transform: scaleX(0); opacity: 1; }
-    60% { transform: scaleX(0.7); opacity: 1; }
-    100% { transform: scaleX(1); opacity: 0; }
-  }
+.neoleaf-progress-num {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.8);
+  min-width: 2ch;
+  display: inline-block;
+  text-align: right;
 }

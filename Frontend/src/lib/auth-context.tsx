@@ -34,7 +34,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const { data: sessionData } = await supabase.auth.getSession();
         if (sessionData?.session?.user) {
           const me = await authApi.getMe();
-          if (isMounted) setUser(me.data);
+          if (isMounted) {
+            setUser(me.data);
+            if (typeof window !== "undefined") {
+              localStorage.setItem("ddd_current_user_id", me.data._id || me.data.id || me.data.email);
+            }
+          }
         } else {
           if (isMounted) setUser(null);
         }
@@ -52,7 +57,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (session?.user) {
         try {
           const me = await authApi.getMe();
-          if (isMounted) setUser(me.data);
+          if (isMounted) {
+            setUser(me.data);
+            if (typeof window !== "undefined") {
+              localStorage.setItem("ddd_current_user_id", me.data._id || me.data.id || me.data.email);
+            }
+          }
         } catch {
           if (isMounted) setUser(null);
         }
@@ -74,6 +84,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = useCallback(async (data: LoginPayload): Promise<AuthUser> => {
     const res = await authApi.login(data);
     setUser(res.data.user);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("ddd_current_user_id", res.data.user._id || res.data.user.id || res.data.user.email);
+    }
     return res.data.user;
   }, []);
 
@@ -91,6 +104,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const setSession = useCallback((authUser: AuthUser, accessToken: string, refreshToken?: string) => {
     setTokens(accessToken, refreshToken || "");
     setUser(authUser);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("ddd_current_user_id", authUser._id || authUser.id || authUser.email);
+    }
   }, []);
 
   return (

@@ -31,6 +31,7 @@ export function clearTokens() {
   if (typeof window === "undefined") return;
   localStorage.removeItem("sb-token");
   localStorage.removeItem("sb-refresh-token");
+  localStorage.removeItem("ddd_current_user_id");
 }
 
 export function getRefreshToken(): string | null {
@@ -199,7 +200,7 @@ export interface PlaceOrderResponse {
   message?: string;
 }
 
-export interface ShopProduct extends ProductResponse {}
+export interface ShopProduct extends ProductResponse { }
 export interface ShopInventoryItem {
   _id: string;
   sku: string;
@@ -432,14 +433,35 @@ function mapProfileToUser(profile: any, authEmail?: string): AuthUser {
   };
 }
 
-// ─── Local Cart & Wishlist Storage ──────────────────────────────────────────
-const CART_KEY = "ddd_cart_items";
-const WISHLIST_KEY = "ddd_wishlist_items";
+// ─── User-Scoped Cart & Wishlist Storage ───────────────────────────────────────
+function getCurrentUserScope(): string {
+  if (typeof window === "undefined") return "guest";
+  try {
+    const directUserId = localStorage.getItem("ddd_current_user_id");
+    if (directUserId) return directUserId.toLowerCase().trim();
+
+    const sbToken = localStorage.getItem("sb-token") || sessionStorage.getItem("sb-token");
+    if (sbToken && !sbToken.includes(".")) {
+      return sbToken.toLowerCase().trim();
+    }
+  } catch {
+    // ignore
+  }
+  return "guest";
+}
+
+function getCartKey(): string {
+  return `ddd_cart_${getCurrentUserScope()}`;
+}
+
+function getWishlistKey(): string {
+  return `ddd_wishlist_${getCurrentUserScope()}`;
+}
 
 function getLocalCart(): DoctorCartItem[] {
   if (typeof window === "undefined") return [];
   try {
-    return JSON.parse(localStorage.getItem(CART_KEY) || "[]");
+    return JSON.parse(localStorage.getItem(getCartKey()) || "[]");
   } catch {
     return [];
   }
@@ -447,13 +469,13 @@ function getLocalCart(): DoctorCartItem[] {
 
 function saveLocalCart(items: DoctorCartItem[]) {
   if (typeof window === "undefined") return;
-  localStorage.setItem(CART_KEY, JSON.stringify(items));
+  localStorage.setItem(getCartKey(), JSON.stringify(items));
 }
 
 function getLocalWishlist(): DoctorWishlistItem[] {
   if (typeof window === "undefined") return [];
   try {
-    return JSON.parse(localStorage.getItem(WISHLIST_KEY) || "[]");
+    return JSON.parse(localStorage.getItem(getWishlistKey()) || "[]");
   } catch {
     return [];
   }
@@ -461,7 +483,7 @@ function getLocalWishlist(): DoctorWishlistItem[] {
 
 function saveLocalWishlist(items: DoctorWishlistItem[]) {
   if (typeof window === "undefined") return;
-  localStorage.setItem(WISHLIST_KEY, JSON.stringify(items));
+  localStorage.setItem(getWishlistKey(), JSON.stringify(items));
 }
 
 // ─── Authentication API (Supabase Auth) ─────────────────────────────────────
@@ -574,7 +596,7 @@ export const authApi = {
     // Fetch profile
     let profileData: any = null;
     const { data: prof } = await supabase.from("profiles").select("*").eq("id", authData.user.id).maybeSingle();
-    
+
     if (prof) {
       profileData = prof;
     } else {
@@ -634,7 +656,7 @@ export const authApi = {
         message: `A 6-digit login code has been sent to your email: ${cleanEmail}.`,
       };
     } else {
-      // Mobile Number -> Send SMS OTP via Firebase or fallback to email OTP
+      // Mobile Number -> Send SMS OTP via Firebase (10,000 free SMS / month)
       let cleanPhone = rawId.replace(/\D/g, "");
       if (cleanPhone.length === 10) {
         cleanPhone = "+91" + cleanPhone;
@@ -655,34 +677,13 @@ export const authApi = {
         throw new ApiError(400, "No registered doctor account found with this mobile number. Please register first.");
       }
 
-      try {
-        const res = await phoneAuth.sendOtp(cleanPhone);
-        return {
-          success: true,
-          type: "phone" as const,
-          target: cleanPhone,
-          message: res.message,
-        };
-      } catch (err: any) {
-        // If Firebase live SMS requires billing/fails, automatically fallback to registered email OTP
-        if (profile.email) {
-          const { error: emailError } = await supabase.auth.signInWithOtp({
-            email: profile.email.toLowerCase(),
-            options: { shouldCreateUser: false },
-          });
-
-          if (!emailError) {
-            return {
-              success: true,
-              type: "email" as const,
-              target: profile.email,
-              message: `A 6-digit login code has been sent to your registered email: ${profile.email} (linked to mobile ${cleanPhone}).`,
-            };
-          }
-        }
-
-        throw new ApiError(400, err.message || "Failed to send SMS OTP. Add this number to Firebase test numbers or verify account.");
-      }
+      const res = await phoneAuth.sendOtp(cleanPhone);
+      return {
+        success: true,
+        type: "phone" as const,
+        target: cleanPhone,
+        message: res.message,
+      };
     }
   },
 
@@ -715,12 +716,15 @@ export const authApi = {
         },
       };
     } else {
+      // Verify Firebase SMS OTP
       let cleanPhone = rawId.replace(/\D/g, "");
       if (cleanPhone.length === 10) {
         cleanPhone = "+91" + cleanPhone;
       } else if (!cleanPhone.startsWith("+")) {
         cleanPhone = "+" + cleanPhone;
       }
+
+      await phoneAuth.verifyOtp(data.otp.trim());
 
       const phoneDigits = cleanPhone.slice(-10);
       const { data: prof } = await supabase
@@ -734,47 +738,18 @@ export const authApi = {
         throw new ApiError(404, "Profile not found for this mobile number.");
       }
 
-      // Try Firebase phone OTP first
-      try {
-        await phoneAuth.verifyOtp(data.otp.trim());
-        const user = mapProfileToUser(prof, prof.email);
-        setTokens(prof.id, "");
+      const user = mapProfileToUser(prof, prof.email);
+      setTokens(prof.id, "");
 
-        return {
-          success: true,
-          message: "Login successful",
-          data: {
-            user,
-            accessToken: prof.id,
-            refreshToken: "",
-          },
-        };
-      } catch (err: any) {
-        // Fallback: Verify against Supabase Email OTP if fallback email was used
-        if (prof.email) {
-          const { data: authData, error } = await supabase.auth.verifyOtp({
-            email: prof.email.toLowerCase(),
-            token: data.otp.trim(),
-            type: "email",
-          });
-
-          if (!error && authData?.user && authData?.session) {
-            const user = mapProfileToUser(prof || {}, authData.user.email);
-            setTokens(authData.session.access_token, authData.session.refresh_token);
-            return {
-              success: true,
-              message: "Login successful",
-              data: {
-                user,
-                accessToken: authData.session.access_token,
-                refreshToken: authData.session.refresh_token,
-              },
-            };
-          }
-        }
-
-        throw new ApiError(400, "Invalid or expired OTP code.");
-      }
+      return {
+        success: true,
+        message: "Login successful",
+        data: {
+          user,
+          accessToken: prof.id,
+          refreshToken: "",
+        },
+      };
     }
   },
 
@@ -1613,10 +1588,10 @@ export const shopApi = {
       const aov = stats.count > 0 ? Math.round(stats.spent / stats.count) : 0;
       const memberSince = p.created_at
         ? new Date(p.created_at).toLocaleDateString("en-IN", {
-            day: "numeric",
-            month: "short",
-            year: "numeric",
-          })
+          day: "numeric",
+          month: "short",
+          year: "numeric",
+        })
         : "—";
 
       return {
@@ -1635,10 +1610,10 @@ export const shopApi = {
         aov,
         lastOrderDate: stats.lastOrderDate
           ? new Date(stats.lastOrderDate).toLocaleDateString("en-IN", {
-              day: "numeric",
-              month: "short",
-              year: "numeric",
-            })
+            day: "numeric",
+            month: "short",
+            year: "numeric",
+          })
           : undefined,
         statusBreakdown: {
           delivered: stats.delivered,
@@ -1733,19 +1708,19 @@ export const shopApi = {
     const firstOrderDate =
       transactions.length > 0
         ? new Date(transactions[transactions.length - 1].rawDate).toLocaleDateString("en-IN", {
-            day: "numeric",
-            month: "short",
-            year: "numeric",
-          })
+          day: "numeric",
+          month: "short",
+          year: "numeric",
+        })
         : undefined;
 
     const lastOrderDate =
       transactions.length > 0
         ? new Date(transactions[0].rawDate).toLocaleDateString("en-IN", {
-            day: "numeric",
-            month: "short",
-            year: "numeric",
-          })
+          day: "numeric",
+          month: "short",
+          year: "numeric",
+        })
         : undefined;
 
     // 5. Month-by-Month & Year-by-Year Aggregations
@@ -1834,10 +1809,10 @@ export const shopApi = {
       createdAt: profile.created_at,
       memberSince: profile.created_at
         ? new Date(profile.created_at).toLocaleDateString("en-IN", {
-            day: "numeric",
-            month: "short",
-            year: "numeric",
-          })
+          day: "numeric",
+          month: "short",
+          year: "numeric",
+        })
         : "—",
       orders: totalOrders,
       spent: ltv,

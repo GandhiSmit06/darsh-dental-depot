@@ -162,14 +162,39 @@ export interface DoctorActiveOrder {
 }
 
 export interface DoctorOrderHistoryItem {
+  id?: string;
   orderId: string;
   itemCount: number;
   total: number;
+  subtotal?: number;
+  taxAmount?: number;
   status: string;
   paymentStatus: string;
   paymentMethod: string;
   paymentId?: string;
   date: string;
+  rawDate?: string;
+  shippingAddress?: {
+    clinicName?: string;
+    contactName?: string;
+    contactPhone?: string;
+    street?: string;
+    landmark?: string;
+    city?: string;
+    state?: string;
+    pincode?: string;
+  };
+  items?: Array<{
+    id?: string;
+    productId?: string;
+    name: string;
+    quantity: number;
+    price: number;
+    image?: string;
+    brand?: string;
+    hsn?: string;
+    gstRate?: number;
+  }>;
 }
 
 export interface PlaceOrderPayload {
@@ -1141,13 +1166,21 @@ export const doctorApi = {
         orderId: order.order_number,
         itemCount: (order.order_items || []).length,
         total: Number(order.total_price),
+        subtotal: Number(order.subtotal || order.total_price || 0),
+        taxAmount: Number(order.tax_amount || 0),
         status: order.order_status,
+        paymentStatus: order.payment_status || (order.payment_method === "cod" ? "pending" : "paid"),
+        paymentMethod: order.payment_method || "cod",
+        paymentId: order.payment_id || "",
+        shippingAddress: order.shipping_address,
         products: (order.order_items || []).map((item: any) => ({
           name: item.name,
           brand: "Darsh Dental Depot",
           image: item.image,
           quantity: item.quantity,
           price: Number(item.price),
+          hsn: "90184900",
+          gstRate: 18,
         })),
         createdAt: order.created_at,
       },
@@ -1165,13 +1198,18 @@ export const doctorApi = {
       .order("created_at", { ascending: false });
 
     const mapped: DoctorOrderHistoryItem[] = (orders || []).map((o: any) => ({
+      id: o.id,
       orderId: o.order_number,
       itemCount: (o.order_items || []).length,
       total: Number(o.total_price),
+      subtotal: Number(o.subtotal || o.total_price || 0),
+      taxAmount: Number(o.tax_amount || 0),
       status: o.order_status,
       paymentStatus: o.payment_status || (o.payment_method === "cod" ? "pending" : "paid"),
       paymentMethod: o.payment_method || "cod",
       paymentId: o.payment_id || "",
+      shippingAddress: o.shipping_address,
+      rawDate: o.created_at,
       date: new Date(o.created_at).toLocaleDateString("en-IN", {
         day: "numeric",
         month: "short",
@@ -1179,6 +1217,17 @@ export const doctorApi = {
         hour: "2-digit",
         minute: "2-digit",
       }),
+      items: (o.order_items || []).map((item: any) => ({
+        id: item.id,
+        productId: item.product_id,
+        name: item.name,
+        quantity: Number(item.quantity || 1),
+        price: Number(item.price || 0),
+        image: item.image,
+        brand: "Darsh Dental Depot",
+        hsn: "90184900",
+        gstRate: 18,
+      })),
     }));
 
     return { success: true as const, message: "OK", data: mapped };

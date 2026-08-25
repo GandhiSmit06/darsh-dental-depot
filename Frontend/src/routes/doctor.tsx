@@ -3,7 +3,8 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import {
   LayoutDashboard, ShoppingCart, Heart, ShoppingBag, Bell, Settings, Package,
   CheckCircle2, Truck, Plus, Minus, Trash2, Loader2, Phone, MapPin, Clock, Sparkles, RefreshCw,
-  CreditCard, Banknote, ShieldCheck, Building, QrCode, Smartphone, Landmark, Check, ChevronRight
+  CreditCard, Banknote, ShieldCheck, Building, QrCode, Smartphone, Landmark, Check, ChevronRight,
+  FileText, MessageSquare
 } from "lucide-react";
 import { DashboardLayout, type NavItem } from "@/components/dashboard/DashboardLayout";
 import { StatCard, StatusBadge } from "@/components/dashboard/widgets";
@@ -20,6 +21,9 @@ import { toast } from "sonner";
 import { useAuth } from "@/lib/auth-context";
 import { notificationService, type AppNotification } from "@/lib/notifications";
 import { openRazorpayCheckout } from "@/lib/razorpay";
+import { InvoiceModal } from "@/components/invoice/InvoiceModal";
+import type { InvoiceOrderData } from "@/components/invoice/TallyGstInvoice";
+import { openDoctorSupportWhatsApp } from "@/lib/whatsapp";
 import {
   doctorApi, productsApi, type DoctorProfile, type DoctorStats,
   type DoctorCartItem, type DoctorWishlistItem, type DoctorActiveOrder,
@@ -674,12 +678,54 @@ function Wishlist() {
   );
 }
 
-// ─── PAGE 5: Orders ─────────────────────────────────────────────────────────
+// Helper to format doctor order for Tally ERP GST Invoice
+function buildInvoiceDataFromDoctorOrder(o: any, user: any): InvoiceOrderData {
+  const items = (o.products || o.items || []).map((it: any) => ({
+    name: it.name,
+    brand: it.brand || "Darsh Dental Depot",
+    hsn: it.hsn || "90184900",
+    gstRate: it.gstRate || 18,
+    mrp: Number(it.price || it.mrp || 0),
+    quantity: Number(it.quantity || 1),
+    sellingPrice: Number(it.price || 0),
+    unit: "Unit",
+    batchNumber: "V" + Math.floor(1000 + (Math.random() * 9000)),
+    expiryDate: "31-Oct-30",
+  }));
+
+  return {
+    orderNumber: o.orderId || o.orderNumber || "ORD-001",
+    invoiceNumber: `T/${(o.orderId || "").replace(/[^0-9]/g, "").slice(-4) || "2674"}/26-27`,
+    invoiceDate: o.rawDate || o.createdAt || new Date().toISOString(),
+    deliveryNoteNumber: `DC/26-27/${(o.orderId || "").replace(/[^0-9]/g, "").slice(-3) || "140"}`,
+    paymentMethod: o.paymentMethod,
+    paymentStatus: o.paymentStatus,
+    paymentId: o.paymentId,
+    totalAmount: Number(o.total || o.totalPrice || 0),
+    subtotal: Number(o.subtotal || o.total || o.totalPrice || 0),
+    taxAmount: Number(o.taxAmount || 0),
+    customer: {
+      fullName: o.shippingAddress?.contactName || user?.fullName || "Doctor",
+      clinicName: o.shippingAddress?.clinicName || user?.clinicName,
+      phone: o.shippingAddress?.contactPhone || user?.phone,
+      email: user?.email,
+      address: {
+        street: o.shippingAddress?.street,
+        city: o.shippingAddress?.city || "Vadodara",
+        state: o.shippingAddress?.state || "Gujarat",
+        pincode: o.shippingAddress?.pincode || "390001",
+      },
+    },
+    items,
+  };
+}
 
 function OrdersSection() {
+  const { user } = useAuth();
   const activeOrder = useApiData<DoctorActiveOrder | null>(doctorApi.getActiveOrder);
   const history = useApiData<DoctorOrderHistoryItem[]>(doctorApi.getOrderHistory);
   const [isCanceling, setIsCanceling] = useState(false);
+  const [selectedInvoiceOrder, setSelectedInvoiceOrder] = useState<InvoiceOrderData | null>(null);
   const previousStatusRef = useRef<string | null>(null);
 
   // Real-time asynchronous live polling every 10 seconds (silent background refresh)
@@ -853,11 +899,31 @@ function OrdersSection() {
                 </p>
               </div>
 
-              <div className="flex items-center gap-3">
-                <div className="text-right">
+              <div className="flex items-center gap-2 flex-wrap justify-end">
+                <div className="text-right mr-2">
                   <div className="text-xs text-muted-foreground">{activeOrder.data.itemCount} Items</div>
                   <div className="text-lg font-black text-foreground">₹{activeOrder.data.total.toFixed(2)}</div>
                 </div>
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setSelectedInvoiceOrder(buildInvoiceDataFromDoctorOrder(activeOrder.data, user))}
+                  className="text-xs h-9 font-bold border-primary/30 text-primary hover:bg-primary/10 gap-1.5 shadow-xs"
+                >
+                  <FileText className="h-3.5 w-3.5" />
+                  Tally GST Invoice
+                </Button>
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => openDoctorSupportWhatsApp(activeOrder.data!.orderId, user?.fullName)}
+                  className="text-xs h-9 font-bold border-emerald-500/30 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/10 gap-1.5 shadow-xs"
+                >
+                  <MessageSquare className="h-3.5 w-3.5 text-emerald-600" />
+                  WhatsApp
+                </Button>
 
                 {(activeOrder.data.status.toLowerCase() === "pending" || activeOrder.data.status.toLowerCase() === "processing") && (
                   <Button 
@@ -933,15 +999,24 @@ function OrdersSection() {
                   </div>
                   <div className="text-xs">
                     <span className="font-bold text-foreground block">Have a Question?</span>
-                    <p className="text-muted-foreground">Call Shop Owner (Uncle)</p>
+                    <p className="text-muted-foreground">Direct Depot Helpline</p>
                   </div>
                 </div>
-                <a
-                  href="tel:+919727076119"
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-xs transition-colors"
-                >
-                  <Phone className="h-3 w-3" /> +91 97270 76119
-                </a>
+                <div className="flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => openDoctorSupportWhatsApp(activeOrder.data!.orderId, user?.fullName)}
+                    className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-xs transition-colors"
+                  >
+                    <MessageSquare className="h-3 w-3" /> WhatsApp
+                  </button>
+                  <a
+                    href="tel:+919727076119"
+                    className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-primary hover:bg-primary/90 text-white font-bold text-xs shadow-xs transition-colors"
+                  >
+                    <Phone className="h-3 w-3" /> Call
+                  </a>
+                </div>
               </div>
             </div>
 
@@ -994,9 +1069,10 @@ function OrdersSection() {
                   <TableHead className="font-bold">Order #</TableHead>
                   <TableHead className="font-bold">Items</TableHead>
                   <TableHead className="font-bold">Total Amount</TableHead>
-                  <TableHead className="font-bold">Payment Method & Status</TableHead>
-                  <TableHead className="font-bold">Delivery Status</TableHead>
+                  <TableHead className="font-bold">Payment</TableHead>
+                  <TableHead className="font-bold">Status</TableHead>
                   <TableHead className="font-bold">Date & Time</TableHead>
+                  <TableHead className="font-bold text-right">Invoice & Action</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -1013,11 +1089,11 @@ function OrdersSection() {
                       <div className="space-y-1">
                         {o.paymentMethod?.toLowerCase() === "razorpay" ? (
                           <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-sky-500/10 text-sky-700 dark:text-sky-300 border border-sky-500/20">
-                            <CreditCard className="h-3 w-3 text-sky-600" /> Razorpay Online
+                            <CreditCard className="h-3 w-3 text-sky-600" /> Razorpay
                           </div>
                         ) : (
                           <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20">
-                            <Banknote className="h-3 w-3 text-emerald-600" /> Pay on Delivery (COD)
+                            <Banknote className="h-3 w-3 text-emerald-600" /> COD
                           </div>
                         )}
                         <div>
@@ -1031,15 +1107,33 @@ function OrdersSection() {
                             </span>
                           )}
                         </div>
-                        {o.paymentId && (
-                          <div className="text-[10px] font-mono text-muted-foreground bg-muted/60 px-1.5 py-0.5 rounded w-fit">
-                            ID: {o.paymentId}
-                          </div>
-                        )}
                       </div>
                     </TableCell>
                     <TableCell><StatusBadge status={o.status as any} /></TableCell>
                     <TableCell className="text-muted-foreground text-xs whitespace-nowrap">{o.date}</TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex items-center justify-end gap-1.5">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setSelectedInvoiceOrder(buildInvoiceDataFromDoctorOrder(o, user))}
+                          className="text-xs h-8 font-semibold border-primary/30 text-primary hover:bg-primary/10 gap-1 px-2.5"
+                          title="View & Download Tally GST Invoice"
+                        >
+                          <FileText className="h-3.5 w-3.5" />
+                          GST Bill
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => openDoctorSupportWhatsApp(o.orderId, user?.fullName)}
+                          className="h-8 w-8 text-emerald-600 hover:bg-emerald-500/10"
+                          title="Inquire on WhatsApp"
+                        >
+                          <MessageSquare className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -1047,6 +1141,13 @@ function OrdersSection() {
           </Card>
         )}
       </div>
+
+      {/* Tally ERP GST Invoice Modal */}
+      <InvoiceModal
+        isOpen={!!selectedInvoiceOrder}
+        onClose={() => setSelectedInvoiceOrder(null)}
+        orderData={selectedInvoiceOrder}
+      />
     </div>
   );
 }

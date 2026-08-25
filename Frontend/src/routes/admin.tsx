@@ -3,7 +3,8 @@ import { useState, useEffect } from "react";
 import {
   LayoutDashboard, Users, Package, ShoppingBag, BarChart3, FileText, Settings,
   DollarSign, TrendingUp, Activity, Download, Trash2, Loader2, Bell, CheckCircle2,
-  RefreshCw, Clock, Check, ChevronRight, UserCheck, CreditCard, Banknote, Building, Phone, XCircle
+  RefreshCw, Clock, Check, ChevronRight, UserCheck, CreditCard, Banknote, Building, Phone, XCircle,
+  MessageSquare
 } from "lucide-react";
 import {
   Area, AreaChart, Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer,
@@ -22,6 +23,9 @@ import { toast } from "sonner";
 import { useAuth } from "@/lib/auth-context";
 import { adminApi, shopApi, type User, type ShopOrder } from "@/lib/api";
 import { notificationService, type AppNotification } from "@/lib/notifications";
+import { InvoiceModal } from "@/components/invoice/InvoiceModal";
+import type { InvoiceOrderData } from "@/components/invoice/TallyGstInvoice";
+import { buildDispatchWhatsAppMessage, openWhatsApp } from "@/lib/whatsapp";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({ meta: [{ title: "Admin Dashboard — Darsh Dental Depot" }] }),
@@ -467,10 +471,53 @@ function AdminDashboard() {
     );
   }
 
+  // Helper to format admin order for Tally ERP GST Invoice
+  function buildInvoiceDataFromAdminOrder(o: ShopOrder): InvoiceOrderData {
+    const items = (o.items || []).map((it: any) => ({
+      name: it.name,
+      brand: it.brand || "Darsh Dental Depot",
+      hsn: it.hsn || "90184900",
+      gstRate: it.gstRate || 18,
+      mrp: Number(it.price || 0),
+      quantity: Number(it.quantity || 1),
+      sellingPrice: Number(it.price || 0),
+      unit: "Unit",
+      batchNumber: "V" + Math.floor(1000 + (Math.random() * 9000)),
+      expiryDate: "31-Oct-30",
+    }));
+
+    return {
+      orderNumber: o.orderId,
+      invoiceNumber: `T/${(o.orderId || "").replace(/[^0-9]/g, "").slice(-4) || "2674"}/26-27`,
+      invoiceDate: o.rawDate || new Date().toISOString(),
+      deliveryNoteNumber: `DC/26-27/${(o.orderId || "").replace(/[^0-9]/g, "").slice(-3) || "140"}`,
+      paymentMethod: o.paymentMethod,
+      paymentStatus: o.paymentStatus,
+      paymentId: o.paymentId,
+      totalAmount: Number(o.total || 0),
+      subtotal: Number(o.subtotal || o.total || 0),
+      taxAmount: Number(o.taxAmount || 0),
+      customer: {
+        fullName: o.customerName || "Doctor",
+        clinicName: o.clinicName,
+        phone: o.contactPhone,
+        email: o.customerEmail,
+        address: {
+          street: o.shippingAddress?.street,
+          city: o.shippingAddress?.city || "Vadodara",
+          state: o.shippingAddress?.state || "Gujarat",
+          pincode: o.shippingAddress?.pincode || "390001",
+        },
+      },
+      items,
+    };
+  }
+
   function OrdersSection() {
     const [orders, setOrders] = useState<ShopOrder[]>([]);
     const [loading, setLoading] = useState(true);
     const [updatingId, setUpdatingId] = useState<string | null>(null);
+    const [selectedInvoiceOrder, setSelectedInvoiceOrder] = useState<InvoiceOrderData | null>(null);
     const [paymentFilter, setPaymentFilter] = useState<"all" | "razorpay" | "cod" | "paid" | "pending">("all");
     const [search, setSearch] = useState("");
 
@@ -492,11 +539,31 @@ function AdminDashboard() {
       return () => clearInterval(interval);
     }, []);
 
-    const handleStatusChange = async (orderId: string, orderNumber: string, newStatus: string) => {
+    const handleStatusChange = async (orderId: string, orderNumber: string, newStatus: string, orderObj?: ShopOrder) => {
       setUpdatingId(orderId);
       try {
         await adminApi.updateOrderStatus(orderId, newStatus);
-        toast.success(`Order ${orderNumber} is now "${newStatus.toUpperCase()}"!`);
+        toast.success(`Order ${orderNumber} is now "${newStatus.toUpperCase()}"!`, {
+          action: orderObj?.contactPhone ? {
+            label: "WhatsApp Doctor",
+            onClick: () => {
+              const msg = buildDispatchWhatsAppMessage({
+                orderNumber: orderObj.orderId,
+                customerName: orderObj.customerName,
+                clinicName: orderObj.clinicName,
+                customerPhone: orderObj.contactPhone,
+                street: orderObj.shippingAddress?.street,
+                city: orderObj.shippingAddress?.city,
+                status: newStatus,
+                paymentMethod: orderObj.paymentMethod,
+                paymentStatus: orderObj.paymentStatus,
+                totalAmount: orderObj.total,
+                items: orderObj.items,
+              });
+              openWhatsApp(orderObj.contactPhone || "", msg);
+            }
+          } : undefined
+        });
         loadOrders();
       } catch (err: unknown) {
         toast.error((err as Error).message || "Failed to update order status");
@@ -727,20 +794,44 @@ function AdminDashboard() {
                       {o.date}
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="h-8 text-xs px-2.5 rounded-xl gap-1"
-                        onClick={() => {
-                          shopApi
-                            .getOrderInvoice(o._id)
-                            .then(() => toast.success(`Invoice for ${o.orderId} generated`))
-                            .catch(() => toast.error("Failed to generate invoice"));
-                        }}
-                      >
-                        <FileText className="h-3.5 w-3.5 text-primary" />
-                        Invoice
-                      </Button>
+                      <div className="flex items-center justify-end gap-1.5">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-8 text-xs px-2.5 rounded-xl gap-1 border-primary/30 text-primary hover:bg-primary/10"
+                          onClick={() => setSelectedInvoiceOrder(buildInvoiceDataFromAdminOrder(o))}
+                          title="View & Download Tally GST Tax Invoice"
+                        >
+                          <FileText className="h-3.5 w-3.5" />
+                          Tally Bill
+                        </Button>
+
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-8 text-xs px-2 rounded-xl gap-1 border-emerald-500/30 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/10"
+                          onClick={() => {
+                            const msg = buildDispatchWhatsAppMessage({
+                              orderNumber: o.orderId,
+                              customerName: o.customerName,
+                              clinicName: o.clinicName,
+                              customerPhone: o.contactPhone,
+                              street: o.shippingAddress?.street,
+                              city: o.shippingAddress?.city,
+                              status: o.status,
+                              paymentMethod: o.paymentMethod,
+                              paymentStatus: o.paymentStatus,
+                              totalAmount: o.total,
+                              items: o.items,
+                            });
+                            openWhatsApp(o.contactPhone || "", msg);
+                          }}
+                          title="Send WhatsApp Dispatch Notice to Doctor"
+                        >
+                          <MessageSquare className="h-3.5 w-3.5 text-emerald-600" />
+                          WhatsApp
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -748,6 +839,13 @@ function AdminDashboard() {
             </Table>
           </Card>
         )}
+
+        {/* Tally ERP GST Invoice Modal */}
+        <InvoiceModal
+          isOpen={!!selectedInvoiceOrder}
+          onClose={() => setSelectedInvoiceOrder(null)}
+          orderData={selectedInvoiceOrder}
+        />
       </div>
     );
   }

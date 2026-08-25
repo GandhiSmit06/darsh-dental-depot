@@ -351,15 +351,7 @@ export function CountUp({ to, duration = 2, className, suffix = "", prefix = "" 
         viewport={{ once: true }}
       >
         {prefix}
-        <motion.span
-          initial={0}
-          whileInView={to}
-          viewport={{ once: true }}
-          transition={{ duration, ease: "easeOut" }}
-        >
-          {/* Uses a render callback pattern — Framer Motion will interpolate */}
-        </motion.span>
-        {to}
+        <span>{to}</span>
         {suffix}
       </motion.span>
     </motion.span>

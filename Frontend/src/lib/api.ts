@@ -235,6 +235,18 @@ export interface ShopInventoryItem {
 }
 export type InventoryItem = ShopInventoryItem;
 
+export interface ShopOrderItem {
+  id?: string;
+  name: string;
+  brand?: string;
+  hsn?: string;
+  gstRate?: number;
+  price: number;
+  quantity: number;
+  image?: string;
+  unit?: string;
+}
+
 export interface ShopOrder {
   _id: string;
   orderId: string;
@@ -243,6 +255,8 @@ export interface ShopOrder {
   clinicName?: string;
   contactPhone?: string;
   itemCount: number;
+  subtotal?: number;
+  taxAmount?: number;
   total: number;
   status: string;
   paymentStatus: string;
@@ -250,6 +264,14 @@ export interface ShopOrder {
   paymentId?: string;
   date: string;
   rawDate?: string;
+  shippingAddress?: {
+    street?: string;
+    city?: string;
+    state?: string;
+    pincode?: string;
+    gstin?: string;
+  };
+  items?: ShopOrderItem[];
 }
 
 export interface CustomerTransactionItem {
@@ -1477,6 +1499,18 @@ export const shopApi = {
 
     const mapped: ShopOrder[] = (orders || []).map((o: any) => {
       const orderDate = new Date(o.created_at);
+      const items: ShopOrderItem[] = (o.order_items || []).map((it: any) => ({
+        id: it.id,
+        name: it.product_name || "Dental Product",
+        brand: it.brand || "Darsh Dental Depot",
+        hsn: it.hsn_code || "90184900",
+        gstRate: it.gst_rate || 5,
+        price: Number(it.price || it.unit_price || 0),
+        quantity: Number(it.quantity || 1),
+        image: it.image_url,
+        unit: it.unit || "NOS",
+      }));
+
       return {
         _id: o.id,
         orderId: o.order_number,
@@ -1484,7 +1518,9 @@ export const shopApi = {
         customerEmail: o.profiles?.email || "",
         clinicName: o.profiles?.clinic_name || o.shipping_address?.clinicName || "",
         contactPhone: o.profiles?.phone || o.shipping_address?.contactPhone || "",
-        itemCount: (o.order_items || []).length,
+        itemCount: items.length > 0 ? items.length : 1,
+        subtotal: Number(o.subtotal || o.total_price),
+        taxAmount: Number(o.tax_amount || 0),
         total: Number(o.total_price),
         status: o.order_status,
         paymentStatus: o.payment_status || (o.payment_method === "cod" ? "pending" : "paid"),
@@ -1498,6 +1534,14 @@ export const shopApi = {
           minute: "2-digit",
         }),
         rawDate: o.created_at,
+        shippingAddress: {
+          street: o.shipping_address?.street || o.shipping_address?.address || "",
+          city: o.shipping_address?.city || "Vadodara",
+          state: o.shipping_address?.state || "Gujarat",
+          pincode: o.shipping_address?.pincode || "390001",
+          gstin: o.profiles?.gstin || o.shipping_address?.gstin || "",
+        },
+        items,
       };
     });
 

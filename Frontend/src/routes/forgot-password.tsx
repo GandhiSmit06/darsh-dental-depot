@@ -50,7 +50,7 @@ function ForgotPasswordPage() {
     setIsSending(true);
     try {
       const res = await authApi.sendPasswordResetOtp(cleanId);
-      setTargetEmail(res.email || cleanId);
+      setTargetEmail((res as any).target || (res as any).email || cleanId);
       setStep("verify_otp");
       setCountdown(60);
       toast.success(res.message || "Password reset OTP sent to your email!");

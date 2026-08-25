@@ -622,7 +622,7 @@ function AdminDashboard() {
               onChange={(e) => setSearch(e.target.value)}
               className="h-9 w-64 text-xs rounded-xl"
             />
-            <Button variant="outline" size="sm" onClick={loadOrders} className="text-xs rounded-xl gap-1.5 h-9">
+            <Button variant="outline" size="sm" onClick={() => loadOrders()} className="text-xs rounded-xl gap-1.5 h-9">
               <RefreshCw className="h-3.5 w-3.5" /> Refresh
             </Button>
           </div>

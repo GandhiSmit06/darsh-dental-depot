@@ -1549,7 +1549,7 @@ function CustomersSection({ search: globalSearch }: { search?: string }) {
           <Badge variant="outline" className="border-primary/40 bg-primary/5 text-primary font-mono text-xs py-1 px-3">
             <Building className="h-3 w-3 mr-1.5" /> Vadodara Dental Network
           </Badge>
-          <Button variant="outline" size="sm" onClick={retry} className="text-xs rounded-xl h-8">
+          <Button variant="outline" size="sm" onClick={() => retry()} className="text-xs rounded-xl h-8">
             <RefreshCw className={`h-3.5 w-3.5 mr-1.5 ${loading ? "animate-spin" : ""}`} /> Refresh
           </Button>
         </div>

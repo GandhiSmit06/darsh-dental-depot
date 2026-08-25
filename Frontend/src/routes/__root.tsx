@@ -13,6 +13,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@/components/theme-provider";
 import { AuthProvider } from "@/lib/auth-context";
 import { PageLoader } from "@/components/ui/PageLoader";
+import { DentalAiChatbot } from "@/components/chatbot/DentalAiChatbot";
 
 function NotFoundComponent() {
   return (
@@ -101,6 +102,7 @@ function RootComponent() {
         <AuthProvider>
           <PageLoader />
           <Outlet />
+          <DentalAiChatbot />
           <Toaster richColors position="top-right" />
         </AuthProvider>
       </ThemeProvider>

@@ -404,19 +404,3 @@ export function SectionHeading({
     </div>
   );
 }
-
-/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- * 9. HorizontalRail — Touch-friendly & physics-drag discovery rail
- * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
-interface HorizontalRailProps {
-  children: ReactNode;
-  className?: string;
-}
-
-export function HorizontalRail({ children, className = "" }: HorizontalRailProps) {
-  return (
-    <div className={`overflow-x-auto no-scrollbar flex items-stretch gap-5 pb-6 pt-2 snap-x snap-mandatory px-4 md:px-0 ${className}`}>
-      {children}
-    </div>
-  );
-}

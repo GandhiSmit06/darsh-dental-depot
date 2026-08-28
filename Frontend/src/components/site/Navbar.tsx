@@ -1,18 +1,17 @@
-import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
+import { Link, useRouterState } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import {
   Menu,
   ShoppingCart,
+  Sparkles,
   Moon,
   Sun,
   LayoutDashboard,
   LogOut,
   ArrowRight,
   Phone,
-  Search,
-  MapPin,
-  Sparkles,
+  MessageSquare,
 } from "lucide-react";
 import { useTheme } from "@/components/theme-provider";
 import { useAuth } from "@/lib/auth-context";
@@ -22,26 +21,27 @@ const links = [
   { to: "/", label: "Home" },
   { to: "/products", label: "Dental Catalog" },
   { to: "/about", label: "About Depot" },
-  { to: "/contact", label: "Vadodara Location" },
+  { to: "/contact", label: "Vadodara Location & Contact" },
 ];
 
 export function Logo({ className }: { className?: string }) {
   return (
     <Link to="/" className={`flex items-center gap-3 group select-none ${className || ""}`}>
       <div className="relative shrink-0">
-        <div className="h-10 w-10 rounded-xl overflow-hidden bg-white dark:bg-slate-900 border border-border/80 dark:border-white/15 shadow-xs flex items-center justify-center p-0.5 group-hover:border-primary/50 transition-colors">
+        <div className="absolute -inset-1 bg-gradient-to-r from-cyan-500 via-sky-500 to-indigo-500 rounded-2xl blur-sm opacity-50 group-hover:opacity-100 transition duration-300 pointer-events-none" />
+        <div className="relative h-10 w-10 rounded-xl overflow-hidden bg-white/95 dark:bg-slate-900 border border-white/60 dark:border-slate-700/60 shadow-md transform group-hover:scale-105 transition-all duration-300 flex items-center justify-center p-0.5">
           <img
             src="/logo.jpg"
             alt="Darsh Dental Depot"
-            className="w-full h-full object-cover rounded-[inherit] transform group-hover:scale-105 transition-transform duration-300"
+            className="w-full h-full object-cover rounded-[inherit] transform group-hover:scale-110 transition-transform duration-500"
           />
         </div>
       </div>
       <div className="leading-none flex flex-col justify-center">
-        <span className="font-extrabold text-base tracking-tight font-heading text-foreground group-hover:text-primary transition-colors">
+        <span className="font-extrabold text-base tracking-tight font-heading bg-gradient-to-r from-foreground via-foreground to-primary bg-clip-text text-transparent group-hover:to-cyan-500 transition-colors">
           DARSH DENTAL
         </span>
-        <span className="text-[9px] font-bold uppercase tracking-widest text-primary mt-0.5">
+        <span className="text-[9px] font-extrabold uppercase tracking-widest text-primary mt-0.5">
           DEPOT • VADODARA
         </span>
       </div>
@@ -53,7 +53,6 @@ export function Navbar() {
   const path = useRouterState({ select: (s) => s.location.pathname });
   const { theme, toggle } = useTheme();
   const { user, isAuthenticated, logout } = useAuth();
-  const nav = useNavigate();
 
   const getDashboardPath = () => {
     if (!user) return "/login";
@@ -63,54 +62,34 @@ export function Navbar() {
   };
 
   return (
-    <header className="sticky top-0 z-40 w-full transition-all duration-300 bg-background/85 dark:bg-[#060913]/85 backdrop-blur-2xl border-b border-border/60 dark:border-white/8">
-      {/* ── Top Micro Telemetry Bar ── */}
-      <div className="hidden sm:flex items-center justify-between px-6 py-1 bg-secondary/40 dark:bg-white/[0.02] border-b border-border/40 text-[11px] font-medium text-muted-foreground">
-        <div className="flex items-center gap-2">
-          <span className="flex h-2 w-2 relative">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-          </span>
-          <span className="font-semibold text-foreground">Siyabaug Central Depot Open</span>
-          <span className="text-border dark:text-white/10">•</span>
-          <span>Same-Day Express Dispatch Across Vadodara Clinics</span>
-        </div>
-
-        <div className="flex items-center gap-4 text-[11px]">
-          <span className="text-mono-data">DL: GJ-VAD-215550</span>
-          <span className="text-border dark:text-white/10">•</span>
-          <a
-            href="tel:+919727076119"
-            className="hover:text-primary font-bold text-foreground transition-colors flex items-center gap-1"
-          >
-            <Phone className="h-3 w-3 text-primary" /> +91 97270 76119
-          </a>
-        </div>
-      </div>
-
-      {/* ── Main Navigation Island ── */}
-      <div className="container mx-auto px-4 h-16 flex items-center justify-between gap-4">
+    <motion.header
+      initial={{ y: -30, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+      className="sticky top-0 z-40 border-b border-border/50 bg-background/80 backdrop-blur-xl supports-[backdrop-filter]:bg-background/70 shadow-sm"
+    >
+      <div className="container mx-auto px-4 h-18 flex items-center justify-between gap-4">
         <Logo />
 
-        {/* Desktop Navigation Links */}
-        <nav className="hidden lg:flex items-center gap-1 p-1 rounded-full bg-secondary/60 dark:bg-white/[0.04] border border-border/70 dark:border-white/8">
+        {/* Desktop Navigation */}
+        <nav className="hidden lg:flex items-center gap-1.5 p-1 rounded-full bg-secondary/50 border border-border/40 backdrop-blur-md">
           {links.map((l) => {
             const active = l.to === "/" ? path === "/" : path.startsWith(l.to);
             return (
               <Link
                 key={l.to}
                 to={l.to}
-                className={`relative px-4 py-1.5 text-xs font-semibold rounded-full transition-all duration-200 ${
+                className={`relative px-4 py-2 text-xs font-semibold rounded-full transition-all duration-200 ${
                   active
-                    ? "text-primary font-bold"
-                    : "text-muted-foreground hover:text-foreground"
+                    ? "text-primary font-bold shadow-sm"
+                    : "text-muted-foreground hover:text-foreground hover:bg-background/60"
                 }`}
               >
                 {active && (
                   <motion.div
-                    layoutId="navbar-active-pill"
-                    className="absolute inset-0 bg-background dark:bg-white/10 rounded-full border border-border/80 dark:border-white/10 shadow-xs -z-10"
-                    transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                    layoutId="active-pill"
+                    className="absolute inset-0 bg-background rounded-full border border-primary/20 shadow-sm -z-10"
+                    transition={{ type: "spring", stiffness: 380, damping: 30 }}
                   />
                 )}
                 {l.label}
@@ -119,21 +98,15 @@ export function Navbar() {
           })}
         </nav>
 
-        {/* Right Side Actions */}
+        {/* Right side actions */}
         <div className="flex items-center gap-2">
-          {/* Quick Search Shortcut */}
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => nav({ to: "/products" })}
-            className="hidden md:flex items-center gap-2 h-9 px-3 text-xs font-medium text-muted-foreground hover:text-foreground rounded-full border-border/80 dark:border-white/10 bg-background/50"
+          {/* Quick Call Button */}
+          <a
+            href="tel:+919727076119"
+            className="hidden xl:flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold text-primary bg-primary/10 hover:bg-primary/20 transition-colors border border-primary/20"
           >
-            <Search className="h-3.5 w-3.5" />
-            <span>Search Catalog...</span>
-            <kbd className="text-[10px] font-mono bg-muted px-1.5 py-0.5 rounded text-muted-foreground border border-border/60">
-              ⌘K
-            </kbd>
-          </Button>
+            <Phone className="h-3.5 w-3.5 text-primary" /> +91 97270 76119
+          </a>
 
           {/* Theme Toggle */}
           <Button
@@ -141,7 +114,7 @@ export function Navbar() {
             size="icon"
             onClick={toggle}
             aria-label="Toggle theme"
-            className="rounded-full h-9 w-9 text-muted-foreground hover:text-foreground hover:bg-secondary/80"
+            className="rounded-full h-9 w-9 hover:bg-secondary/80 text-muted-foreground hover:text-foreground"
           >
             <AnimatePresence mode="wait" initial={false}>
               <motion.div
@@ -156,7 +129,7 @@ export function Navbar() {
             </AnimatePresence>
           </Button>
 
-          {/* Quick Cart */}
+          {/* Quick Cart (Only for doctors / guest buyers) */}
           {(!user || user.role === "doctor") && (
             <Button
               variant="ghost"
@@ -170,13 +143,14 @@ export function Navbar() {
             </Button>
           )}
 
-          {/* Auth State CTAs */}
+          {/* Auth State Button */}
           {isAuthenticated && user ? (
             <div className="flex items-center gap-2">
               <Button
+                variant="default"
                 size="sm"
                 asChild
-                className="hidden sm:inline-flex rounded-full font-bold text-xs px-4 h-9 bg-primary hover:bg-primary/90 text-white shadow-xs"
+                className="hidden sm:inline-flex rounded-full shadow-md bg-gradient-to-r from-primary to-sky-600 hover:opacity-95 btn-shine font-medium text-xs px-4 h-9"
               >
                 <Link to={getDashboardPath()}>
                   <LayoutDashboard className="h-3.5 w-3.5 mr-1.5" />
@@ -187,7 +161,7 @@ export function Navbar() {
                 variant="outline"
                 size="icon"
                 onClick={() => logout()}
-                title="Sign Out"
+                title="Logout"
                 className="hidden sm:inline-flex rounded-full h-9 w-9 text-muted-foreground hover:text-destructive hover:border-destructive/30"
               >
                 <LogOut className="h-3.5 w-3.5" />
@@ -195,13 +169,13 @@ export function Navbar() {
             </div>
           ) : (
             <div className="hidden sm:flex items-center gap-2">
-              <Button variant="ghost" size="sm" asChild className="rounded-full text-xs font-semibold px-3.5 h-9">
+              <Button variant="ghost" size="sm" asChild className="rounded-full text-xs font-medium px-4 h-9">
                 <Link to="/login">Sign In</Link>
               </Button>
               <Button
                 size="sm"
                 asChild
-                className="rounded-full text-xs font-bold px-4 h-9 bg-primary hover:bg-primary/90 text-white shadow-xs"
+                className="rounded-full text-xs font-semibold px-4 h-9 bg-gradient-to-r from-primary via-sky-600 to-indigo-600 hover:opacity-95 shadow-md shadow-primary/20 btn-shine"
               >
                 <Link to="/register">
                   Doctor Register <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
@@ -217,29 +191,29 @@ export function Navbar() {
                 <Menu className="h-5 w-5" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="w-[310px] bg-background/98 backdrop-blur-2xl border-l border-border/80">
+            <SheetContent side="right" className="w-[300px] glass-card border-l border-border/60">
               <div className="flex flex-col gap-6 mt-6">
                 <Logo />
-                <div className="flex flex-col gap-1">
+                <div className="flex flex-col gap-1.5">
                   {links.map((l) => (
                     <Link
                       key={l.to}
                       to={l.to}
-                      className="px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-primary/10 hover:text-primary transition-colors"
+                      className="px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-primary/10 hover:text-primary transition-colors"
                     >
                       {l.label}
                     </Link>
                   ))}
                 </div>
 
-                <div className="p-3.5 rounded-2xl bg-secondary/50 border border-border/70 space-y-1.5 text-xs">
-                  <div className="font-extrabold text-foreground">Darsh Dental Depot</div>
-                  <div className="text-muted-foreground text-[11.5px] leading-relaxed">
-                    Vraj Vihar Complex, Near Khanderao Market, Shiyabaug, Vadodara
+                <div className="p-3.5 rounded-2xl bg-secondary/50 border border-border/50 space-y-2">
+                  <div className="text-xs font-bold text-foreground">Darsh Dental Depot</div>
+                  <div className="text-[11px] text-muted-foreground leading-tight">
+                    FF-10/11, Vraj Vihar Complex, Shiyabaug, Vadodara
                   </div>
                   <a
                     href="tel:+919727076119"
-                    className="text-primary font-bold flex items-center gap-1.5 pt-1 text-xs"
+                    className="text-xs text-primary font-bold flex items-center gap-1.5 pt-1"
                   >
                     <Phone className="h-3.5 w-3.5" /> +91 97270 76119
                   </a>
@@ -250,11 +224,11 @@ export function Navbar() {
                 {isAuthenticated && user ? (
                   <div className="flex flex-col gap-2">
                     <div className="text-xs text-muted-foreground px-4">
-                      Doctor: <span className="font-bold text-foreground">{user.fullName}</span>
+                      Signed in as <span className="font-semibold text-foreground">{user.fullName}</span>
                     </div>
-                    <Button asChild className="rounded-xl justify-start bg-primary text-white font-bold">
+                    <Button asChild className="rounded-xl justify-start bg-primary text-white">
                       <Link to={getDashboardPath()}>
-                        <LayoutDashboard className="h-4 w-4 mr-2" /> Open Portal
+                        <LayoutDashboard className="h-4 w-4 mr-2" /> Open Dashboard
                       </Link>
                     </Button>
                     <Button variant="outline" onClick={() => logout()} className="rounded-xl justify-start text-destructive">
@@ -263,10 +237,10 @@ export function Navbar() {
                   </div>
                 ) : (
                   <div className="flex flex-col gap-2.5">
-                    <Button variant="outline" asChild className="rounded-xl justify-center font-bold">
+                    <Button variant="outline" asChild className="rounded-xl justify-center">
                       <Link to="/login">Sign In</Link>
                     </Button>
-                    <Button asChild className="rounded-xl justify-center bg-primary text-white font-bold shadow-xs">
+                    <Button asChild className="rounded-xl justify-center bg-gradient-to-r from-primary to-indigo-600 text-white shadow-md">
                       <Link to="/register">Doctor Registration</Link>
                     </Button>
                   </div>
@@ -276,6 +250,6 @@ export function Navbar() {
           </Sheet>
         </div>
       </div>
-    </header>
+    </motion.header>
   );
 }

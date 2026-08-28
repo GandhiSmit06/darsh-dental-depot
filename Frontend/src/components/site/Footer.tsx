@@ -4,18 +4,24 @@ import {
   ShieldCheck,
   Truck,
   Clock,
+  Sparkles,
+  Send,
   Phone,
+  Mail,
   MapPin,
+  CheckCircle2,
   ExternalLink,
   MessageSquare,
-  FileText,
-  CreditCard,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { useState } from "react";
-import { ScrollReveal } from "@/components/animations/ScrollReveal";
+import {
+  ScrollReveal,
+  StaggerContainer,
+  StaggerItem,
+} from "@/components/animations/ScrollReveal";
 
 export function Footer() {
   const [email, setEmail] = useState("");
@@ -23,80 +29,75 @@ export function Footer() {
   const handleSubscribe = (e: React.FormEvent) => {
     e.preventDefault();
     if (!email) return;
-    toast.success("Thank you Doctor! You are subscribed to Vadodara depot material stock updates.");
+    toast.success("Thank you! You will receive daily Vadodara depot stock updates.");
     setEmail("");
   };
 
   return (
-    <footer className="border-t border-border/70 dark:border-white/8 bg-background dark:bg-[#060913] mt-28 relative overflow-hidden">
-      {/* ── Top Quality Pillars ── */}
-      <div className="border-b border-border/50 dark:border-white/8 py-8 bg-secondary/30 dark:bg-white/[0.01]">
-        <div className="container mx-auto px-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          <div className="flex items-center gap-3 p-3.5 rounded-2xl bg-background/80 dark:bg-white/[0.03] border border-border/70 dark:border-white/8">
-            <div className="h-10 w-10 rounded-xl bg-primary/10 text-primary grid place-items-center shrink-0">
-              <ShieldCheck className="h-5 w-5" />
-            </div>
-            <div>
-              <div className="font-bold text-xs uppercase tracking-wider text-foreground">100% Genuine Direct</div>
-              <div className="text-xs text-muted-foreground">Authorized Mani, GC, Ivoclar, 3M</div>
-            </div>
-          </div>
+    <footer className="border-t border-border/50 bg-gradient-to-b from-background via-background to-secondary/40 mt-28 relative overflow-hidden">
+      {/* Decorative top glow border */}
+      <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
 
-          <div className="flex items-center gap-3 p-3.5 rounded-2xl bg-background/80 dark:bg-white/[0.03] border border-border/70 dark:border-white/8">
-            <div className="h-10 w-10 rounded-xl bg-sky-500/10 text-sky-500 grid place-items-center shrink-0">
-              <Truck className="h-5 w-5" />
+      {/* Trust & Guarantee Highlights Bar */}
+      <div className="border-b border-border/40 py-8 bg-secondary/30 backdrop-blur-md">
+        <StaggerContainer staggerDelay={0.1} className="container mx-auto px-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <StaggerItem>
+            <div className="flex items-center gap-3.5 p-3 rounded-2xl bg-background/50 border border-border/30">
+              <div className="h-10 w-10 rounded-xl bg-primary/10 text-primary grid place-items-center shrink-0">
+                <ShieldCheck className="h-5 w-5" />
+              </div>
+              <div>
+                <div className="font-bold text-xs uppercase tracking-wider">100% Genuine Guaranteed</div>
+                <div className="text-xs text-muted-foreground">Direct manufacturer authentic batch</div>
+              </div>
             </div>
-            <div>
-              <div className="font-bold text-xs uppercase tracking-wider text-foreground">Same-Day Vadodara Dispatch</div>
-              <div className="text-xs text-muted-foreground">Direct delivery to your dental clinic</div>
-            </div>
-          </div>
+          </StaggerItem>
 
-          <div className="flex items-center gap-3 p-3.5 rounded-2xl bg-background/80 dark:bg-white/[0.03] border border-border/70 dark:border-white/8">
-            <div className="h-10 w-10 rounded-xl bg-amber-500/10 text-amber-500 grid place-items-center shrink-0">
-              <FileText className="h-5 w-5" />
+          <StaggerItem>
+            <div className="flex items-center gap-3.5 p-3 rounded-2xl bg-background/50 border border-border/30">
+              <div className="h-10 w-10 rounded-xl bg-sky-500/10 text-sky-500 grid place-items-center shrink-0">
+                <Truck className="h-5 w-5" />
+              </div>
+              <div>
+                <div className="font-bold text-xs uppercase tracking-wider">Same-Day Vadodara Delivery</div>
+                <div className="text-xs text-muted-foreground">Direct to your dental clinic</div>
+              </div>
             </div>
-            <div>
-              <div className="font-bold text-xs uppercase tracking-wider text-foreground">Tally ERP GST Invoices</div>
-              <div className="text-xs text-muted-foreground">Official tax bill with HSN breakdown</div>
-            </div>
-          </div>
+          </StaggerItem>
 
-          <div className="flex items-center gap-3 p-3.5 rounded-2xl bg-background/80 dark:bg-white/[0.03] border border-border/70 dark:border-white/8">
-            <div className="h-10 w-10 rounded-xl bg-emerald-500/10 text-emerald-500 grid place-items-center shrink-0">
-              <CreditCard className="h-5 w-5" />
+          <StaggerItem>
+            <div className="flex items-center gap-3.5 p-3 rounded-2xl bg-background/50 border border-border/30">
+              <div className="h-10 w-10 rounded-xl bg-indigo-500/10 text-indigo-500 grid place-items-center shrink-0">
+                <Clock className="h-5 w-5" />
+              </div>
+              <div>
+                <div className="font-bold text-xs uppercase tracking-wider">Mon–Sat: 10AM – 8:30PM</div>
+                <div className="text-xs text-muted-foreground">Sunday: Emergency on call</div>
+              </div>
             </div>
-            <div>
-              <div className="font-bold text-xs uppercase tracking-wider text-foreground">Wholesale Depot Rates</div>
-              <div className="text-xs text-muted-foreground">COD & Instant Razorpay UPI</div>
+          </StaggerItem>
+
+          <StaggerItem>
+            <div className="flex items-center gap-3.5 p-3 rounded-2xl bg-background/50 border border-border/30">
+              <div className="h-10 w-10 rounded-xl bg-emerald-500/10 text-emerald-500 grid place-items-center shrink-0">
+                <CheckCircle2 className="h-5 w-5" />
+              </div>
+              <div>
+                <div className="font-bold text-xs uppercase tracking-wider">Direct Depot Wholesale Rates</div>
+                <div className="text-xs text-muted-foreground">Special pricing for Vadodara doctors</div>
+              </div>
             </div>
-          </div>
-        </div>
+          </StaggerItem>
+        </StaggerContainer>
       </div>
 
-      {/* ── Main Footer Navigation Grid ── */}
-      <div className="container mx-auto px-4 py-14 grid gap-10 md:grid-cols-2 lg:grid-cols-5">
-        {/* Brand & Mission */}
-        <div className="lg:col-span-2 space-y-4">
+      <StaggerContainer staggerDelay={0.12} className="container mx-auto px-4 py-16 grid gap-10 md:grid-cols-2 lg:grid-cols-5">
+        {/* Brand Column */}
+        <StaggerItem className="lg:col-span-2 space-y-4">
           <Logo />
           <p className="text-sm text-muted-foreground leading-relaxed max-w-sm">
-            Darsh Dental Depot is Vadodara's dedicated dental supply depot, empowering clinics with authentic restorative materials, rotary files, instruments, and express local delivery.
+            Darsh Dental Depot is Vadodara's premier physical & digital dental supply depot, providing local dentists with factory-certified composites, instruments, and consumables with prompt local clinic delivery.
           </p>
-
-          <div className="space-y-1.5 pt-2 text-xs text-muted-foreground">
-            <div className="flex items-center gap-2">
-              <span className="font-bold text-foreground">Drug Licenses:</span>
-              <span className="text-mono-data text-foreground font-semibold">DL No. GJ-VAD-215550 & GJ-VAD-215551</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="font-bold text-foreground">GSTIN / UIN:</span>
-              <span className="text-mono-data text-foreground font-semibold">24ANKPG4381M1ZP</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="font-bold text-foreground">Bank A/c:</span>
-              <span className="text-mono-data">IDBI Bank Ltd • A/c 0553102000031189</span>
-            </div>
-          </div>
 
           <div className="pt-2">
             <form onSubmit={handleSubscribe} className="flex gap-2 max-w-sm">
@@ -105,97 +106,109 @@ export function Footer() {
                 placeholder="Enter doctor / clinic email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="rounded-full bg-background dark:bg-white/[0.04] text-xs h-9 border-border/80"
+                className="rounded-full bg-background/80 text-xs h-10 border-border/60 focus:border-primary"
                 required
               />
-              <Button type="submit" size="sm" className="rounded-full px-4 h-9 bg-primary text-white font-bold">
-                Subscribe
+              <Button type="submit" size="sm" className="rounded-full px-4 h-10 bg-primary hover:bg-primary/90 shadow-md">
+                <Send className="h-3.5 w-3.5" />
               </Button>
             </form>
+            <span className="text-[11px] text-muted-foreground mt-1.5 block">
+              Subscribe for Vadodara clinic offers & fresh material batch arrivals.
+            </span>
           </div>
-        </div>
+        </StaggerItem>
 
-        {/* Categories */}
-        <div>
-          <h4 className="font-heading font-bold text-xs uppercase tracking-wider text-foreground mb-3.5">
-            Dental Categories
+        {/* Quick Links */}
+        <StaggerItem>
+          <h4 className="font-heading font-bold text-sm mb-4 tracking-wide text-foreground uppercase text-[11px]">
+            Dental Catalog
           </h4>
-          <ul className="space-y-2 text-xs text-muted-foreground">
-            <li><Link to="/products" className="hover:text-primary transition-colors">Composite & Restoratives</Link></li>
-            <li><Link to="/products" className="hover:text-primary transition-colors">Mani Diamond Burs</Link></li>
-            <li><Link to="/products" className="hover:text-primary transition-colors">Endodontic Rotary Files</Link></li>
-            <li><Link to="/products" className="hover:text-primary transition-colors">Impression Materials (Alginate)</Link></li>
-            <li><Link to="/products" className="hover:text-primary transition-colors">Glass Ionomer Cements (GIC)</Link></li>
-            <li><Link to="/products" className="hover:text-primary transition-colors">Sterilization & Disposables</Link></li>
+          <ul className="space-y-2.5 text-sm text-muted-foreground">
+            <li><Link to="/products" className="hover:text-primary transition-colors flex items-center gap-1.5">All Products</Link></li>
+            <li><Link to="/products" className="hover:text-primary transition-colors flex items-center gap-1.5">Composite & Restorative</Link></li>
+            <li><Link to="/products" className="hover:text-primary transition-colors flex items-center gap-1.5">Endodontic Rotary Files</Link></li>
+            <li><Link to="/products" className="hover:text-primary transition-colors flex items-center gap-1.5">Impression Materials</Link></li>
+            <li><Link to="/products" className="hover:text-primary transition-colors flex items-center gap-1.5">Sterilization & Disposables</Link></li>
           </ul>
-        </div>
+        </StaggerItem>
 
-        {/* Portals & Depot */}
-        <div>
-          <h4 className="font-heading font-bold text-xs uppercase tracking-wider text-foreground mb-3.5">
-            Clinic Portals
+        {/* Quick Links */}
+        <StaggerItem>
+          <h4 className="font-heading font-bold text-sm mb-4 tracking-wide text-foreground uppercase text-[11px]">
+            Vadodara Doctor Portal
           </h4>
-          <ul className="space-y-2 text-xs text-muted-foreground">
+          <ul className="space-y-2.5 text-sm text-muted-foreground">
+            <li><Link to="/about" className="hover:text-primary transition-colors">Our Vadodara Store</Link></li>
+            <li><Link to="/contact" className="hover:text-primary transition-colors">Depot Location & Hours</Link></li>
             <li><Link to="/login" className="hover:text-primary transition-colors">Doctor Portal Login</Link></li>
             <li><Link to="/register" className="hover:text-primary transition-colors">Register Clinic (Vadodara)</Link></li>
-            <li><Link to="/about" className="hover:text-primary transition-colors">About Our Depot</Link></li>
-            <li><Link to="/contact" className="hover:text-primary transition-colors">Store Location & Hours</Link></li>
-            <li><Link to="/products" className="hover:text-primary transition-colors">Wholesale Catalog</Link></li>
           </ul>
-        </div>
+        </StaggerItem>
 
-        {/* Store & Contact Info */}
-        <div>
-          <h4 className="font-heading font-bold text-xs uppercase tracking-wider text-foreground mb-3.5">
-            Depot Location
+        {/* Store Location & Timings */}
+        <StaggerItem>
+          <h4 className="font-heading font-bold text-sm mb-4 tracking-wide text-foreground uppercase text-[11px]">
+            Store & Contact Info
           </h4>
-          <div className="space-y-3 text-xs text-muted-foreground">
-            <div className="flex items-center gap-2">
-              <Phone className="h-3.5 w-3.5 text-primary shrink-0" />
+          <ul className="space-y-3 text-xs text-muted-foreground">
+            <li className="flex items-center gap-2">
+              <Phone className="h-4 w-4 text-primary shrink-0" />
               <a href="tel:+919727076119" className="font-bold text-foreground hover:text-primary transition-colors">
                 +91 97270 76119
               </a>
-            </div>
-            <div className="flex items-center gap-2">
-              <MessageSquare className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
+            </li>
+            <li className="flex items-center gap-2">
+              <MessageSquare className="h-4 w-4 text-emerald-500 shrink-0" />
               <a
                 href="https://wa.me/919727076119"
                 target="_blank"
                 rel="noreferrer"
-                className="font-bold text-emerald-600 dark:text-emerald-400 hover:underline"
+                className="font-semibold text-emerald-600 dark:text-emerald-400 hover:underline"
               >
-                WhatsApp Helpline
+                Chat on WhatsApp
               </a>
-            </div>
-            <div className="flex items-start gap-2 pt-1 border-t border-border/50">
-              <MapPin className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5" />
+            </li>
+            <li className="flex items-start gap-2">
+              <Clock className="h-4 w-4 text-primary shrink-0 mt-0.5" />
               <div>
-                <p className="text-[11.5px] leading-relaxed text-muted-foreground">
-                  Vraj Vihar Complex, Near Khanderao Market, Shiyabaug, Kevdabaug, Vadodara, Gujarat 390001
+                <span className="font-bold text-foreground">Mon – Sat:</span> 10:00 AM – 8:30 PM
+                <div className="text-[11px] text-muted-foreground">Sunday: Closed (Surgeries on Call)</div>
+              </div>
+            </li>
+            <li className="flex items-start gap-2 pt-1 border-t border-border/40">
+              <MapPin className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+              <div>
+                <span className="font-bold text-foreground">Darsh Dental Depot:</span>
+                <p className="text-[11px] leading-tight text-muted-foreground mt-0.5">
+                  FF-10/11, Vraj Vihar Complex, Char Rasta, Opp. Kachhia Patel Wadi, Shiyabaug, Kevdabaug, Vadodara, Gujarat 390001
                 </p>
                 <a
                   href="https://maps.app.goo.gl/7czn6gwYUgdSm8b46"
                   target="_blank"
                   rel="noreferrer"
-                  className="inline-flex items-center gap-1 text-[11px] text-primary font-bold hover:underline mt-1"
+                  className="inline-flex items-center gap-1 text-[11px] text-primary font-bold hover:underline mt-1.5"
                 >
-                  Open in Google Maps <ExternalLink className="h-3 w-3" />
+                  View on Google Maps <ExternalLink className="h-3 w-3" />
                 </a>
               </div>
-            </div>
-          </div>
-        </div>
-      </div>
+            </li>
+          </ul>
+        </StaggerItem>
+      </StaggerContainer>
 
-      {/* Bottom Bar */}
-      <div className="border-t border-border/50 dark:border-white/8 py-5 text-center text-xs text-muted-foreground flex flex-col sm:flex-row items-center justify-between container mx-auto px-4 gap-3">
+      <div className="border-t border-border/40 py-6 text-center text-xs text-muted-foreground flex flex-col sm:flex-row items-center justify-between container mx-auto px-4 gap-3">
         <div>
-          © {new Date().getFullYear()} <span className="font-bold text-foreground">Darsh Dental Depot</span>. Precision Dental Supplies for Vadodara Clinics.
+          © {new Date().getFullYear()} <span className="font-semibold text-foreground">Darsh Dental Depot</span>. Exclusively serving dentists across Vadodara, Gujarat.
         </div>
         <div className="flex items-center gap-4 text-[11px]">
-          <span>Proprietors: Hetal Gandhi & Smit Gandhi</span>
+          <a href="https://maps.app.goo.gl/7czn6gwYUgdSm8b46" target="_blank" rel="noreferrer" className="hover:text-primary cursor-pointer">
+            Google Maps Location
+          </a>
           <span>•</span>
-          <span>Siyabaug, Vadodara</span>
+          <span className="hover:text-primary cursor-pointer">GST Invoicing</span>
+          <span>•</span>
+          <span className="hover:text-primary cursor-pointer">100% Authentic Materials</span>
         </div>
       </div>
     </footer>

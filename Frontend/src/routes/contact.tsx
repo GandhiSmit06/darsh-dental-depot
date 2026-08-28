@@ -1,6 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { PublicLayout } from "@/components/site/PublicLayout";
-import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -13,10 +12,9 @@ import {
   Clock,
   MessageSquare,
   Send,
-  Sparkles,
-  CheckCircle2,
   ExternalLink,
-  Navigation,
+  ShieldCheck,
+  CheckCircle2,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useState } from "react";
@@ -25,7 +23,6 @@ import {
   ScrollReveal,
   StaggerContainer,
   StaggerItem,
-  ScaleReveal,
 } from "@/components/animations/ScrollReveal";
 
 export const Route = createFileRoute("/contact")({
@@ -35,7 +32,7 @@ export const Route = createFileRoute("/contact")({
       {
         name: "description",
         content:
-          "Visit Darsh Dental Depot at Shiyabaug Vadodara or reach out for same-day dental supply dispatch across Vadodara clinics.",
+          "Visit Darsh Dental Depot at Siyabaug Vadodara or reach out for same-day dental supply dispatch across Vadodara clinics.",
       },
     ],
   }),
@@ -84,290 +81,274 @@ function ContactPage() {
 
   return (
     <PublicLayout>
-      <div className="container mx-auto px-4 py-16 max-w-6xl">
+      <div className="container mx-auto px-4 py-12 max-w-6xl">
         {/* Header */}
-        <div className="text-center max-w-3xl mx-auto mb-14 space-y-3">
+        <div className="text-center max-w-3xl mx-auto mb-12 space-y-2">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+            transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
           >
-            <Badge variant="outline" className="text-primary border-primary/30">
-              <Sparkles className="h-3.5 w-3.5 mr-1 text-amber-500" /> Vadodara Dental Clinic Support
-            </Badge>
+            <span className="text-caption-eyebrow text-primary">Direct Depot Desk</span>
           </motion.div>
 
           <motion.h1
-            initial={{ opacity: 0, y: 24 }}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
-            className="text-4xl sm:text-5xl font-extrabold font-heading tracking-tight text-foreground"
+            transition={{ duration: 0.6, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+            className="text-display-xl font-extrabold font-heading tracking-tight text-foreground"
           >
-            Visit Our Depot Or <span className="text-gradient">Get In Touch</span>
+            Visit Our Depot Or Reach Our Supply Desk.
           </motion.h1>
 
           <motion.p
-            initial={{ opacity: 0, y: 24 }}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-            className="text-muted-foreground text-sm sm:text-base leading-relaxed"
+            transition={{ duration: 0.6, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+            className="text-muted-foreground text-xs sm:text-sm leading-relaxed"
           >
-            Exclusively serving practicing dentists across Vadodara. Visit our store at Shiyabaug / Kevdabaug or call for fast clinic delivery.
+            Exclusively serving dental clinics across Vadodara. Visit our store at Siyabaug / Kevdabaug or call for instant express delivery.
           </motion.p>
         </div>
 
-        {/* Contact Info Cards */}
-        <StaggerContainer staggerDelay={0.1} className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-12">
+        {/* Contact Quick Cards */}
+        <StaggerContainer staggerDelay={0.08} className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
           {/* Phone */}
           <StaggerItem scale>
-            <Card className="p-6 glass-card glass-card-hover rounded-2xl border border-border/60 text-center flex flex-col justify-between h-full">
+            <div className="p-5 rounded-2xl bg-card border border-border/70 dark:border-white/10 text-center flex flex-col justify-between h-full shadow-xs">
               <div>
-                <div className="h-12 w-12 rounded-2xl bg-primary/10 text-primary grid place-items-center mx-auto mb-4 shadow-sm">
-                  <Phone className="h-6 w-6" />
+                <div className="h-10 w-10 rounded-xl bg-primary/10 text-primary grid place-items-center mx-auto mb-3">
+                  <Phone className="h-5 w-5" />
                 </div>
-                <div className="font-bold text-sm text-foreground font-heading">Call Store Directly</div>
-                <div className="text-sm font-extrabold text-primary mt-1">{PHONE_NUMBER}</div>
-                <div className="text-xs text-muted-foreground mt-1">Direct contact with owner</div>
+                <div className="font-bold text-xs text-foreground font-heading">Call Depot Directly</div>
+                <div className="text-xs font-mono font-extrabold text-primary mt-1">{PHONE_NUMBER}</div>
+                <div className="text-[11px] text-muted-foreground mt-0.5">Proprietor: Hetal Gandhi</div>
               </div>
               <a
                 href={`tel:${PHONE_RAW}`}
-                className="mt-4 inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-primary/10 hover:bg-primary/20 text-primary font-bold text-xs transition-colors"
+                className="mt-3 inline-flex items-center justify-center gap-1 py-1.5 px-3 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary font-bold text-xs transition-colors"
               >
-                <Phone className="h-3.5 w-3.5" /> Call Now
+                <Phone className="h-3 w-3" /> Call Now
               </a>
-            </Card>
+            </div>
           </StaggerItem>
 
           {/* WhatsApp */}
           <StaggerItem scale>
-            <Card className="p-6 glass-card glass-card-hover rounded-2xl border border-border/60 text-center flex flex-col justify-between h-full">
+            <div className="p-5 rounded-2xl bg-card border border-border/70 dark:border-white/10 text-center flex flex-col justify-between h-full shadow-xs">
               <div>
-                <div className="h-12 w-12 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 grid place-items-center mx-auto mb-4 shadow-sm">
-                  <MessageSquare className="h-6 w-6" />
+                <div className="h-10 w-10 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 grid place-items-center mx-auto mb-3">
+                  <MessageSquare className="h-5 w-5" />
                 </div>
-                <div className="font-bold text-sm text-foreground font-heading">WhatsApp Orders</div>
-                <div className="text-sm font-extrabold text-emerald-600 dark:text-emerald-400 mt-1">
+                <div className="font-bold text-xs text-foreground font-heading">WhatsApp Order Line</div>
+                <div className="text-xs font-mono font-extrabold text-emerald-600 dark:text-emerald-400 mt-1">
                   {PHONE_NUMBER}
                 </div>
-                <div className="text-xs text-muted-foreground mt-1">Instant material availability</div>
+                <div className="text-[11px] text-muted-foreground mt-0.5">Quick photo prescriptions</div>
               </div>
               <a
                 href={WHATSAPP_URL}
                 target="_blank"
                 rel="noreferrer"
-                className="mt-4 inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs transition-colors shadow-sm"
+                className="mt-3 inline-flex items-center justify-center gap-1 py-1.5 px-3 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-bold text-xs transition-colors"
               >
-                <MessageSquare className="h-3.5 w-3.5" /> Chat on WhatsApp
+                <MessageSquare className="h-3 w-3" /> Chat on WhatsApp
               </a>
-            </Card>
+            </div>
           </StaggerItem>
 
-          {/* Working Hours */}
+          {/* Email */}
           <StaggerItem scale>
-            <Card className="p-6 glass-card glass-card-hover rounded-2xl border border-border/60 text-center flex flex-col justify-between h-full">
+            <div className="p-5 rounded-2xl bg-card border border-border/70 dark:border-white/10 text-center flex flex-col justify-between h-full shadow-xs">
               <div>
-                <div className="h-12 w-12 rounded-2xl bg-sky-500/10 text-sky-600 dark:text-sky-400 grid place-items-center mx-auto mb-4 shadow-sm">
-                  <Clock className="h-6 w-6" />
+                <div className="h-10 w-10 rounded-xl bg-sky-500/10 text-sky-600 dark:text-sky-400 grid place-items-center mx-auto mb-3">
+                  <Mail className="h-5 w-5" />
                 </div>
-                <div className="font-bold text-sm text-foreground font-heading">Depot Working Hours</div>
-                <div className="text-xs font-extrabold text-foreground mt-1">Mon – Sat: 10:00 AM – 8:30 PM</div>
-                <div className="text-xs text-muted-foreground mt-1">Sunday: Closed (Surgeries on call)</div>
+                <div className="font-bold text-xs text-foreground font-heading">Official Email</div>
+                <div className="text-xs font-semibold text-foreground mt-1 truncate">hetalgandhi16@gmail.com</div>
+                <div className="text-[11px] text-muted-foreground mt-0.5">Institutional quotation requests</div>
               </div>
-              <div className="mt-4 py-1.5 px-3 rounded-xl bg-secondary/80 text-[11px] font-semibold text-muted-foreground">
-                Open 6 Days a Week
-              </div>
-            </Card>
+              <a
+                href="mailto:hetalgandhi16@gmail.com"
+                className="mt-3 inline-flex items-center justify-center gap-1 py-1.5 px-3 rounded-lg bg-sky-500/10 hover:bg-sky-500/20 text-sky-600 dark:text-sky-400 font-bold text-xs transition-colors"
+              >
+                <Mail className="h-3 w-3" /> Send Email
+              </a>
+            </div>
           </StaggerItem>
 
-          {/* Location */}
+          {/* Depot Location */}
           <StaggerItem scale>
-            <Card className="p-6 glass-card glass-card-hover rounded-2xl border border-border/60 text-center flex flex-col justify-between h-full">
+            <div className="p-5 rounded-2xl bg-card border border-border/70 dark:border-white/10 text-center flex flex-col justify-between h-full shadow-xs">
               <div>
-                <div className="h-12 w-12 rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-400 grid place-items-center mx-auto mb-4 shadow-sm">
-                  <MapPin className="h-6 w-6" />
+                <div className="h-10 w-10 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 grid place-items-center mx-auto mb-3">
+                  <MapPin className="h-5 w-5" />
                 </div>
-                <div className="font-bold text-sm text-foreground font-heading">Physical Depot</div>
-                <div className="text-xs font-semibold text-foreground mt-1">Shiyabaug / Kevdabaug</div>
-                <div className="text-[11px] text-muted-foreground mt-1">Vadodara, Gujarat 390001</div>
+                <div className="font-bold text-xs text-foreground font-heading">Physical Depot</div>
+                <div className="text-xs text-foreground mt-1">FF-10/11, Vraj Vihar Complex</div>
+                <div className="text-[11px] text-muted-foreground mt-0.5">Siyabaug, Vadodara - 390001</div>
               </div>
               <a
                 href={MAPS_URL}
                 target="_blank"
                 rel="noreferrer"
-                className="mt-4 inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 dark:text-amber-400 font-bold text-xs transition-colors"
+                className="mt-3 inline-flex items-center justify-center gap-1 py-1.5 px-3 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 dark:text-amber-400 font-bold text-xs transition-colors"
               >
-                <Navigation className="h-3.5 w-3.5" /> Directions
+                <ExternalLink className="h-3 w-3" /> Google Maps
               </a>
-            </Card>
+            </div>
           </StaggerItem>
         </StaggerContainer>
 
-        {/* Main Grid: Form + Detailed Location & Timings */}
+        {/* Main Grid: Form + Depot Hours & Map Link */}
         <div className="grid lg:grid-cols-12 gap-8 items-start">
           {/* Inquiry Form */}
-          <ScrollReveal direction="left" className="lg:col-span-7">
-            <Card className="p-6 sm:p-8 glass-card rounded-3xl border border-border/60 shadow-lg">
-              <h2 className="text-2xl font-bold font-heading mb-1 text-foreground">Clinic Material Inquiry</h2>
-              <p className="text-xs text-muted-foreground mb-6">
-                Vadodara dental doctors can submit requests for custom quantity or direct quotation.
-              </p>
+          <div className="lg:col-span-7">
+            <div className="p-6 sm:p-8 rounded-3xl bg-card border border-border/70 dark:border-white/10 shadow-sm">
+              <div className="mb-5 space-y-1">
+                <h2 className="text-lg font-bold font-heading text-foreground">
+                  Send a Direct Procurement Inquiry
+                </h2>
+                <p className="text-xs text-muted-foreground">
+                  Need a specific unlisted composite shade, batch quotation, or equipment demonstration?
+                </p>
+              </div>
 
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="grid sm:grid-cols-2 gap-4">
+              <form onSubmit={handleSubmit} className="space-y-3.5">
+                <div className="grid sm:grid-cols-2 gap-3">
                   <div>
-                    <Label className="text-xs font-semibold mb-1.5 block">Doctor Name *</Label>
+                    <Label className="text-xs font-semibold mb-1 block">First Name *</Label>
                     <Input
                       required
-                      placeholder="Dr. Smit Patel"
+                      placeholder="Rajesh"
                       value={formData.firstName}
                       onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
-                      className="rounded-xl bg-background/70 border-border/60 text-sm h-11"
+                      className="rounded-xl bg-background text-xs h-10 border-border/80"
                     />
                   </div>
                   <div>
-                    <Label className="text-xs font-semibold mb-1.5 block">Clinic / Hospital Name *</Label>
+                    <Label className="text-xs font-semibold mb-1 block">Last Name</Label>
                     <Input
-                      required
-                      placeholder="e.g. Care Dental Clinic"
-                      value={formData.clinicName}
-                      onChange={(e) => setFormData({ ...formData, clinicName: e.target.value })}
-                      className="rounded-xl bg-background/70 border-border/60 text-sm h-11"
+                      placeholder="Patel"
+                      value={formData.lastName}
+                      onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                      className="rounded-xl bg-background text-xs h-10 border-border/80"
                     />
                   </div>
                 </div>
 
-                <div className="grid sm:grid-cols-2 gap-4">
+                <div className="grid sm:grid-cols-2 gap-3">
                   <div>
-                    <Label className="text-xs font-semibold mb-1.5 block">Doctor Contact Number *</Label>
+                    <Label className="text-xs font-semibold mb-1 block">Doctor / Clinic Email *</Label>
                     <Input
-                      type="tel"
+                      type="email"
                       required
-                      placeholder="98765 00000"
-                      value={formData.phone}
-                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                      className="rounded-xl bg-background/70 border-border/60 text-sm h-11"
+                      placeholder="dr.patel@gmail.com"
+                      value={formData.email}
+                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      className="rounded-xl bg-background text-xs h-10 border-border/80"
                     />
                   </div>
                   <div>
-                    <Label className="text-xs font-semibold mb-1.5 block">Clinic Area in Vadodara *</Label>
+                    <Label className="text-xs font-semibold mb-1 block">Mobile Number (10 digits) *</Label>
                     <Input
+                      type="tel"
                       required
-                      placeholder="e.g. Alkapuri, Akota, Gotri, Karelibaug"
+                      maxLength={10}
+                      placeholder="9876543210"
+                      value={formData.phone}
+                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                      className="rounded-xl bg-background text-xs h-10 border-border/80"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid sm:grid-cols-2 gap-3">
+                  <div>
+                    <Label className="text-xs font-semibold mb-1 block">Clinic Name</Label>
+                    <Input
+                      placeholder="Smile Dental Clinic"
+                      value={formData.clinicName}
+                      onChange={(e) => setFormData({ ...formData, clinicName: e.target.value })}
+                      className="rounded-xl bg-background text-xs h-10 border-border/80"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-xs font-semibold mb-1 block">Vadodara Locality</Label>
+                    <Input
+                      placeholder="e.g. Alkapuri, Akota, Gotri"
                       value={formData.vadodaraArea}
                       onChange={(e) => setFormData({ ...formData, vadodaraArea: e.target.value })}
-                      className="rounded-xl bg-background/70 border-border/60 text-sm h-11"
+                      className="rounded-xl bg-background text-xs h-10 border-border/80"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <Label className="text-xs font-semibold mb-1.5 block">Product / Material Needed *</Label>
+                  <Label className="text-xs font-semibold mb-1 block">Subject / Material Required *</Label>
                   <Input
                     required
-                    placeholder="e.g. 3M Filtek Z350 XT, Mani Endo K-Files, GC Gold Label Cements"
+                    placeholder="e.g. Bulk 3M Filtek Z250 Composite quotation"
                     value={formData.subject}
                     onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
-                    className="rounded-xl bg-background/70 border-border/60 text-sm h-11"
+                    className="rounded-xl bg-background text-xs h-10 border-border/80"
                   />
                 </div>
 
                 <div>
-                  <Label className="text-xs font-semibold mb-1.5 block">Additional Specifications / Urgency</Label>
+                  <Label className="text-xs font-semibold mb-1 block">Detailed Message *</Label>
                   <Textarea
                     rows={3}
-                    placeholder="Mention shade, quantity, or if urgent delivery needed at clinic today..."
+                    required
+                    placeholder="Specify shades, quantities, or clinic delivery instructions..."
                     value={formData.message}
                     onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                    className="rounded-xl bg-background/70 border-border/60 text-sm"
+                    className="rounded-xl bg-background text-xs border-border/80"
                   />
                 </div>
 
                 <Button
                   type="submit"
                   disabled={loading}
-                  className="w-full rounded-2xl h-12 text-sm font-bold bg-gradient-to-r from-primary to-indigo-600 hover:opacity-95 text-white shadow-lg btn-shine mt-2"
+                  className="w-full rounded-xl h-10 text-xs font-bold bg-primary hover:bg-primary/90 text-white shadow-xs"
                 >
-                  {loading ? "Sending..." : "Submit Inquiry to Darsh Dental Depot"} <Send className="ml-2 h-4 w-4" />
+                  <Send className="mr-1.5 h-3.5 w-3.5" />
+                  {loading ? "Sending Message..." : "Submit Inquiry to Depot"}
                 </Button>
               </form>
-            </Card>
-          </ScrollReveal>
+            </div>
+          </div>
 
-          {/* Store Location & Timings Box */}
-          <div className="lg:col-span-5 space-y-6">
-            <ScrollReveal direction="right" delay={0.1}>
-              <Card className="p-6 glass-card rounded-3xl border border-border/60 space-y-4">
-                <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-xl bg-primary/10 text-primary grid place-items-center">
-                    <MapPin className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <div className="font-bold text-sm font-heading">Darsh Dental Depot Store</div>
-                    <div className="text-xs text-muted-foreground">Authorized Dental Material Supplier</div>
-                  </div>
+          {/* Depot Operating Details */}
+          <div className="lg:col-span-5 space-y-4">
+            <div className="p-6 rounded-3xl bg-secondary/40 dark:bg-white/[0.02] border border-border/70 dark:border-white/10 space-y-4 text-xs">
+              <div className="font-heading font-bold text-sm text-foreground flex items-center gap-2">
+                <Clock className="h-4 w-4 text-primary" /> Depot Operational Schedule
+              </div>
+              <div className="space-y-2">
+                <div className="flex justify-between py-1.5 border-b border-border/50">
+                  <span className="text-muted-foreground">Monday – Saturday:</span>
+                  <span className="font-bold text-foreground font-mono">10:00 AM – 8:30 PM</span>
                 </div>
-
-                <div className="space-y-3 pt-2 text-xs border-t border-border/40">
-                  <div>
-                    <span className="font-bold text-foreground block mb-0.5">📍 Full Store Address:</span>
-                    <p className="text-muted-foreground leading-relaxed">
-                      FF-10/11, Vraj Vihar Complex, Char Rasta, Opp. Kachhia Patel Wadi, Mahavir Colony, Shiyabaug, Kevdabaug, Vadodara, Gujarat 390001
-                    </p>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-2 pt-2 border-t border-border/30">
-                    <div>
-                      <span className="font-bold text-foreground block">🕒 Working Days:</span>
-                      <span className="text-muted-foreground">Monday to Saturday</span>
-                    </div>
-                    <div>
-                      <span className="font-bold text-foreground block">⏰ Timings:</span>
-                      <span className="text-muted-foreground">10:00 AM – 8:30 PM</span>
-                    </div>
-                  </div>
-
-                  <div className="pt-2 border-t border-border/30">
-                    <span className="font-bold text-foreground block mb-0.5">📞 Direct Owner Helpline:</span>
-                    <div className="flex items-center gap-2 mt-1">
-                      <a
-                        href={`tel:${PHONE_RAW}`}
-                        className="font-extrabold text-sm text-primary hover:underline"
-                      >
-                        {PHONE_NUMBER}
-                      </a>
-                      <span className="text-muted-foreground text-[11px]">(Call / WhatsApp)</span>
-                    </div>
-                  </div>
-
-                  <div className="pt-3">
-                    <a
-                      href={MAPS_URL}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="w-full inline-flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-primary text-white font-bold text-xs shadow-md hover:bg-primary/90 transition-all btn-shine"
-                    >
-                      Open Location in Google Maps <ExternalLink className="h-3.5 w-3.5" />
-                    </a>
-                  </div>
+                <div className="flex justify-between py-1.5 border-b border-border/50">
+                  <span className="text-muted-foreground">Sunday:</span>
+                  <span className="font-bold text-foreground font-mono">10:30 AM – 2:00 PM</span>
                 </div>
-              </Card>
-            </ScrollReveal>
+                <div className="flex justify-between py-1.5 border-b border-border/50">
+                  <span className="text-muted-foreground">Express Dispatch:</span>
+                  <span className="font-bold text-emerald-600 dark:text-emerald-400">Within 2 Hours (Local)</span>
+                </div>
+              </div>
+            </div>
 
-            {/* Google Map View */}
-            <ScaleReveal delay={0.2}>
-              <Card className="overflow-hidden rounded-3xl border border-border/60 shadow-lg h-[290px] relative">
-                <iframe
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3691.6033486161476!2d73.2001109!3d22.2951561!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x395fc50752550793%3A0xff8cbe3bb9f64be5!2sDarsh%20Dental%20Depot!5e0!3m2!1sen!2sin!4v1700000000000!5m2!1sen!2sin"
-                  width="100%"
-                  height="100%"
-                  style={{ border: 0, position: "absolute", inset: 0 }}
-                  allowFullScreen
-                  loading="lazy"
-                  referrerPolicy="no-referrer-when-downgrade"
-                  title="Darsh Dental Depot Vadodara Store Location"
-                />
-              </Card>
-            </ScaleReveal>
+            <div className="p-6 rounded-3xl bg-card border border-border/70 dark:border-white/10 space-y-3 text-xs">
+              <div className="font-heading font-bold text-sm text-foreground flex items-center gap-2">
+                <ShieldCheck className="h-4 w-4 text-primary" /> Licensed Dental Depot
+              </div>
+              <p className="text-muted-foreground text-[11.5px] leading-relaxed">
+                Operating with valid Gujarat FDCA Drug Licenses (<strong>GJ-VAD-215550</strong> & <strong>GJ-VAD-215551</strong>) ensuring full regulatory compliance for scheduled dental drugs and surgical devices.
+              </p>
+            </div>
           </div>
         </div>
       </div>

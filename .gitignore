@@ -47,3 +47,4 @@ coverage/
 *.sw?
 .DS_Store
 Thumbs.db
+screenshots/

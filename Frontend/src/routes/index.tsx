@@ -321,13 +321,20 @@ function HomePage() {
                 {/* Subtle ambient cyan glow behind tooth */}
                 <div className="absolute -inset-4 bg-sky-400/20 dark:bg-sky-500/10 rounded-full blur-3xl opacity-60 -z-10 pointer-events-none" />
 
-                {/* 3D Tooth on Marble Pedestal centerpiece */}
+                {/* 3D Dental Instruments Cinematic Video Showcase */}
                 <div className="relative rounded-3xl overflow-hidden shadow-2xl border border-white/80 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50 backdrop-blur-xs">
-                  <img
-                    src="/design-assets/hero-tooth-pedestal-hd.jpg"
-                    alt="Darsh Dental Depot Tooth and Pedestal Showcase"
+                  <video
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    preload="auto"
+                    poster="/design-assets/hero-tooth-pedestal-hd.jpg"
                     className="w-full h-auto object-cover rounded-3xl transform hover:scale-[1.01] transition-transform duration-500"
-                  />
+                  >
+                    <source src="/design-assets/hero-video.mp4" type="video/mp4" />
+                    Your browser does not support the video tag.
+                  </video>
                 </div>
 
                 {/* Floating Card 1 (Top Left / Depot status & hours) */}

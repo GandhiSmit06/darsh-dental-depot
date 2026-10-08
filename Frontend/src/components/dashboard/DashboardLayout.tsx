@@ -127,11 +127,11 @@ export function DashboardLayout({
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full bg-background text-foreground relative">
-        <Sidebar collapsible="icon" className="border-r border-border/50 bg-card/60 backdrop-blur-xl">
-          <SidebarHeader className="p-3 border-b border-border/40">
+        <Sidebar collapsible="icon" className="border-r border-border/50 dark:border-white/10 bg-card/60 dark:bg-[#070B0A] backdrop-blur-xl">
+          <SidebarHeader className="p-3 border-b border-border/40 dark:border-white/10">
             <Link to="/" className="flex items-center gap-3 px-2 py-1.5 group select-none">
               <div className="relative shrink-0">
-                <div className="h-9 w-9 rounded-xl overflow-hidden bg-white/95 dark:bg-slate-900 border border-white/60 dark:border-slate-700/60 shadow-md transform group-hover:scale-105 transition-all duration-300 flex items-center justify-center p-0.5">
+                <div className="h-9 w-9 rounded-xl overflow-hidden bg-white/95 dark:bg-[#10201C] border border-white/60 dark:border-white/10 shadow-md transform group-hover:scale-105 transition-all duration-300 flex items-center justify-center p-0.5">
                   <img
                     src="/logo.jpg"
                     alt="Darsh Dental"
@@ -140,10 +140,10 @@ export function DashboardLayout({
                 </div>
               </div>
               <div className="flex flex-col leading-tight group-data-[collapsible=icon]:hidden">
-                <span className="font-extrabold text-sm font-heading tracking-tight text-foreground group-hover:text-primary transition-colors">
+                <span className="font-extrabold text-sm font-heading tracking-tight text-foreground group-hover:text-primary dark:group-hover:text-[#3FD1B3] transition-colors">
                   Darsh Dental
                 </span>
-                <span className="text-[10px] font-bold uppercase tracking-widest text-primary">
+                <span className="text-[10px] font-bold uppercase tracking-widest text-primary dark:text-[#3FD1B3]">
                   {role}
                 </span>
               </div>
@@ -152,7 +152,7 @@ export function DashboardLayout({
 
           <SidebarContent className="px-2 py-3">
             <SidebarGroup>
-              <SidebarGroupLabel className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground px-3 mb-1">
+              <SidebarGroupLabel className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground dark:text-[#9DB0A9] px-3 mb-1">
                 Management
               </SidebarGroupLabel>
               <SidebarGroupContent>
@@ -168,8 +168,8 @@ export function DashboardLayout({
                           tooltip={item.label}
                           className={`rounded-xl h-10 px-3 transition-all relative ${
                             isActive
-                              ? "bg-primary text-primary-foreground font-bold shadow-sm"
-                              : "text-muted-foreground hover:text-foreground hover:bg-secondary/70"
+                              ? "bg-primary dark:bg-[#12A488] text-primary-foreground dark:text-[#04110E] font-bold shadow-sm"
+                              : "text-muted-foreground dark:text-[#9DB0A9] hover:text-foreground dark:hover:text-[#F2F6F4] hover:bg-secondary/70 dark:hover:bg-[#10201C]"
                           }`}
                         >
                           <item.icon className="h-4 w-4" />
@@ -188,13 +188,13 @@ export function DashboardLayout({
             </SidebarGroup>
           </SidebarContent>
 
-          <SidebarFooter className="p-3 border-t border-border/40 space-y-1">
+          <SidebarFooter className="p-3 border-t border-border/40 dark:border-white/10 space-y-1">
             <SidebarMenu>
               <SidebarMenuItem>
                 <SidebarMenuButton asChild tooltip="Storefront">
                   <Link
                     to="/"
-                    className="rounded-xl h-9 px-3 text-xs text-muted-foreground hover:text-foreground hover:bg-secondary"
+                    className="rounded-xl h-9 px-3 text-xs text-muted-foreground dark:text-[#9DB0A9] hover:text-foreground dark:hover:text-[#F2F6F4] hover:bg-secondary dark:hover:bg-[#10201C]"
                   >
                     <Home className="h-4 w-4" />
                     <span>Back to Store</span>
@@ -217,23 +217,23 @@ export function DashboardLayout({
         </Sidebar>
 
         <div className="flex-1 flex flex-col min-w-0">
-          <header className="h-16 border-b border-border/50 bg-card/60 backdrop-blur-xl sticky top-0 z-30 flex items-center gap-3 px-4 sm:px-6 justify-between">
+          <header className="h-16 border-b border-border/50 dark:border-white/10 bg-card/60 dark:bg-[#070B0A]/80 backdrop-blur-xl sticky top-0 z-30 flex items-center gap-3 px-4 sm:px-6 justify-between">
             <div className="flex items-center gap-3 min-w-0">
-              <SidebarTrigger className="rounded-xl h-9 w-9 border border-border/60 hover:bg-secondary" />
+              <SidebarTrigger className="rounded-xl h-9 w-9 border border-border/60 dark:border-white/10 hover:bg-secondary dark:hover:bg-[#10201C]" />
               <nav className="flex items-center text-xs font-semibold text-muted-foreground gap-1.5 min-w-0">
-                <span className="text-muted-foreground truncate">{title}</span>
+                <span className="text-muted-foreground dark:text-[#9DB0A9] truncate">{title}</span>
                 <ChevronRight className="h-3.5 w-3.5 shrink-0 opacity-50" />
-                <span className="text-foreground font-bold truncate">{current?.label}</span>
+                <span className="text-foreground dark:text-[#F2F6F4] font-bold truncate">{current?.label}</span>
               </nav>
             </div>
 
             <div className="flex items-center gap-2.5">
               {onSearchChange !== undefined && (
                 <div className="relative hidden md:block">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground dark:text-[#9DB0A9]" />
                   <Input
                     placeholder="Search records..."
-                    className="pl-8.5 w-56 h-9 rounded-xl bg-background/70 border-border/60 text-xs focus:border-primary"
+                    className="pl-8.5 w-56 h-9 rounded-xl bg-background/70 dark:bg-[#0B1210] border-border/60 dark:border-white/10 text-xs text-foreground dark:text-[#F2F6F4] dark:placeholder-[#9DB0A9]/60 focus:border-primary dark:focus:border-[#12A488]"
                     value={search ?? ""}
                     onChange={(e) => onSearchChange(e.target.value)}
                   />
@@ -319,30 +319,30 @@ function NotificationsDropdown({
         <Button variant="ghost" size="icon" className="relative rounded-xl h-9 w-9">
           <Bell className="h-4 w-4 text-muted-foreground" />
           {unreadCount > 0 && (
-            <span className="absolute -top-0.5 -right-0.5 flex h-4 min-w-4 px-1 items-center justify-center rounded-full bg-primary text-white text-[9px] font-extrabold shadow-sm animate-pulse">
+            <span className="absolute -top-0.5 -right-0.5 flex h-4 min-w-4 px-1 items-center justify-center rounded-full bg-primary dark:bg-[#12A488] text-white dark:text-[#04110E] text-[9px] font-extrabold shadow-sm animate-pulse">
               {unreadCount}
             </span>
           )}
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-80 sm:w-96 glass-card rounded-2xl p-2 shadow-2xl border-border/70">
+      <DropdownMenuContent align="end" className="w-80 sm:w-96 glass-card dark:bg-[#070B0A] rounded-2xl p-2 shadow-2xl border-border/70 dark:border-white/10">
         <div className="flex items-center justify-between px-3 py-2">
-          <span className="font-heading font-bold text-xs uppercase tracking-wider text-muted-foreground">
+          <span className="font-heading font-bold text-xs uppercase tracking-wider text-muted-foreground dark:text-[#9DB0A9]">
             {role === "Doctor" ? "Clinic Alerts" : role === "Shop Owner" ? "Shop Live Alerts" : "Platform Alerts"}
           </span>
           {unreadCount > 0 && (
             <button
               onClick={onMarkAllRead}
-              className="text-[11px] font-semibold text-primary hover:underline flex items-center gap-1 cursor-pointer"
+              className="text-[11px] font-semibold text-primary dark:text-[#3FD1B3] hover:underline flex items-center gap-1 cursor-pointer"
             >
               <CheckCheck className="h-3 w-3" /> Mark all read
             </button>
           )}
         </div>
-        <DropdownMenuSeparator className="bg-border/40 my-1" />
+        <DropdownMenuSeparator className="bg-border/40 dark:bg-white/10 my-1" />
 
         {notifications.length === 0 ? (
-          <div className="p-6 text-center text-muted-foreground space-y-1">
+          <div className="p-6 text-center text-muted-foreground dark:text-[#9DB0A9] space-y-1">
             <Bell className="h-6 w-6 mx-auto opacity-40 mb-2" />
             <p className="text-xs font-semibold">No notifications yet</p>
             <p className="text-[10px]">Real-time orders, dispatch, and restock alerts will appear here.</p>
@@ -354,18 +354,18 @@ function NotificationsDropdown({
                 key={n.id}
                 onClick={() => onNotificationClick(n)}
                 className={`flex items-start gap-2.5 p-2.5 rounded-xl cursor-pointer transition-all ${
-                  !n.isRead ? "bg-primary/8 font-medium border-l-2 border-primary" : "hover:bg-secondary/70 opacity-80"
+                  !n.isRead ? "bg-primary/8 dark:bg-[#12A488]/15 font-medium border-l-2 border-primary dark:border-[#12A488]" : "hover:bg-secondary/70 dark:hover:bg-[#10201C] opacity-80"
                 }`}
               >
-                <div className="mt-0.5 p-1.5 rounded-lg bg-background border border-border/50">
+                <div className="mt-0.5 p-1.5 rounded-lg bg-background dark:bg-[#10201C] border border-border/50 dark:border-white/10">
                   {getIcon(n.type)}
                 </div>
                 <div className="flex-1 min-w-0 text-left">
                   <div className="flex items-center justify-between gap-1 mb-0.5">
-                    <span className="text-xs font-bold text-foreground truncate">{n.title}</span>
-                    <span className="text-[10px] text-muted-foreground shrink-0">{n.time}</span>
+                    <span className="text-xs font-bold text-foreground dark:text-[#F2F6F4] truncate">{n.title}</span>
+                    <span className="text-[10px] text-muted-foreground dark:text-[#9DB0A9] shrink-0">{n.time}</span>
                   </div>
-                  <p className="text-[11px] text-muted-foreground line-clamp-2 leading-relaxed">
+                  <p className="text-[11px] text-muted-foreground dark:text-[#9DB0A9] line-clamp-2 leading-relaxed">
                     {n.message}
                   </p>
                 </div>
@@ -374,10 +374,10 @@ function NotificationsDropdown({
           </div>
         )}
 
-        <DropdownMenuSeparator className="bg-border/40 my-1" />
+        <DropdownMenuSeparator className="bg-border/40 dark:bg-white/10 my-1" />
         <DropdownMenuItem
           onClick={onOpenFull}
-          className="rounded-xl justify-center text-xs font-semibold text-primary py-2 cursor-pointer hover:bg-primary/10"
+          className="rounded-xl justify-center text-xs font-semibold text-primary dark:text-[#3FD1B3] py-2 cursor-pointer hover:bg-primary/10 dark:hover:bg-[#12A488]/15"
         >
           View All Notifications
         </DropdownMenuItem>
@@ -407,24 +407,24 @@ function ProfileDropdown({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <button className="flex items-center gap-2 rounded-2xl hover:bg-secondary/80 p-1.5 pr-3 transition-colors border border-border/40">
-          <Avatar className="h-7 w-7 rounded-xl bg-gradient-to-br from-primary to-indigo-600 text-white font-bold text-xs">
-            <AvatarFallback className="bg-transparent text-white text-[11px] font-bold">{initials}</AvatarFallback>
+        <button className="flex items-center gap-2 rounded-2xl hover:bg-secondary/80 dark:hover:bg-[#10201C] p-1.5 pr-3 transition-colors border border-border/40 dark:border-white/10">
+          <Avatar className="h-7 w-7 rounded-xl bg-gradient-to-br from-primary to-indigo-600 dark:from-[#12A488] dark:to-[#3FD1B3] text-white dark:text-[#04110E] font-bold text-xs">
+            <AvatarFallback className="bg-transparent text-white dark:text-[#04110E] text-[11px] font-bold">{initials}</AvatarFallback>
           </Avatar>
           <div className="hidden sm:flex flex-col text-left leading-none">
-            <span className="text-xs font-bold text-foreground truncate max-w-[100px]">
+            <span className="text-xs font-bold text-foreground dark:text-[#F2F6F4] truncate max-w-[100px]">
               {user?.fullName || "Doctor"}
             </span>
-            <span className="text-[10px] text-primary font-semibold">{role}</span>
+            <span className="text-[10px] text-primary dark:text-[#3FD1B3] font-semibold">{role}</span>
           </div>
         </button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="glass-card w-56 rounded-2xl p-2">
+      <DropdownMenuContent align="end" className="glass-card dark:bg-[#070B0A] dark:border-white/10 w-56 rounded-2xl p-2">
         <DropdownMenuLabel className="px-3 py-2">
-          <div className="font-bold text-xs">{user?.fullName || "Doctor Profile"}</div>
-          <div className="text-[11px] text-muted-foreground truncate">{user?.email || "doctor@clinic.com"}</div>
+          <div className="font-bold text-xs text-foreground dark:text-[#F2F6F4]">{user?.fullName || "Doctor Profile"}</div>
+          <div className="text-[11px] text-muted-foreground dark:text-[#9DB0A9] truncate">{user?.email || "doctor@clinic.com"}</div>
         </DropdownMenuLabel>
-        <DropdownMenuSeparator className="bg-border/40" />
+        <DropdownMenuSeparator className="bg-border/40 dark:bg-white/10" />
         <DropdownMenuItem asChild className="rounded-xl cursor-pointer text-xs">
           <Link to="/">
             <Home className="h-3.5 w-3.5 mr-2" /> Storefront

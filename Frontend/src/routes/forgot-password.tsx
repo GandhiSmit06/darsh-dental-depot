@@ -135,7 +135,7 @@ function ForgotPasswordPage() {
                 </p>
                 <div className="pt-4">
                   <Button
-                    className="w-full rounded-2xl h-12 text-sm font-bold bg-gradient-to-r from-primary to-indigo-600 text-white shadow-lg btn-shine"
+                    className="w-full rounded-2xl h-12 text-sm font-bold bg-[#12A488] hover:bg-[#3FD1B3] text-[#04110E] shadow-lg shadow-[#12A488]/20 btn-shine cursor-pointer"
                     onClick={() => nav({ to: "/login" })}
                   >
                     Sign In to Doctor Portal
@@ -154,7 +154,7 @@ function ForgotPasswordPage() {
                   >
                     {/* Header */}
                     <div className="text-center mb-6 space-y-1.5">
-                      <div className="mx-auto h-12 w-12 rounded-2xl bg-gradient-to-br from-primary via-sky-600 to-indigo-600 text-white grid place-items-center mb-3 shadow-md">
+                      <div className="mx-auto h-12 w-12 rounded-2xl bg-[#12A488] text-[#04110E] grid place-items-center mb-3 shadow-md">
                         <KeyRound className="h-6 w-6" />
                       </div>
                       <h1 className="text-2xl sm:text-3xl font-extrabold font-heading tracking-tight text-foreground">
@@ -187,7 +187,7 @@ function ForgotPasswordPage() {
                       <Button
                         type="submit"
                         disabled={isSending}
-                        className="w-full rounded-2xl h-12 text-sm font-bold bg-gradient-to-r from-primary via-sky-600 to-indigo-600 hover:opacity-95 text-white shadow-lg shadow-primary/20 btn-shine mt-2"
+                        className="w-full rounded-2xl h-12 text-sm font-bold bg-[#12A488] hover:bg-[#3FD1B3] text-[#04110E] shadow-lg shadow-[#12A488]/20 btn-shine mt-2 cursor-pointer"
                       >
                         {isSending ? "Sending OTP Code..." : "Send Reset OTP Code"}
                       </Button>
@@ -212,7 +212,7 @@ function ForgotPasswordPage() {
                   >
                     {/* Header */}
                     <div className="text-center mb-6 space-y-1.5">
-                      <div className="mx-auto h-12 w-12 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 grid place-items-center mb-3 shadow-sm">
+                      <div className="mx-auto h-12 w-12 rounded-2xl bg-[#12A488]/20 text-[#3FD1B3] border border-[#12A488]/30 grid place-items-center mb-3 shadow-sm">
                         <Lock className="h-6 w-6" />
                       </div>
                       <h1 className="text-2xl font-bold font-heading text-foreground">
@@ -278,7 +278,7 @@ function ForgotPasswordPage() {
                       <Button
                         type="submit"
                         disabled={isResetting}
-                        className="w-full rounded-2xl h-12 text-sm font-bold bg-gradient-to-r from-emerald-500 via-teal-600 to-primary hover:opacity-95 text-white shadow-lg btn-shine mt-2"
+                        className="w-full rounded-2xl h-12 text-sm font-bold bg-[#12A488] hover:bg-[#3FD1B3] text-[#04110E] shadow-lg shadow-[#12A488]/20 btn-shine mt-2 cursor-pointer"
                       >
                         {isResetting ? "Updating Password..." : "Reset & Save Password"}
                       </Button>

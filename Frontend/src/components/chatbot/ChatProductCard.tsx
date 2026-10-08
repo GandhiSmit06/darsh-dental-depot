@@ -59,29 +59,29 @@ export function ChatProductCard({ product }: ChatProductCardProps) {
   };
 
   return (
-    <div className="flex items-center gap-3 p-2.5 rounded-xl bg-background/95 border border-border/80 shadow-xs hover:border-primary/40 transition-all text-xs">
+    <div className="flex items-center gap-3 p-2.5 rounded-xl bg-background/95 dark:bg-gradient-to-br dark:from-[#10201C] dark:to-[#0A100F] border border-border/80 dark:border-white/10 shadow-xs hover:border-primary/40 dark:hover:border-[#12A488]/50 transition-all text-xs">
       <img
         src={imageUrl}
         alt={product.name}
-        className="h-14 w-14 rounded-lg object-cover border border-border/60 shrink-0 bg-muted"
+        className="h-14 w-14 rounded-lg object-cover border border-border/60 dark:border-white/10 shrink-0 bg-muted dark:bg-[#070B0A]"
         onError={(e) => {
           (e.target as HTMLElement).style.display = "none";
         }}
       />
 
       <div className="flex-1 min-w-0">
-        <div className="font-bold text-foreground truncate leading-tight">{product.name}</div>
-        <div className="text-[11px] text-muted-foreground mt-0.5 truncate">
+        <div className="font-bold text-foreground dark:text-[#F2F6F4] truncate leading-tight">{product.name}</div>
+        <div className="text-[11px] text-muted-foreground dark:text-[#9DB0A9] mt-0.5 truncate">
           {product.brand || "Darsh Dental Depot"}
         </div>
         <div className="flex items-center gap-2 mt-1">
-          <span className="font-extrabold text-primary text-sm">₹{price.toFixed(2)}</span>
+          <span className="font-extrabold text-primary dark:text-[#3FD1B3] text-sm">₹{price.toFixed(2)}</span>
           <Badge
             variant="outline"
             className={`text-[9px] px-1.5 py-0 h-4 font-semibold ${
               inStock
-                ? "border-emerald-500/30 text-emerald-600 bg-emerald-500/10"
-                : "border-rose-500/30 text-rose-600 bg-rose-500/10"
+                ? "border-emerald-500/30 text-emerald-600 bg-emerald-500/10 dark:border-[#12A488]/40 dark:text-[#3FD1B3] dark:bg-[#12A488]/15"
+                : "border-rose-500/30 text-rose-600 bg-rose-500/10 dark:border-rose-500/40 dark:text-rose-400 dark:bg-rose-500/15"
             }`}
           >
             {inStock ? "In Stock" : "Out of Stock"}
@@ -96,7 +96,7 @@ export function ChatProductCard({ product }: ChatProductCardProps) {
         className={`h-8 px-2.5 text-xs font-bold rounded-lg shrink-0 gap-1 transition-all ${
           added
             ? "bg-emerald-600 hover:bg-emerald-700 text-white"
-            : "bg-primary hover:bg-primary/90 text-white shadow-xs"
+            : "bg-primary hover:bg-primary/90 dark:bg-[#12A488] dark:hover:bg-[#3FD1B3] text-white dark:text-[#04110E] shadow-xs"
         }`}
       >
         {isAdding ? (

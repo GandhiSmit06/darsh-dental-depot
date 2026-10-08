@@ -167,7 +167,7 @@ export function ProductCard({ product, onAdd, onWishlist }: ProductCardProps) {
         {/* Card Content */}
         <div className="p-4 flex flex-col gap-2 flex-1">
           {/* Brand */}
-          <div className="text-[11px] font-bold text-primary/80 uppercase tracking-wider flex items-center gap-1">
+          <div className="text-[11px] font-bold text-primary dark:text-[#3FD1B3] uppercase tracking-wider flex items-center gap-1">
             <CheckCircle className="h-3 w-3" />
             {product.brand || "Darsh Certified"}
           </div>
@@ -176,7 +176,7 @@ export function ProductCard({ product, onAdd, onWishlist }: ProductCardProps) {
           <Link
             to="/products/$id"
             params={{ id: productId }}
-            className="font-semibold text-sm leading-snug line-clamp-2 text-foreground group-hover:text-primary transition-colors"
+            className="font-semibold text-sm leading-snug line-clamp-2 text-foreground group-hover:text-primary dark:group-hover:text-[#3FD1B3] transition-colors"
           >
             {product.name}
           </Link>
@@ -200,7 +200,7 @@ export function ProductCard({ product, onAdd, onWishlist }: ProductCardProps) {
               <div className="text-[10px] text-muted-foreground line-through">
                 ₹{originalPrice.toLocaleString("en-IN")}
               </div>
-              <div className="font-extrabold text-base text-foreground font-heading">
+              <div className="font-extrabold text-base text-foreground dark:text-[#3FD1B3] font-heading">
                 ₹{price.toLocaleString("en-IN")}
               </div>
             </div>
@@ -210,7 +210,7 @@ export function ProductCard({ product, onAdd, onWishlist }: ProductCardProps) {
                 size="sm"
                 variant="outline"
                 asChild
-                className="rounded-xl px-3 h-8 text-xs font-semibold border-primary/40 text-primary hover:bg-primary/10 transition-all"
+                className="rounded-xl px-3 h-8 text-xs font-semibold border-primary/40 text-primary dark:text-[#3FD1B3] hover:bg-primary/10 transition-all"
               >
                 <Link to="/shop">
                   <Package className="h-3.5 w-3.5 mr-1" /> Depot Stock
@@ -221,7 +221,7 @@ export function ProductCard({ product, onAdd, onWishlist }: ProductCardProps) {
                 size="sm"
                 variant="outline"
                 asChild
-                className="rounded-xl px-3 h-8 text-xs font-semibold border-primary/40 text-primary hover:bg-primary/10 transition-all"
+                className="rounded-xl px-3 h-8 text-xs font-semibold border-primary/40 text-primary dark:text-[#3FD1B3] hover:bg-primary/10 transition-all"
               >
                 <Link to="/admin">
                   <Settings className="h-3.5 w-3.5 mr-1" /> Admin
@@ -232,7 +232,7 @@ export function ProductCard({ product, onAdd, onWishlist }: ProductCardProps) {
                 size="sm"
                 disabled={!inStock || isAdding}
                 onClick={handleAddToCart}
-                className="rounded-xl px-3.5 h-8 text-xs font-medium bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm hover:shadow-md transition-all active:scale-95 disabled:opacity-70"
+                className="rounded-xl px-3.5 h-8 text-xs font-bold bg-[#12A488] hover:bg-[#3FD1B3] text-[#04110E] shadow-sm hover:shadow-md transition-all active:scale-95 disabled:opacity-70"
               >
                 {isAdding ? (
                   <>

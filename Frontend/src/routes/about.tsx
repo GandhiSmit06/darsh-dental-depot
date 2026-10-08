@@ -88,7 +88,7 @@ function AboutPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
           >
-            <Badge variant="outline" className="text-primary border-primary/30 mb-3 px-3 py-1">
+            <Badge variant="outline" className="text-primary dark:text-[#3FD1B3] border-primary/30 dark:border-[#12A488]/30 dark:bg-[#10201C] mb-3 px-3 py-1">
               <Sparkles className="h-3.5 w-3.5 mr-1.5 text-amber-500" /> Vadodara's Exclusive Dental Supply Depot
             </Badge>
           </motion.div>
@@ -135,7 +135,7 @@ function AboutPage() {
           ].map((v) => (
             <StaggerItem key={v.title} scale>
               <Card className="p-7 glass-card glass-card-hover rounded-2xl border border-border/60 h-full">
-                <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-primary/15 to-sky-500/10 text-primary grid place-items-center mb-5 shadow-sm">
+                <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-primary/15 to-sky-500/10 dark:from-[#12A488]/20 dark:to-[#3FD1B3]/10 text-primary dark:text-[#3FD1B3] grid place-items-center mb-5 shadow-sm">
                   <v.icon className="h-6 w-6" />
                 </div>
                 <h3 className="font-heading font-bold text-xl text-foreground">{v.title}</h3>
@@ -147,7 +147,7 @@ function AboutPage() {
       </section>
 
       {/* ─── Journey Timeline ────────────────────────────────────────────── */}
-      <section className="bg-secondary/30 border-y border-border/50 py-20">
+      <section className="bg-secondary/30 dark:bg-[#0B1210] border-y border-border/50 dark:border-white/10 py-20">
         <div className="container mx-auto px-4 max-w-4xl">
           <SectionHeading
             badge="Our Journey"
@@ -160,7 +160,7 @@ function AboutPage() {
             {milestones.map((m) => (
               <StaggerItem key={m.year} direction="left" scale>
                 <Card className="p-5 glass-card rounded-2xl border border-border/60 relative h-full">
-                  <div className="text-2xl font-extrabold font-heading text-primary">{m.year}</div>
+                  <div className="text-2xl font-extrabold font-heading text-primary dark:text-[#3FD1B3]">{m.year}</div>
                   <div className="font-bold text-sm text-foreground mt-1">{m.title}</div>
                   <div className="text-xs text-muted-foreground mt-2 leading-relaxed">{m.desc}</div>
                 </Card>
@@ -174,7 +174,7 @@ function AboutPage() {
       <section className="container mx-auto px-4 py-20">
         <div className="grid lg:grid-cols-12 gap-10 items-center">
           <ScrollReveal direction="left" className="lg:col-span-6 space-y-6">
-            <Badge variant="outline" className="text-primary border-primary/30">
+            <Badge variant="outline" className="text-primary dark:text-[#3FD1B3] border-primary/30 dark:border-[#12A488]/30 dark:bg-[#10201C]">
               Physical Depot Location
             </Badge>
             <h2 className="text-3xl sm:text-4xl font-extrabold font-heading text-foreground">
@@ -184,9 +184,9 @@ function AboutPage() {
               Our full-service dental materials showroom is centrally located in Vadodara. Doctors and clinical staff are always welcome to inspect materials, test dental instruments, or collect urgent supplies directly.
             </p>
 
-            <div className="p-5 rounded-2xl bg-secondary/50 border border-border/60 space-y-3 text-xs">
+            <div className="p-5 rounded-2xl bg-secondary/50 dark:bg-gradient-to-br dark:from-[#10201C] dark:to-[#0A100F] border border-border/60 dark:border-white/10 space-y-3 text-xs">
               <div className="flex items-start gap-2.5">
-                <MapPin className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+                <MapPin className="h-4 w-4 text-primary dark:text-[#3FD1B3] shrink-0 mt-0.5" />
                 <div>
                   <span className="font-bold text-foreground">Depot Address:</span>
                   <p className="text-muted-foreground mt-0.5 leading-relaxed">
@@ -195,19 +195,19 @@ function AboutPage() {
                 </div>
               </div>
 
-              <div className="flex items-center gap-2.5 pt-2 border-t border-border/40">
-                <Clock className="h-4 w-4 text-primary shrink-0" />
+              <div className="flex items-center gap-2.5 pt-2 border-t border-border/40 dark:border-white/10">
+                <Clock className="h-4 w-4 text-primary dark:text-[#3FD1B3] shrink-0" />
                 <div>
                   <span className="font-bold text-foreground">Operating Hours:</span>
                   <span className="text-muted-foreground ml-1">Mon – Sat: 10:00 AM – 8:30 PM (Sun: Closed)</span>
                 </div>
               </div>
 
-              <div className="flex items-center gap-2.5 pt-2 border-t border-border/40">
-                <Phone className="h-4 w-4 text-primary shrink-0" />
+              <div className="flex items-center gap-2.5 pt-2 border-t border-border/40 dark:border-white/10">
+                <Phone className="h-4 w-4 text-primary dark:text-[#3FD1B3] shrink-0" />
                 <div>
                   <span className="font-bold text-foreground">Direct Call & WhatsApp:</span>
-                  <a href={`tel:${PHONE_RAW}`} className="text-primary font-bold ml-1 hover:underline">
+                  <a href={`tel:${PHONE_RAW}`} className="text-primary dark:text-[#3FD1B3] font-bold ml-1 hover:underline">
                     {PHONE_NUMBER}
                   </a>
                 </div>
@@ -215,12 +215,12 @@ function AboutPage() {
             </div>
 
             <div className="flex flex-wrap items-center gap-3">
-              <Button asChild className="rounded-full px-6 h-11 bg-primary text-white shadow-md btn-shine">
+              <Button asChild className="rounded-full px-6 h-11 bg-primary dark:bg-[#12A488] dark:hover:bg-[#3FD1B3] text-white dark:text-[#04110E] dark:font-bold shadow-md btn-shine">
                 <a href={MAPS_URL} target="_blank" rel="noreferrer">
                   Open Google Maps <ExternalLink className="ml-2 h-4 w-4" />
                 </a>
               </Button>
-              <Button variant="outline" asChild className="rounded-full px-6 h-11 border-border/60">
+              <Button variant="outline" asChild className="rounded-full px-6 h-11 border-border/60 dark:border-white/10 dark:text-[#F2F6F4] dark:hover:text-[#3FD1B3] dark:hover:bg-[#10201C]">
                 <Link to="/products">
                   Explore Products <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
@@ -231,7 +231,7 @@ function AboutPage() {
           <ScrollReveal direction="right" delay={0.15} className="lg:col-span-6">
             <Card className="p-6 glass-card rounded-3xl border border-border/60 space-y-4">
               <h3 className="font-heading font-bold text-lg text-foreground flex items-center gap-2">
-                <CheckCircle2 className="h-5 w-5 text-emerald-500" /> Same-Day Delivery Across Vadodara
+                <CheckCircle2 className="h-5 w-5 text-emerald-500 dark:text-[#3FD1B3]" /> Same-Day Delivery Across Vadodara
               </h3>
               <p className="text-xs text-muted-foreground">
                 We deliver directly to dental clinics across all major Vadodara sectors:
@@ -240,8 +240,8 @@ function AboutPage() {
               <StaggerContainer staggerDelay={0.06} className="grid grid-cols-2 gap-2.5 pt-2">
                 {vadodaraZones.map((z) => (
                   <StaggerItem key={z}>
-                    <div className="p-2.5 rounded-xl bg-background/80 border border-border/40 text-xs font-semibold text-foreground flex items-center gap-2">
-                      <div className="h-2 w-2 rounded-full bg-primary" />
+                    <div className="p-2.5 rounded-xl bg-background/80 dark:bg-[#070B0A] border border-border/40 dark:border-white/10 text-xs font-semibold text-foreground dark:text-[#F2F6F4] flex items-center gap-2">
+                      <div className="h-2 w-2 rounded-full bg-primary dark:bg-[#12A488]" />
                       <span>{z}</span>
                     </div>
                   </StaggerItem>

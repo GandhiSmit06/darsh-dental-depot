@@ -34,56 +34,56 @@ export function Footer() {
   };
 
   return (
-    <footer className="border-t border-border/50 bg-gradient-to-b from-background via-background to-secondary/40 mt-28 relative overflow-hidden">
+    <footer className="border-t border-border/50 dark:border-white/8 bg-gradient-to-b from-background via-background to-secondary/40 dark:from-[#070B0A] dark:via-[#070B0A] dark:to-[#0B1210] mt-28 relative overflow-hidden">
       {/* Decorative top glow border */}
-      <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
+      <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-primary/50 dark:via-[#12A488]/40 to-transparent" />
 
       {/* Trust & Guarantee Highlights Bar */}
-      <div className="border-b border-border/40 py-8 bg-secondary/30 backdrop-blur-md">
+      <div className="border-b border-border/40 dark:border-white/8 py-8 bg-secondary/30 dark:bg-[#0B1210] backdrop-blur-md">
         <StaggerContainer staggerDelay={0.1} className="container mx-auto px-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           <StaggerItem>
-            <div className="flex items-center gap-3.5 p-3 rounded-2xl bg-background/50 border border-border/30">
-              <div className="h-10 w-10 rounded-xl bg-primary/10 text-primary grid place-items-center shrink-0">
+            <div className="flex items-center gap-3.5 p-3.5 rounded-2xl bg-background/50 dark:bg-gradient-to-br dark:from-[#10201C] dark:to-[#0A100F] border border-border/30 dark:border-white/8">
+              <div className="h-10 w-10 rounded-xl bg-primary/10 dark:bg-[#12A488]/15 text-primary dark:text-[#3FD1B3] grid place-items-center shrink-0">
                 <ShieldCheck className="h-5 w-5" />
               </div>
               <div>
-                <div className="font-bold text-xs uppercase tracking-wider">100% Genuine Guaranteed</div>
+                <div className="font-bold text-xs uppercase tracking-wider text-foreground">100% Genuine Guaranteed</div>
                 <div className="text-xs text-muted-foreground">Direct manufacturer authentic batch</div>
               </div>
             </div>
           </StaggerItem>
 
           <StaggerItem>
-            <div className="flex items-center gap-3.5 p-3 rounded-2xl bg-background/50 border border-border/30">
-              <div className="h-10 w-10 rounded-xl bg-sky-500/10 text-sky-500 grid place-items-center shrink-0">
+            <div className="flex items-center gap-3.5 p-3.5 rounded-2xl bg-background/50 dark:bg-gradient-to-br dark:from-[#10201C] dark:to-[#0A100F] border border-border/30 dark:border-white/8">
+              <div className="h-10 w-10 rounded-xl bg-sky-500/10 dark:bg-[#12A488]/15 text-sky-500 dark:text-[#3FD1B3] grid place-items-center shrink-0">
                 <Truck className="h-5 w-5" />
               </div>
               <div>
-                <div className="font-bold text-xs uppercase tracking-wider">Same-Day Vadodara Delivery</div>
+                <div className="font-bold text-xs uppercase tracking-wider text-foreground">Same-Day Vadodara Delivery</div>
                 <div className="text-xs text-muted-foreground">Direct to your dental clinic</div>
               </div>
             </div>
           </StaggerItem>
 
           <StaggerItem>
-            <div className="flex items-center gap-3.5 p-3 rounded-2xl bg-background/50 border border-border/30">
-              <div className="h-10 w-10 rounded-xl bg-indigo-500/10 text-indigo-500 grid place-items-center shrink-0">
+            <div className="flex items-center gap-3.5 p-3.5 rounded-2xl bg-background/50 dark:bg-gradient-to-br dark:from-[#10201C] dark:to-[#0A100F] border border-border/30 dark:border-white/8">
+              <div className="h-10 w-10 rounded-xl bg-indigo-500/10 dark:bg-[#12A488]/15 text-indigo-500 dark:text-[#3FD1B3] grid place-items-center shrink-0">
                 <Clock className="h-5 w-5" />
               </div>
               <div>
-                <div className="font-bold text-xs uppercase tracking-wider">Mon–Sat: 10AM – 8:30PM</div>
+                <div className="font-bold text-xs uppercase tracking-wider text-foreground">Mon–Sat: 10AM – 8:30PM</div>
                 <div className="text-xs text-muted-foreground">Sunday: Emergency on call</div>
               </div>
             </div>
           </StaggerItem>
 
           <StaggerItem>
-            <div className="flex items-center gap-3.5 p-3 rounded-2xl bg-background/50 border border-border/30">
-              <div className="h-10 w-10 rounded-xl bg-emerald-500/10 text-emerald-500 grid place-items-center shrink-0">
+            <div className="flex items-center gap-3.5 p-3.5 rounded-2xl bg-background/50 dark:bg-gradient-to-br dark:from-[#10201C] dark:to-[#0A100F] border border-border/30 dark:border-white/8">
+              <div className="h-10 w-10 rounded-xl bg-emerald-500/10 dark:bg-[#12A488]/15 text-emerald-500 dark:text-[#3FD1B3] grid place-items-center shrink-0">
                 <CheckCircle2 className="h-5 w-5" />
               </div>
               <div>
-                <div className="font-bold text-xs uppercase tracking-wider">Direct Depot Wholesale Rates</div>
+                <div className="font-bold text-xs uppercase tracking-wider text-foreground">Direct Depot Wholesale Rates</div>
                 <div className="text-xs text-muted-foreground">Special pricing for Vadodara doctors</div>
               </div>
             </div>
@@ -106,10 +106,10 @@ export function Footer() {
                 placeholder="Enter doctor / clinic email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="rounded-full bg-background/80 text-xs h-10 border-border/60 focus:border-primary"
+                className="rounded-full bg-background/80 dark:bg-[#070B0A] text-xs h-10 border-border/60 dark:border-white/10 focus:border-[#12A488]"
                 required
               />
-              <Button type="submit" size="sm" className="rounded-full px-4 h-10 bg-primary hover:bg-primary/90 shadow-md">
+              <Button type="submit" size="sm" className="rounded-full px-4 h-10 bg-[#12A488] hover:bg-[#3FD1B3] text-[#04110E] font-bold shadow-md">
                 <Send className="h-3.5 w-3.5" />
               </Button>
             </form>

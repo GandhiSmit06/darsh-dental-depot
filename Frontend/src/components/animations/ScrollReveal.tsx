@@ -375,7 +375,7 @@ export function SectionHeading({
   title,
   subtitle,
   align = "center",
-  badgeClassName = "text-primary border-primary/30",
+  badgeClassName = "text-primary dark:text-[#3FD1B3] border-primary/30 dark:border-[#12A488]/30 dark:bg-[#10201C]",
   className = "",
 }: SectionHeadingProps) {
   const textAlign = align === "center" ? "text-center mx-auto" : "text-left";

@@ -1,47 +1,49 @@
-import { Link, useRouterState } from "@tanstack/react-router";
+import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import {
   Menu,
   ShoppingCart,
-  Sparkles,
   Moon,
   Sun,
   LayoutDashboard,
   LogOut,
   ArrowRight,
   Phone,
-  MessageSquare,
+  Search,
+  User,
+  SlidersHorizontal,
 } from "lucide-react";
 import { useTheme } from "@/components/theme-provider";
 import { useAuth } from "@/lib/auth-context";
 import { motion, AnimatePresence } from "framer-motion";
+import { useState } from "react";
 
-const links = [
+const navLinks = [
   { to: "/", label: "Home" },
-  { to: "/products", label: "Dental Catalog" },
+  { to: "/products", label: "Products" },
+  { to: "/products", label: "Brands" },
   { to: "/about", label: "About Depot" },
-  { to: "/contact", label: "Vadodara Location & Contact" },
+  { to: "/contact", label: "Vadodara Location" },
+  { to: "/contact", label: "Contact" },
 ];
 
 export function Logo({ className }: { className?: string }) {
   return (
-    <Link to="/" className={`flex items-center gap-3 group select-none ${className || ""}`}>
+    <Link to="/" className={`flex items-center gap-2.5 group select-none shrink-0 ${className || ""}`}>
       <div className="relative shrink-0">
-        <div className="absolute -inset-1 bg-gradient-to-r from-cyan-500 via-sky-500 to-indigo-500 rounded-2xl blur-sm opacity-50 group-hover:opacity-100 transition duration-300 pointer-events-none" />
-        <div className="relative h-10 w-10 rounded-xl overflow-hidden bg-white/95 dark:bg-slate-900 border border-white/60 dark:border-slate-700/60 shadow-md transform group-hover:scale-105 transition-all duration-300 flex items-center justify-center p-0.5">
-          <img
-            src="/logo.jpg"
-            alt="Darsh Dental Depot"
-            className="w-full h-full object-cover rounded-[inherit] transform group-hover:scale-110 transition-transform duration-500"
-          />
+        <div className="h-9 w-9 rounded-xl overflow-hidden bg-white dark:bg-slate-900 border border-sky-200/80 dark:border-slate-700 shadow-xs flex items-center justify-center p-1 group-hover:border-sky-400 transition-colors">
+          <svg className="w-6 h-6 text-[#0284c7]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12 2C8 2 5 4.5 5 8c0 3.5 2 7 3.5 11 .5 1.5 1.5 3 3.5 3s3-1.5 3.5-3C17 15 19 11.5 19 8c0-3.5-3-6-7-6z" />
+            <path d="M9 8c0-1.5 1.3-2.5 3-2.5s3 1 3 2.5" />
+          </svg>
         </div>
       </div>
-      <div className="leading-none flex flex-col justify-center">
-        <span className="font-extrabold text-base tracking-tight font-heading bg-gradient-to-r from-foreground via-foreground to-primary bg-clip-text text-transparent group-hover:to-cyan-500 transition-colors">
+      <div className="leading-tight flex flex-col justify-center">
+        <span className="font-extrabold text-[15px] tracking-tight font-heading text-slate-900 dark:text-white group-hover:text-[#0284c7] transition-colors">
           DARSH DENTAL
         </span>
-        <span className="text-[9px] font-extrabold uppercase tracking-widest text-primary mt-0.5">
+        <span className="text-[9px] font-extrabold uppercase tracking-widest text-[#0284c7]">
           DEPOT • VADODARA
         </span>
       </div>
@@ -51,8 +53,19 @@ export function Logo({ className }: { className?: string }) {
 
 export function Navbar() {
   const path = useRouterState({ select: (s) => s.location.pathname });
+  const navigate = useNavigate();
   const { theme, toggle } = useTheme();
   const { user, isAuthenticated, logout } = useAuth();
+  const [navSearch, setNavSearch] = useState("");
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (navSearch.trim()) {
+      navigate({ to: "/products", search: { search: navSearch.trim() } as any });
+    } else {
+      navigate({ to: "/products" });
+    }
+  };
 
   const getDashboardPath = () => {
     if (!user) return "/login";
@@ -63,50 +76,74 @@ export function Navbar() {
 
   return (
     <motion.header
-      initial={{ y: -30, opacity: 0 }}
+      initial={{ y: -20, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-      className="sticky top-0 z-40 border-b border-border/50 bg-background/80 backdrop-blur-xl supports-[backdrop-filter]:bg-background/70 shadow-sm"
+      transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+      className="sticky top-0 z-40 border-b border-slate-200/70 dark:border-slate-800/80 bg-white/95 dark:bg-[#070B0A]/95 backdrop-blur-md shadow-xs"
     >
-      <div className="container mx-auto px-4 h-18 flex items-center justify-between gap-4">
+      <div className="container mx-auto px-4 h-16 flex items-center justify-between gap-3 lg:gap-4">
+        {/* Left: Brand Logo */}
         <Logo />
 
-        {/* Desktop Navigation */}
-        <nav className="hidden lg:flex items-center gap-1.5 p-1 rounded-full bg-secondary/50 border border-border/40 backdrop-blur-md">
-          {links.map((l) => {
-            const active = l.to === "/" ? path === "/" : path.startsWith(l.to);
+        {/* Center: Clean Nav Pills (matching mockup) */}
+        <nav className="hidden xl:flex items-center gap-1">
+          {navLinks.map((l, index) => {
+            const isHome = l.to === "/" && l.label === "Home";
+            const active = isHome ? path === "/" : path === l.to;
             return (
               <Link
-                key={l.to}
+                key={`${l.label}-${index}`}
                 to={l.to}
-                className={`relative px-4 py-2 text-xs font-semibold rounded-full transition-all duration-200 ${
+                className={`px-3 py-1.5 text-xs font-semibold rounded-full transition-all duration-200 ${
                   active
-                    ? "text-primary font-bold shadow-sm"
-                    : "text-muted-foreground hover:text-foreground hover:bg-background/60"
+                    ? "bg-sky-100 dark:bg-sky-950/60 text-[#0284c7] dark:text-sky-300 font-bold"
+                    : "text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white hover:bg-slate-100/70 dark:hover:bg-slate-800/60"
                 }`}
               >
-                {active && (
-                  <motion.div
-                    layoutId="active-pill"
-                    className="absolute inset-0 bg-background rounded-full border border-primary/20 shadow-sm -z-10"
-                    transition={{ type: "spring", stiffness: 380, damping: 30 }}
-                  />
-                )}
                 {l.label}
               </Link>
             );
           })}
         </nav>
 
+        {/* Search input in header (matching mockup) */}
+        <form
+          onSubmit={handleSearchSubmit}
+          className="hidden md:flex items-center relative max-w-xs lg:max-w-sm w-full mx-2"
+        >
+          <div className="relative w-full">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400 pointer-events-none" />
+            <input
+              type="text"
+              value={navSearch}
+              onChange={(e) => setNavSearch(e.target.value)}
+              placeholder="Search for products, brands or categories..."
+              className="w-full h-9 pl-9 pr-8 text-xs rounded-full bg-slate-100/90 dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0284c7]/30 focus:border-[#0284c7] transition-all"
+            />
+            <button
+              type="button"
+              onClick={() => navigate({ to: "/products" })}
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+              title="Filters"
+            >
+              <SlidersHorizontal className="h-3 w-3" />
+            </button>
+          </div>
+        </form>
+
         {/* Right side actions */}
-        <div className="flex items-center gap-2">
-          {/* Quick Call Button */}
-          <a
-            href="tel:+919727076119"
-            className="hidden xl:flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold text-primary bg-primary/10 hover:bg-primary/20 transition-colors border border-primary/20"
+        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+          {/* Cart Icon with '3' badge matching mockup */}
+          <Link
+            to={isAuthenticated && user?.role === "doctor" ? "/doctor" : "/products"}
+            className="relative p-2 rounded-full text-slate-700 dark:text-slate-300 hover:text-[#0284c7] hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+            title="Clinic Cart"
           >
-            <Phone className="h-3.5 w-3.5 text-primary" /> +91 97270 76119
-          </a>
+            <ShoppingCart className="h-4 w-4" />
+            <span className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full bg-[#0284c7] text-white text-[10px] font-bold flex items-center justify-center shadow-xs">
+              3
+            </span>
+          </Link>
 
           {/* Theme Toggle */}
           <Button
@@ -114,7 +151,7 @@ export function Navbar() {
             size="icon"
             onClick={toggle}
             aria-label="Toggle theme"
-            className="rounded-full h-9 w-9 hover:bg-secondary/80 text-muted-foreground hover:text-foreground"
+            className="rounded-full h-8 w-8 text-slate-600 dark:text-slate-300 hover:text-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800"
           >
             <AnimatePresence mode="wait" initial={false}>
               <motion.div
@@ -122,111 +159,111 @@ export function Navbar() {
                 initial={{ rotate: -90, scale: 0.8, opacity: 0 }}
                 animate={{ rotate: 0, scale: 1, opacity: 1 }}
                 exit={{ rotate: 90, scale: 0.8, opacity: 0 }}
-                transition={{ duration: 0.2 }}
+                transition={{ duration: 0.15 }}
               >
-                {theme === "dark" ? <Sun className="h-4 w-4 text-amber-400" /> : <Moon className="h-4 w-4 text-sky-600" />}
+                {theme === "dark" ? <Sun className="h-3.5 w-3.5 text-amber-400" /> : <Moon className="h-3.5 w-3.5 text-sky-600" />}
               </motion.div>
             </AnimatePresence>
           </Button>
 
-          {/* Quick Cart (Only for doctors / guest buyers) */}
-          {(!user || user.role === "doctor") && (
-            <Button
-              variant="ghost"
-              size="icon"
-              asChild
-              className="hidden sm:inline-flex rounded-full h-9 w-9 text-muted-foreground hover:text-foreground hover:bg-secondary/80 relative"
-            >
-              <Link to={user ? "/doctor" : "/products"}>
-                <ShoppingCart className="h-4 w-4" />
-              </Link>
-            </Button>
-          )}
-
-          {/* Auth State Button */}
+          {/* Auth State */}
           {isAuthenticated && user ? (
             <div className="flex items-center gap-2">
               <Button
-                variant="default"
                 size="sm"
                 asChild
-                className="hidden sm:inline-flex rounded-full shadow-md bg-gradient-to-r from-primary to-sky-600 hover:opacity-95 btn-shine font-medium text-xs px-4 h-9"
+                className="rounded-full bg-[#0284c7] hover:bg-[#0369a1] text-white font-semibold text-xs px-3.5 h-8.5 shadow-xs"
               >
                 <Link to={getDashboardPath()}>
-                  <LayoutDashboard className="h-3.5 w-3.5 mr-1.5" />
-                  {user.role === "doctor" ? "Doctor Portal" : user.role === "shop_owner" ? "Shop Dashboard" : "Admin Hub"}
+                  <LayoutDashboard className="h-3.5 w-3.5 mr-1" />
+                  {user.role === "doctor" ? "Doctor Portal" : user.role === "shop_owner" ? "Shop" : "Admin"}
                 </Link>
               </Button>
               <Button
-                variant="outline"
+                variant="ghost"
                 size="icon"
                 onClick={() => logout()}
                 title="Logout"
-                className="hidden sm:inline-flex rounded-full h-9 w-9 text-muted-foreground hover:text-destructive hover:border-destructive/30"
+                className="rounded-full h-8 w-8 text-slate-400 hover:text-destructive"
               >
                 <LogOut className="h-3.5 w-3.5" />
               </Button>
             </div>
           ) : (
-            <div className="hidden sm:flex items-center gap-2">
-              <Button variant="ghost" size="sm" asChild className="rounded-full text-xs font-medium px-4 h-9">
-                <Link to="/login">Sign In</Link>
-              </Button>
+            <div className="flex items-center gap-2">
+              <Link
+                to="/login"
+                className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:text-[#0284c7] transition-colors"
+              >
+                <User className="h-3.5 w-3.5" />
+                <span>Sign In</span>
+              </Link>
               <Button
                 size="sm"
                 asChild
-                className="rounded-full text-xs font-semibold px-4 h-9 bg-gradient-to-r from-primary via-sky-600 to-indigo-600 hover:opacity-95 shadow-md shadow-primary/20 btn-shine"
+                className="rounded-full text-xs font-semibold px-4 h-8.5 bg-[#0284c7] hover:bg-[#0369a1] text-white shadow-xs"
               >
-                <Link to="/register">
-                  Doctor Register <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
+                <Link to="/register" className="flex items-center gap-1">
+                  <span>Doctor Register</span>
+                  <ArrowRight className="h-3.5 w-3.5" />
                 </Link>
               </Button>
             </div>
           )}
 
-          {/* Mobile Navigation Sheet */}
+          {/* Mobile Navigation Menu */}
           <Sheet>
             <SheetTrigger asChild>
-              <Button size="icon" variant="ghost" className="lg:hidden rounded-full h-9 w-9">
-                <Menu className="h-5 w-5" />
+              <Button size="icon" variant="ghost" className="xl:hidden rounded-full h-8 w-8 text-slate-700 dark:text-slate-200">
+                <Menu className="h-4 w-4" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="w-[300px] glass-card border-l border-border/60">
-              <div className="flex flex-col gap-6 mt-6">
+            <SheetContent side="right" className="w-[300px] bg-white dark:bg-[#070B0A] border-l border-slate-200 dark:border-slate-800">
+              <div className="flex flex-col gap-5 mt-6">
                 <Logo />
-                <div className="flex flex-col gap-1.5">
-                  {links.map((l) => (
+                
+                {/* Mobile Search */}
+                <form onSubmit={handleSearchSubmit} className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
+                  <input
+                    type="text"
+                    value={navSearch}
+                    onChange={(e) => setNavSearch(e.target.value)}
+                    placeholder="Search dental depot..."
+                    className="w-full h-9 pl-9 pr-3 text-xs rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800"
+                  />
+                </form>
+
+                <div className="flex flex-col gap-1">
+                  {navLinks.map((l, idx) => (
                     <Link
-                      key={l.to}
+                      key={`${l.label}-${idx}`}
                       to={l.to}
-                      className="px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-primary/10 hover:text-primary transition-colors"
+                      className="px-3 py-2 rounded-lg text-sm font-medium hover:bg-sky-50 dark:hover:bg-slate-900 hover:text-[#0284c7] transition-colors"
                     >
                       {l.label}
                     </Link>
                   ))}
                 </div>
 
-                <div className="p-3.5 rounded-2xl bg-secondary/50 border border-border/50 space-y-2">
-                  <div className="text-xs font-bold text-foreground">Darsh Dental Depot</div>
-                  <div className="text-[11px] text-muted-foreground leading-tight">
-                    FF-10/11, Vraj Vihar Complex, Shiyabaug, Vadodara
+                <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800 space-y-1.5">
+                  <div className="text-xs font-bold text-slate-900 dark:text-white">Darsh Dental Depot</div>
+                  <div className="text-[11px] text-slate-500 leading-tight">
+                    Shiyabaug / Kevdabaug, Vadodara
                   </div>
                   <a
                     href="tel:+919727076119"
-                    className="text-xs text-primary font-bold flex items-center gap-1.5 pt-1"
+                    className="text-xs text-[#0284c7] font-bold flex items-center gap-1.5 pt-1"
                   >
                     <Phone className="h-3.5 w-3.5" /> +91 97270 76119
                   </a>
                 </div>
 
-                <div className="h-px bg-border/60 my-1" />
+                <div className="h-px bg-slate-200 dark:bg-slate-800 my-1" />
 
                 {isAuthenticated && user ? (
                   <div className="flex flex-col gap-2">
-                    <div className="text-xs text-muted-foreground px-4">
-                      Signed in as <span className="font-semibold text-foreground">{user.fullName}</span>
-                    </div>
-                    <Button asChild className="rounded-xl justify-start bg-primary text-white">
+                    <Button asChild className="rounded-xl justify-start bg-[#0284c7] text-white">
                       <Link to={getDashboardPath()}>
                         <LayoutDashboard className="h-4 w-4 mr-2" /> Open Dashboard
                       </Link>
@@ -236,12 +273,12 @@ export function Navbar() {
                     </Button>
                   </div>
                 ) : (
-                  <div className="flex flex-col gap-2.5">
-                    <Button variant="outline" asChild className="rounded-xl justify-center">
+                  <div className="flex flex-col gap-2">
+                    <Button variant="outline" asChild className="rounded-xl justify-center text-xs">
                       <Link to="/login">Sign In</Link>
                     </Button>
-                    <Button asChild className="rounded-xl justify-center bg-gradient-to-r from-primary to-indigo-600 text-white shadow-md">
-                      <Link to="/register">Doctor Registration</Link>
+                    <Button asChild className="rounded-xl justify-center bg-[#0284c7] hover:bg-[#0369a1] text-white text-xs">
+                      <Link to="/register">Doctor Register</Link>
                     </Button>
                   </div>
                 )}

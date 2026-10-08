@@ -160,12 +160,12 @@ function ProductDetail() {
     <PublicLayout>
       <div className="container mx-auto px-4 py-10 max-w-6xl">
         {/* Breadcrumb Navigation */}
-        <nav className="flex items-center gap-2 text-xs font-semibold text-muted-foreground mb-8">
-          <Link to="/" className="hover:text-primary transition-colors">
+        <nav className="flex items-center gap-2 text-xs font-semibold text-muted-foreground dark:text-[#9DB0A9] mb-8">
+          <Link to="/" className="hover:text-primary dark:hover:text-[#3FD1B3] transition-colors">
             Home
           </Link>
           <span>/</span>
-          <Link to="/products" className="hover:text-primary transition-colors">
+          <Link to="/products" className="hover:text-primary dark:hover:text-[#3FD1B3] transition-colors">
             Dental Products
           </Link>
           <span>/</span>
@@ -176,14 +176,14 @@ function ProductDetail() {
         <div className="grid lg:grid-cols-12 gap-10 items-start">
           {/* Left Column: Gallery */}
           <ScrollReveal direction="left" className="lg:col-span-6 space-y-4">
-            <Card className="overflow-hidden aspect-[4/3] glass-card border border-border/70 rounded-3xl relative shadow-lg">
+            <Card className="overflow-hidden aspect-[4/3] glass-card border border-border/70 dark:border-white/10 dark:bg-[#0A100F] rounded-3xl relative shadow-lg">
               <img
                 src={gallery[activeImg]}
                 alt={product.name}
                 className="w-full h-full object-cover object-center transition-all duration-300"
               />
               <div className="absolute top-4 left-4 flex flex-col gap-2">
-                <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold text-xs px-2.5 py-1 shadow-md border-0">
+                <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 dark:bg-[#12A488]/20 dark:text-[#3FD1B3] dark:border dark:border-[#12A488]/30 text-white font-bold text-xs px-2.5 py-1 shadow-md border-0">
                   <Zap className="h-3.5 w-3.5 mr-1 fill-current" /> {discountPercent}% Clinic Savings
                 </Badge>
               </div>
@@ -197,8 +197,8 @@ function ProductDetail() {
                     onClick={() => setActiveImg(i)}
                     className={`h-20 w-20 rounded-2xl overflow-hidden border-2 shrink-0 transition-all ${
                       activeImg === i
-                        ? "border-primary shadow-md scale-105"
-                        : "border-border/60 hover:border-primary/50 opacity-70"
+                        ? "border-primary dark:border-[#12A488] shadow-md scale-105"
+                        : "border-border/60 dark:border-white/10 hover:border-primary/50 dark:hover:border-[#3FD1B3]/50 opacity-70"
                     }`}
                   >
                     <img src={g} alt="" className="w-full h-full object-cover" />
@@ -212,10 +212,10 @@ function ProductDetail() {
           <ScrollReveal direction="right" delay={0.1} className="lg:col-span-6 space-y-6">
             <div>
               <div className="flex items-center justify-between gap-2">
-                <Badge variant="outline" className="text-primary font-bold text-xs border-primary/30 uppercase tracking-wider">
+                <Badge variant="outline" className="text-primary dark:text-[#3FD1B3] font-bold text-xs border-primary/30 dark:border-[#12A488]/30 dark:bg-[#12A488]/10 uppercase tracking-wider">
                   {product.brand || "Darsh Certified"}
                 </Badge>
-                <div className="text-xs text-muted-foreground font-mono">
+                <div className="text-xs text-muted-foreground dark:text-[#9DB0A9] font-mono">
                   SKU: {product.sku || product.SKU || `DEN-${product._id?.slice(-6).toUpperCase()}`}
                 </div>
               </div>
@@ -231,14 +231,14 @@ function ProductDetail() {
                   <span className="font-bold ml-1.5 text-foreground text-sm">
                     {(product.rating || 4.9).toFixed(1)}
                   </span>
-                  <span className="text-xs text-muted-foreground ml-1">
+                  <span className="text-xs text-muted-foreground dark:text-[#9DB0A9] ml-1">
                     ({product.reviewCount || 34} clinic reviews)
                   </span>
                 </div>
                 <span>•</span>
                 <Badge
                   variant={inStock ? "secondary" : "destructive"}
-                  className="rounded-full text-xs font-semibold px-2.5 py-0.5"
+                  className="rounded-full text-xs font-semibold px-2.5 py-0.5 dark:bg-[#12A488]/15 dark:text-[#3FD1B3] dark:border-[#12A488]/30"
                 >
                   {inStock ? "In Stock & Ready to Ship" : "Currently Out of Stock"}
                 </Badge>
@@ -246,17 +246,17 @@ function ProductDetail() {
             </div>
 
             {/* Price Box */}
-            <div className="p-5 rounded-2xl bg-secondary/50 border border-border/60 flex items-center justify-between">
+            <div className="p-5 rounded-2xl bg-secondary/50 dark:bg-gradient-to-br dark:from-[#10201C] dark:to-[#0A100F] border border-border/60 dark:border-white/10 flex items-center justify-between">
               <div>
-                <div className="text-xs text-muted-foreground line-through">
+                <div className="text-xs text-muted-foreground dark:text-[#9DB0A9] line-through">
                   MRP: ₹{originalPrice.toLocaleString("en-IN")}
                 </div>
-                <div className="text-3xl font-extrabold font-heading text-primary">
+                <div className="text-3xl font-extrabold font-heading text-primary dark:text-[#3FD1B3]">
                   ₹{price.toLocaleString("en-IN")}{" "}
-                  <span className="text-xs font-medium text-muted-foreground">/ unit (Incl. GST)</span>
+                  <span className="text-xs font-medium text-muted-foreground dark:text-[#9DB0A9]">/ unit (Incl. GST)</span>
                 </div>
               </div>
-              <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 font-bold">
+              <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-[#3FD1B3] border-emerald-500/20 dark:border-[#12A488]/30 font-bold">
                 Wholesale Tier
               </Badge>
             </div>
@@ -264,46 +264,46 @@ function ProductDetail() {
             {/* Quantity and Actions */}
             <div className="space-y-4 pt-2">
               {user?.role === "shop_owner" ? (
-                <div className="p-4 rounded-2xl bg-primary/10 border border-primary/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                <div className="p-4 rounded-2xl bg-primary/10 dark:bg-[#10201C] border border-primary/20 dark:border-white/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                   <div>
                     <div className="font-bold text-sm text-foreground flex items-center gap-1.5">
-                      <Package className="h-4 w-4 text-primary" /> Store Inventory Item
+                      <Package className="h-4 w-4 text-primary dark:text-[#3FD1B3]" /> Store Inventory Item
                     </div>
-                    <div className="text-xs text-muted-foreground mt-0.5">
+                    <div className="text-xs text-muted-foreground dark:text-[#9DB0A9] mt-0.5">
                       You are logged in as the Shop Owner. Manage pricing, batches & stock in your portal.
                     </div>
                   </div>
-                  <Button asChild className="rounded-xl font-bold bg-primary text-white text-xs h-9 shadow-sm">
+                  <Button asChild className="rounded-xl font-bold bg-primary dark:bg-[#12A488] hover:dark:bg-[#3FD1B3] text-white dark:text-[#04110E] text-xs h-9 shadow-sm">
                     <Link to="/shop">Open Shop Inventory</Link>
                   </Button>
                 </div>
               ) : user?.role === "admin" ? (
-                <div className="p-4 rounded-2xl bg-primary/10 border border-primary/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                <div className="p-4 rounded-2xl bg-primary/10 dark:bg-[#10201C] border border-primary/20 dark:border-white/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                   <div>
                     <div className="font-bold text-sm text-foreground flex items-center gap-1.5">
-                      <Settings className="h-4 w-4 text-primary" /> Admin Control
+                      <Settings className="h-4 w-4 text-primary dark:text-[#3FD1B3]" /> Admin Control
                     </div>
-                    <div className="text-xs text-muted-foreground mt-0.5">
+                    <div className="text-xs text-muted-foreground dark:text-[#9DB0A9] mt-0.5">
                       You are logged in as Admin. Manage all catalog items in Admin Hub.
                     </div>
                   </div>
-                  <Button asChild className="rounded-xl font-bold bg-primary text-white text-xs h-9 shadow-sm">
+                  <Button asChild className="rounded-xl font-bold bg-primary dark:bg-[#12A488] hover:dark:bg-[#3FD1B3] text-white dark:text-[#04110E] text-xs h-9 shadow-sm">
                     <Link to="/admin">Open Admin Hub</Link>
                   </Button>
                 </div>
               ) : (
                 <div className="flex flex-wrap items-center gap-3">
-                  <div className="flex items-center border border-border/70 rounded-2xl bg-background p-1 shadow-sm">
+                  <div className="flex items-center border border-border/70 dark:border-white/10 rounded-2xl bg-background dark:bg-[#0B1210] p-1 shadow-sm">
                     <button
-                      className="p-2 text-muted-foreground hover:text-foreground hover:bg-secondary rounded-xl transition-colors disabled:opacity-40"
+                      className="p-2 text-muted-foreground dark:text-[#9DB0A9] hover:text-foreground dark:hover:text-[#F2F6F4] hover:bg-secondary dark:hover:bg-[#10201C] rounded-xl transition-colors disabled:opacity-40"
                       onClick={() => setQty((q) => Math.max(1, q - 1))}
                       disabled={qty <= 1}
                     >
                       <Minus className="h-4 w-4" />
                     </button>
-                    <span className="w-12 text-center font-bold font-heading text-sm">{qty}</span>
+                    <span className="w-12 text-center font-bold font-heading text-sm text-foreground">{qty}</span>
                     <button
-                      className="p-2 text-muted-foreground hover:text-foreground hover:bg-secondary rounded-xl transition-colors disabled:opacity-40"
+                      className="p-2 text-muted-foreground dark:text-[#9DB0A9] hover:text-foreground dark:hover:text-[#F2F6F4] hover:bg-secondary dark:hover:bg-[#10201C] rounded-xl transition-colors disabled:opacity-40"
                       onClick={() => setQty((q) => Math.min(product.stock ?? 1, q + 1))}
                       disabled={qty >= (product.stock ?? 1)}
                       title={qty >= (product.stock ?? 1) ? `Maximum stock available (${product.stock})` : undefined}
@@ -316,7 +316,7 @@ function ProductDetail() {
                     size="lg"
                     onClick={handleAddToCart}
                     disabled={!inStock || addingToCart}
-                    className="flex-1 rounded-2xl h-12 text-sm font-bold bg-gradient-to-r from-primary via-sky-600 to-indigo-600 hover:opacity-95 text-white shadow-lg shadow-primary/20 btn-shine"
+                    className="flex-1 rounded-2xl h-12 text-sm font-bold bg-[#12A488] hover:bg-[#3FD1B3] text-[#04110E] shadow-lg shadow-[#12A488]/20 btn-shine transition-colors"
                   >
                     <ShoppingCart className="h-4 w-4 mr-2" />
                     {addingToCart ? "Adding to Cart..." : "Add to Clinic Cart"}
@@ -326,8 +326,8 @@ function ProductDetail() {
                     variant="outline"
                     size="icon"
                     onClick={handleWishlistToggle}
-                    className={`h-12 w-12 rounded-2xl border-border/70 ${
-                      isWishlisted ? "text-red-500 border-red-500/40 bg-red-500/10" : "text-muted-foreground"
+                    className={`h-12 w-12 rounded-2xl border-border/70 dark:border-white/10 dark:bg-[#0B1210] ${
+                      isWishlisted ? "text-red-500 border-red-500/40 bg-red-500/10" : "text-muted-foreground dark:text-[#9DB0A9]"
                     }`}
                   >
                     <Heart className={`h-5 w-5 ${isWishlisted ? "fill-current" : ""}`} />
@@ -337,20 +337,20 @@ function ProductDetail() {
             </div>
 
             {/* Trust Highlights Grid */}
-            <div className="grid grid-cols-2 gap-3 pt-4 border-t border-border/40">
-              <div className="p-3.5 rounded-2xl bg-card border border-border/40 flex items-center gap-3">
-                <Truck className="h-5 w-5 text-primary shrink-0" />
+            <div className="grid grid-cols-2 gap-3 pt-4 border-t border-border/40 dark:border-white/10">
+              <div className="p-3.5 rounded-2xl bg-card dark:bg-gradient-to-br dark:from-[#10201C] dark:to-[#0A100F] border border-border/40 dark:border-white/10 flex items-center gap-3">
+                <Truck className="h-5 w-5 text-primary dark:text-[#3FD1B3] shrink-0" />
                 <div className="text-xs">
                   <div className="font-bold text-foreground">Priority Medical Transit</div>
-                  <div className="text-muted-foreground text-[11px]">24–48h Delivery across India</div>
+                  <div className="text-muted-foreground dark:text-[#9DB0A9] text-[11px]">24–48h Delivery across India</div>
                 </div>
               </div>
 
-              <div className="p-3.5 rounded-2xl bg-card border border-border/40 flex items-center gap-3">
-                <ShieldCheck className="h-5 w-5 text-emerald-500 shrink-0" />
+              <div className="p-3.5 rounded-2xl bg-card dark:bg-gradient-to-br dark:from-[#10201C] dark:to-[#0A100F] border border-border/40 dark:border-white/10 flex items-center gap-3">
+                <ShieldCheck className="h-5 w-5 text-emerald-500 dark:text-[#3FD1B3] shrink-0" />
                 <div className="text-xs">
                   <div className="font-bold text-foreground">100% Genuine Lot</div>
-                  <div className="text-muted-foreground text-[11px]">Verified manufacturer batch</div>
+                  <div className="text-muted-foreground dark:text-[#9DB0A9] text-[11px]">Verified manufacturer batch</div>
                 </div>
               </div>
             </div>

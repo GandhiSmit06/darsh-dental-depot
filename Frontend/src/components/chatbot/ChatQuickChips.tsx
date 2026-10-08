@@ -41,7 +41,7 @@ export function ChatQuickChips({ role, onSelect }: ChatQuickChipsProps) {
           key={i}
           type="button"
           onClick={() => onSelect(chip.prompt)}
-          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-muted/80 hover:bg-primary hover:text-white border border-border/70 text-foreground transition-all shrink-0 shadow-2xs"
+          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-muted/80 dark:bg-[#10201C] hover:bg-primary dark:hover:bg-[#12A488] hover:text-white dark:hover:text-[#04110E] border border-border/70 dark:border-white/10 dark:hover:border-[#12A488] text-foreground dark:text-[#9DB0A9] transition-all shrink-0 shadow-2xs cursor-pointer"
         >
           <chip.icon className="h-3 w-3 shrink-0" />
           <span>{chip.label}</span>

@@ -66,11 +66,11 @@ function Filters({
 }: any) {
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between pb-3 border-b border-border/50">
+      <div className="flex items-center justify-between pb-3 border-b border-border/50 dark:border-white/10">
         <h3 className="font-heading font-bold text-base text-foreground">Filter Catalog</h3>
         <button
           onClick={onReset}
-          className="text-xs text-primary font-semibold hover:underline flex items-center gap-1"
+          className="text-xs text-primary dark:text-[#3FD1B3] font-semibold hover:underline flex items-center gap-1"
         >
           <RotateCcw className="h-3 w-3" /> Reset
         </button>
@@ -78,14 +78,14 @@ function Filters({
 
       {/* Category */}
       <div>
-        <Label className="font-bold text-xs uppercase tracking-wider text-muted-foreground mb-2.5 block">
+        <Label className="font-bold text-xs uppercase tracking-wider text-muted-foreground dark:text-[#9DB0A9] mb-2.5 block">
           Specialty Category
         </Label>
         <Select value={cat} onValueChange={setCat}>
-          <SelectTrigger className="w-full rounded-xl bg-background/80 border-border/60 text-sm">
+          <SelectTrigger className="w-full rounded-xl bg-background/80 dark:bg-[#0B1210] border-border/60 dark:border-white/10 text-sm">
             <SelectValue placeholder="All Categories" />
           </SelectTrigger>
-          <SelectContent className="glass-card">
+          <SelectContent className="glass-card dark:bg-[#0B1210] dark:border-white/10">
             <SelectItem value="all">All Categories</SelectItem>
             {categories.map((c: string) => (
               <SelectItem key={c} value={c}>
@@ -99,10 +99,10 @@ function Filters({
       {/* Price Slider in INR */}
       <div>
         <div className="flex items-center justify-between mb-2">
-          <Label className="font-bold text-xs uppercase tracking-wider text-muted-foreground">
+          <Label className="font-bold text-xs uppercase tracking-wider text-muted-foreground dark:text-[#9DB0A9]">
             Price Range
           </Label>
-          <span className="text-xs font-bold text-primary font-heading">
+          <span className="text-xs font-bold text-primary dark:text-[#3FD1B3] font-heading">
             ₹{price[0].toLocaleString("en-IN")} – ₹{price[1].toLocaleString("en-IN")}
           </span>
         </div>
@@ -117,23 +117,23 @@ function Filters({
       </div>
 
       {/* In Stock Toggle */}
-      <div className="pt-2 border-t border-border/40">
+      <div className="pt-2 border-t border-border/40 dark:border-white/10">
         <label className="flex items-center gap-2.5 text-sm font-semibold cursor-pointer select-none">
           <Checkbox checked={inStock} onCheckedChange={(v) => setInStock(!!v)} />
-          <span>In-Stock Items Only</span>
+          <span className="text-foreground">In-Stock Items Only</span>
         </label>
       </div>
 
       {/* Brand Checkboxes */}
-      <div className="pt-2 border-t border-border/40">
-        <Label className="font-bold text-xs uppercase tracking-wider text-muted-foreground mb-3 block">
+      <div className="pt-2 border-t border-border/40 dark:border-white/10">
+        <Label className="font-bold text-xs uppercase tracking-wider text-muted-foreground dark:text-[#9DB0A9] mb-3 block">
           Dental Manufacturer / Brand
         </Label>
         <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
           {brands.map((b: string) => (
             <label
               key={b}
-              className="flex items-center gap-2 text-xs font-medium text-foreground hover:text-primary cursor-pointer select-none"
+              className="flex items-center gap-2 text-xs font-medium text-foreground hover:text-primary dark:hover:text-[#3FD1B3] cursor-pointer select-none"
             >
               <Checkbox
                 checked={brand.includes(b)}
@@ -153,8 +153,20 @@ function Filters({
 function ProductsPage() {
   const { isAuthenticated, isLoading: authLoading } = useAuth();
 
-  const [q, setQ] = useState("");
-  const [cat, setCat] = useState("all");
+  const [q, setQ] = useState(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      return params.get("search") || "";
+    }
+    return "";
+  });
+  const [cat, setCat] = useState(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      return params.get("category") || "all";
+    }
+    return "all";
+  });
   const [brand, setBrand] = useState<string[]>([]);
   const [price, setPrice] = useState<number[]>([0, 15000]);
   const [inStock, setInStock] = useState(false);
@@ -249,10 +261,10 @@ function ProductsPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-          className="flex flex-col md:flex-row md:items-end justify-between mb-8 pb-6 border-b border-border/50 gap-4"
+          className="flex flex-col md:flex-row md:items-end justify-between mb-8 pb-6 border-b border-border/50 dark:border-white/10 gap-4"
         >
           <div>
-            <Badge variant="outline" className="text-primary border-primary/30 mb-2">
+            <Badge variant="outline" className="text-primary dark:text-[#3FD1B3] border-primary/30 dark:border-[#12A488]/30 dark:bg-[#12A488]/10 mb-2">
               <Sparkles className="h-3 w-3 mr-1 text-amber-500" /> Authorized Dental Material Depot
             </Badge>
             <h1 className="text-3xl sm:text-4xl font-extrabold font-heading tracking-tight text-foreground">
@@ -264,8 +276,8 @@ function ProductsPage() {
           </div>
 
           <div className="flex items-center gap-3">
-            <Badge variant="secondary" className="px-3 py-1 font-semibold text-xs">
-              <CheckCircle className="h-3.5 w-3.5 mr-1 text-emerald-500" /> Genuine Stock Verified
+            <Badge variant="secondary" className="px-3 py-1 font-semibold text-xs dark:bg-[#12A488]/15 dark:text-[#3FD1B3] dark:border-[#12A488]/30">
+              <CheckCircle className="h-3.5 w-3.5 mr-1 text-emerald-500 dark:text-[#3FD1B3]" /> Genuine Stock Verified
             </Badge>
           </div>
         </motion.div>
@@ -274,7 +286,7 @@ function ProductsPage() {
         <div className="grid md:grid-cols-[280px_1fr] gap-8 items-start">
           {/* Desktop Filters Sidebar */}
           <ScrollReveal direction="left" className="hidden md:block">
-            <Card className="p-6 glass-card rounded-3xl border border-border/60 sticky top-24 shadow-sm">
+            <Card className="p-6 glass-card rounded-3xl border border-border/60 dark:border-white/10 dark:bg-gradient-to-br dark:from-[#10201C] dark:to-[#0A100F] sticky top-24 shadow-sm">
               <Filters {...filterProps} />
             </Card>
           </ScrollReveal>
@@ -292,18 +304,18 @@ function ProductsPage() {
                     setPage(1);
                   }}
                   placeholder="Search materials, instruments, SKU..."
-                  className="pl-10 rounded-2xl bg-background/80 border-border/60 text-sm h-11 focus:border-primary"
+                  className="pl-10 rounded-2xl bg-background/80 dark:bg-[#0B1210] border-border/60 dark:border-white/10 text-sm h-11 focus:border-primary dark:focus:border-[#12A488]"
                 />
               </div>
 
               {/* Mobile Filter Sheet */}
               <Sheet>
                 <SheetTrigger asChild>
-                  <Button variant="outline" className="md:hidden rounded-2xl h-11 px-4 border-border/60">
+                  <Button variant="outline" className="md:hidden rounded-2xl h-11 px-4 border-border/60 dark:border-white/10 dark:bg-[#0B1210]">
                     <SlidersHorizontal className="h-4 w-4 mr-2" /> Filters
                   </Button>
                 </SheetTrigger>
-                <SheetContent className="glass-card w-[320px] overflow-y-auto">
+                <SheetContent className="glass-card dark:bg-[#070B0A] dark:border-white/10 w-[320px] overflow-y-auto">
                   <div className="mt-6">
                     <Filters {...filterProps} />
                   </div>
@@ -312,10 +324,10 @@ function ProductsPage() {
 
               {/* Sort Dropdown */}
               <Select value={sort} onValueChange={setSort}>
-                <SelectTrigger className="w-[190px] rounded-2xl bg-background/80 border-border/60 text-sm h-11 font-medium">
+                <SelectTrigger className="w-[190px] rounded-2xl bg-background/80 dark:bg-[#0B1210] border-border/60 dark:border-white/10 text-sm h-11 font-medium">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="glass-card">
+                <SelectContent className="glass-card dark:bg-[#0B1210] dark:border-white/10">
                   <SelectItem value="featured">Sort: Featured</SelectItem>
                   <SelectItem value="price-asc">Price: Low to High</SelectItem>
                   <SelectItem value="price-desc">Price: High to Low</SelectItem>
@@ -327,19 +339,19 @@ function ProductsPage() {
             {/* Products Grid */}
             {productsLoading ? (
               <div className="flex flex-col items-center justify-center p-16 space-y-3">
-                <Loader2 className="animate-spin h-10 w-10 text-primary" />
+                <Loader2 className="animate-spin h-10 w-10 text-primary dark:text-[#3FD1B3]" />
                 <span className="text-sm text-muted-foreground font-medium">
                   Loading verified dental products...
                 </span>
               </div>
             ) : paged.length === 0 ? (
-              <Card className="p-16 text-center glass-card border border-dashed rounded-3xl">
+              <Card className="p-16 text-center glass-card border border-dashed dark:border-white/10 dark:bg-gradient-to-br dark:from-[#10201C] dark:to-[#0A100F] rounded-3xl">
                 <Package className="mx-auto h-12 w-12 text-muted-foreground/50 mb-3" />
                 <div className="text-lg font-bold font-heading text-foreground">No matching dental products</div>
                 <p className="text-sm text-muted-foreground mt-1 max-w-sm mx-auto">
                   We couldn't find any products matching your active filters. Try resetting the search or category filters.
                 </p>
-                <Button onClick={handleReset} variant="outline" className="mt-5 rounded-full text-xs font-semibold">
+                <Button onClick={handleReset} variant="outline" className="mt-5 rounded-full text-xs font-semibold dark:border-white/15 dark:text-[#3FD1B3] hover:dark:bg-[#12A488]/15">
                   Reset All Filters
                 </Button>
               </Card>
@@ -355,13 +367,13 @@ function ProductsPage() {
 
             {/* Pagination Controls */}
             {!productsLoading && paged.length > 0 && totalPages > 1 && (
-              <div className="flex items-center justify-center gap-3 mt-12 pt-6 border-t border-border/40">
+              <div className="flex items-center justify-center gap-3 mt-12 pt-6 border-t border-border/40 dark:border-white/10">
                 <Button
                   variant="outline"
                   size="sm"
                   disabled={page === 1}
                   onClick={() => setPage((p) => p - 1)}
-                  className="rounded-xl px-4 h-9 font-semibold text-xs"
+                  className="rounded-xl px-4 h-9 font-semibold text-xs dark:border-white/10 dark:bg-[#0B1210] dark:text-[#F2F6F4] hover:dark:bg-[#10201C]"
                 >
                   Previous
                 </Button>
@@ -373,7 +385,7 @@ function ProductsPage() {
                   size="sm"
                   disabled={page === totalPages}
                   onClick={() => setPage((p) => p + 1)}
-                  className="rounded-xl px-4 h-9 font-semibold text-xs"
+                  className="rounded-xl px-4 h-9 font-semibold text-xs dark:border-white/10 dark:bg-[#0B1210] dark:text-[#F2F6F4] hover:dark:bg-[#10201C]"
                 >
                   Next
                 </Button>

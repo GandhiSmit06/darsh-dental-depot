@@ -51,21 +51,21 @@ function ResetPasswordPage() {
         <Card className="p-8 glass-card border border-border/70 rounded-3xl shadow-xl backdrop-blur-xl">
           {isSuccess ? (
             <div className="text-center space-y-4">
-              <div className="mx-auto w-16 h-16 rounded-full bg-green-100 dark:bg-green-900/30 grid place-items-center">
-                <CheckCircle2 className="h-8 w-8 text-green-600" />
+              <div className="mx-auto w-16 h-16 rounded-full bg-green-100 dark:bg-[#12A488]/20 grid place-items-center">
+                <CheckCircle2 className="h-8 w-8 text-green-600 dark:text-[#3FD1B3]" />
               </div>
               <h1 className="text-2xl font-bold font-heading">Password Reset!</h1>
               <p className="text-sm text-muted-foreground">
                 Your password has been successfully updated. You can now sign in with your new password.
               </p>
-              <Button className="w-full rounded-xl mt-4" onClick={() => nav({ to: "/login" })}>
+              <Button className="w-full rounded-xl mt-4 bg-primary dark:bg-[#12A488] dark:hover:bg-[#3FD1B3] text-white dark:text-[#04110E] font-bold cursor-pointer" onClick={() => nav({ to: "/login" })}>
                 Sign In to Doctor Portal
               </Button>
             </div>
           ) : (
             <>
               <div className="text-center mb-6">
-                <div className="mx-auto w-14 h-14 rounded-2xl bg-primary/10 grid place-items-center mb-4 text-primary">
+                <div className="mx-auto w-14 h-14 rounded-2xl bg-primary/10 dark:bg-[#12A488]/20 grid place-items-center mb-4 text-primary dark:text-[#3FD1B3]">
                   <Lock className="h-7 w-7" />
                 </div>
                 <h1 className="text-2xl font-bold font-heading">Set New Password</h1>
@@ -95,14 +95,14 @@ function ResetPasswordPage() {
                     className="rounded-xl"
                   />
                 </div>
-                <Button type="submit" className="w-full rounded-xl py-5" disabled={isSubmitting}>
+                <Button type="submit" className="w-full rounded-xl py-5 bg-primary dark:bg-[#12A488] dark:hover:bg-[#3FD1B3] text-white dark:text-[#04110E] font-bold cursor-pointer" disabled={isSubmitting}>
                   {isSubmitting ? "Updating..." : "Update Password"}
                 </Button>
               </form>
               <div className="mt-6 text-center">
                 <Link
                   to="/login"
-                  className="text-xs text-muted-foreground hover:text-primary inline-flex items-center gap-1"
+                  className="text-xs text-muted-foreground hover:text-primary dark:hover:text-[#3FD1B3] inline-flex items-center gap-1 transition-colors"
                 >
                   <ArrowLeft className="h-3.5 w-3.5" />
                   Back to Sign in

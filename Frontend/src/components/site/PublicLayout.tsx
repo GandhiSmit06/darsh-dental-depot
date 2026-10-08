@@ -4,7 +4,13 @@ import { Footer } from "./Footer";
 import { Sparkles, ShieldCheck, MapPin, Phone, MessageSquare } from "lucide-react";
 import { PageTransition } from "@/components/animations/PageTransition";
 
-export function PublicLayout({ children }: { children: ReactNode }) {
+export function PublicLayout({
+  children,
+  hideAnnouncementBar = false,
+}: {
+  children: ReactNode;
+  hideAnnouncementBar?: boolean;
+}) {
   return (
     <div className="min-h-screen flex flex-col relative overflow-hidden bg-background text-foreground">
       {/* Ambient background glow orbs */}
@@ -13,7 +19,8 @@ export function PublicLayout({ children }: { children: ReactNode }) {
       <div className="fixed -bottom-40 left-1/3 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none -z-10 animate-float" />
 
       {/* Top micro announcement bar */}
-      <div className="bg-gradient-to-r from-primary/95 via-sky-600 to-indigo-600 text-white text-xs font-medium py-1.5 px-4 shadow-sm z-50">
+      {!hideAnnouncementBar && (
+        <div className="bg-gradient-to-r from-primary/95 via-sky-600 to-indigo-600 text-white text-xs font-medium py-1.5 px-4 shadow-sm z-50">
         <div className="container mx-auto flex items-center justify-between">
           <div className="hidden sm:flex items-center gap-4">
             <span className="flex items-center gap-1.5 font-semibold">
@@ -46,6 +53,7 @@ export function PublicLayout({ children }: { children: ReactNode }) {
           </div>
         </div>
       </div>
+      )}
 
       <Navbar />
       <main className="flex-1 relative z-10">

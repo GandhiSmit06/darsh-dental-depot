@@ -163,29 +163,29 @@ function LoginPage() {
     <PublicLayout>
       <div className="container mx-auto px-4 py-16 max-w-md relative">
         {/* Glow behind card */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-primary/15 rounded-full blur-3xl -z-10 pointer-events-none" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-primary/15 dark:bg-[#12A488]/10 rounded-full blur-3xl -z-10 pointer-events-none" />
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <Card className="p-8 sm:p-10 glass-card border border-border/70 rounded-3xl shadow-xl backdrop-blur-xl">
+          <Card className="p-8 sm:p-10 glass-card border border-border/70 dark:border-white/10 dark:bg-gradient-to-br dark:from-[#10201C] dark:to-[#0A100F] rounded-3xl shadow-xl backdrop-blur-xl">
             {/* Header */}
             <div className="text-center mb-6 space-y-1.5">
-              <div className="mx-auto h-12 w-12 rounded-2xl bg-gradient-to-br from-primary via-sky-600 to-indigo-600 text-white grid place-items-center mb-3 shadow-md">
+              <div className="mx-auto h-12 w-12 rounded-2xl bg-gradient-to-br from-primary via-sky-600 to-indigo-600 dark:from-[#12A488] dark:to-[#3FD1B3] text-white dark:text-[#04110E] grid place-items-center mb-3 shadow-md">
                 <Sparkles className="h-6 w-6" />
               </div>
               <h1 className="text-2xl sm:text-3xl font-extrabold font-heading tracking-tight text-foreground">
                 Doctor & Clinic Portal
               </h1>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-muted-foreground dark:text-[#9DB0A9]">
                 Access your doctor dashboard, wholesale rates & active orders
               </p>
             </div>
 
             {/* Login Mode Switcher */}
-            <div className="flex rounded-2xl bg-secondary/80 p-1 mb-6 border border-border/60">
+            <div className="flex rounded-2xl bg-secondary/80 dark:bg-[#0B1210] p-1 mb-6 border border-border/60 dark:border-white/10">
               <button
                 type="button"
                 onClick={() => {
@@ -194,8 +194,8 @@ function LoginPage() {
                 }}
                 className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
                   mode === "password"
-                    ? "bg-background text-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
+                    ? "bg-background dark:bg-[#12A488] text-foreground dark:text-[#04110E] shadow-sm"
+                    : "text-muted-foreground dark:text-[#9DB0A9] hover:text-foreground dark:hover:text-[#F2F6F4]"
                 }`}
               >
                 <Lock className="h-3.5 w-3.5" />
@@ -206,8 +206,8 @@ function LoginPage() {
                 onClick={() => setMode("otp")}
                 className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
                   mode === "otp"
-                    ? "bg-background text-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
+                    ? "bg-background dark:bg-[#12A488] text-foreground dark:text-[#04110E] shadow-sm"
+                    : "text-muted-foreground dark:text-[#9DB0A9] hover:text-foreground dark:hover:text-[#F2F6F4]"
                 }`}
               >
                 <KeyRound className="h-3.5 w-3.5" />
@@ -228,14 +228,14 @@ function LoginPage() {
                   onSubmit={handlePasswordSubmit(onPasswordSubmit)}
                 >
                   <div>
-                    <Label className="text-xs font-semibold mb-1.5 block">
+                    <Label className="text-xs font-semibold mb-1.5 block text-foreground">
                       Email or 10-Digit Mobile
                     </Label>
                     <div className="relative">
-                      <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground dark:text-[#9DB0A9]" />
                       <Input
                         placeholder="dr.patel@gmail.com or 9876543210"
-                        className="pl-10 rounded-xl bg-background/80 border-border/60 text-sm h-11 focus:border-primary"
+                        className="pl-10 rounded-xl bg-background/80 dark:bg-[#0B1210] border-border/60 dark:border-white/10 dark:text-[#F2F6F4] text-sm h-11 focus:border-primary dark:focus:border-[#12A488]"
                         {...registerPassword("identifier")}
                       />
                     </div>
@@ -247,13 +247,13 @@ function LoginPage() {
                   </div>
 
                   <div>
-                    <Label className="text-xs font-semibold mb-1.5 block">Password</Label>
+                    <Label className="text-xs font-semibold mb-1.5 block text-foreground">Password</Label>
                     <div className="relative">
-                      <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground dark:text-[#9DB0A9]" />
                       <Input
                         type="password"
                         placeholder="••••••••"
-                        className="pl-10 rounded-xl bg-background/80 border-border/60 text-sm h-11 focus:border-primary"
+                        className="pl-10 rounded-xl bg-background/80 dark:bg-[#0B1210] border-border/60 dark:border-white/10 dark:text-[#F2F6F4] text-sm h-11 focus:border-primary dark:focus:border-[#12A488]"
                         {...registerPassword("password")}
                       />
                     </div>
@@ -267,7 +267,7 @@ function LoginPage() {
                   <div className="flex justify-end pt-1">
                     <Link
                       to="/forgot-password"
-                      className="text-xs text-primary font-semibold hover:underline"
+                      className="text-xs text-primary dark:text-[#3FD1B3] font-semibold hover:underline"
                     >
                       Forgot password?
                     </Link>
@@ -275,7 +275,7 @@ function LoginPage() {
 
                   <Button
                     type="submit"
-                    className="w-full rounded-2xl h-11 text-sm font-bold bg-gradient-to-r from-primary via-sky-600 to-indigo-600 hover:opacity-95 text-white shadow-lg btn-shine mt-2"
+                    className="w-full rounded-2xl h-11 text-sm font-bold bg-[#12A488] hover:bg-[#3FD1B3] text-[#04110E] shadow-lg shadow-[#12A488]/20 btn-shine mt-2 transition-colors"
                     disabled={isSubmitting}
                   >
                     {isSubmitting ? "Signing in..." : "Sign In with Password"}{" "}
@@ -294,20 +294,20 @@ function LoginPage() {
                   {otpStep === "enter_id" ? (
                     <form onSubmit={handleSendOtp} className="space-y-4">
                       <div>
-                        <Label className="text-xs font-semibold mb-1.5 block">
+                        <Label className="text-xs font-semibold mb-1.5 block text-foreground">
                           Enter Registered Email or Mobile Number
                         </Label>
                         <div className="relative">
-                          <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                          <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground dark:text-[#9DB0A9]" />
                           <Input
                             value={otpIdentifier}
                             onChange={(e) => setOtpIdentifier(e.target.value)}
                             placeholder="dr.patel@gmail.com or 9876543210"
-                            className="pl-10 rounded-xl bg-background/80 border-border/60 text-sm h-11 focus:border-primary"
+                            className="pl-10 rounded-xl bg-background/80 dark:bg-[#0B1210] border-border/60 dark:border-white/10 dark:text-[#F2F6F4] text-sm h-11 focus:border-primary dark:focus:border-[#12A488]"
                             autoFocus
                           />
                         </div>
-                        <p className="text-[11px] text-muted-foreground mt-1.5">
+                        <p className="text-[11px] text-muted-foreground dark:text-[#9DB0A9] mt-1.5">
                           We will send a 6-digit one-time code to your registered email & phone.
                         </p>
                         <div id="recaptcha-container"></div>
@@ -315,7 +315,7 @@ function LoginPage() {
 
                       <Button
                         type="submit"
-                        className="w-full rounded-2xl h-11 text-sm font-bold bg-gradient-to-r from-primary via-sky-600 to-indigo-600 hover:opacity-95 text-white shadow-lg btn-shine mt-2"
+                        className="w-full rounded-2xl h-11 text-sm font-bold bg-[#12A488] hover:bg-[#3FD1B3] text-[#04110E] shadow-lg shadow-[#12A488]/20 btn-shine mt-2 transition-colors"
                         disabled={otpSending || !otpIdentifier.trim()}
                       >
                         {otpSending ? "Sending OTP..." : "Send Verification Code"}{" "}
@@ -326,10 +326,10 @@ function LoginPage() {
                     /* Step 2: Enter OTP */
                     <form onSubmit={handleVerifyOtp} className="space-y-5 text-center">
                       <div className="space-y-1">
-                        <p className="text-xs text-muted-foreground">
+                        <p className="text-xs text-muted-foreground dark:text-[#9DB0A9]">
                           Enter the OTP verification code sent to:
                         </p>
-                        <span className="text-xs font-bold text-foreground bg-secondary px-3 py-1 rounded-full border border-border/60 inline-block">
+                        <span className="text-xs font-bold text-foreground bg-secondary dark:bg-[#0B1210] px-3 py-1 rounded-full border border-border/60 dark:border-white/10 dark:text-[#3FD1B3] inline-block">
                           {targetEmail || otpIdentifier}
                         </span>
                       </div>
@@ -342,14 +342,14 @@ function LoginPage() {
                           value={otpCode}
                           onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, "").slice(0, 8))}
                           placeholder="••••••••"
-                          className="text-center text-2xl font-mono tracking-widest h-12 rounded-2xl bg-background/90 border-2 border-primary/40 focus:border-primary shadow-inner font-bold"
+                          className="text-center text-2xl font-mono tracking-widest h-12 rounded-2xl bg-background/90 dark:bg-[#0B1210] border-2 border-primary/40 dark:border-[#12A488]/40 dark:text-[#3FD1B3] focus:border-primary dark:focus:border-[#12A488] shadow-inner font-bold"
                           autoFocus
                         />
                       </div>
 
                       <Button
                         type="submit"
-                        className="w-full rounded-2xl h-11 text-sm font-bold bg-gradient-to-r from-primary via-sky-600 to-indigo-600 hover:opacity-95 text-white shadow-lg btn-shine"
+                        className="w-full rounded-2xl h-11 text-sm font-bold bg-[#12A488] hover:bg-[#3FD1B3] text-[#04110E] shadow-lg shadow-[#12A488]/20 btn-shine transition-colors"
                         disabled={otpVerifying || otpCode.length < 6}
                       >
                         {otpVerifying ? "Verifying..." : "Verify & Sign In"}
@@ -360,21 +360,21 @@ function LoginPage() {
                         <button
                           type="button"
                           onClick={() => setOtpStep("enter_id")}
-                          className="text-muted-foreground hover:text-foreground underline"
+                          className="text-muted-foreground dark:text-[#9DB0A9] hover:text-foreground dark:hover:text-[#F2F6F4] underline"
                         >
                           Change Number/Email
                         </button>
 
                         {countdown > 0 ? (
-                          <span className="text-muted-foreground">
-                            Resend in <strong className="text-primary">{countdown}s</strong>
+                          <span className="text-muted-foreground dark:text-[#9DB0A9]">
+                            Resend in <strong className="text-primary dark:text-[#3FD1B3]">{countdown}s</strong>
                           </span>
                         ) : (
                           <button
                             type="button"
                             onClick={handleSendOtp}
                             disabled={otpSending}
-                            className="font-bold text-primary hover:underline inline-flex items-center gap-1"
+                            className="font-bold text-primary dark:text-[#3FD1B3] hover:underline inline-flex items-center gap-1"
                           >
                             <RotateCcw className="h-3 w-3" />
                             Resend OTP
@@ -387,12 +387,12 @@ function LoginPage() {
               )}
             </AnimatePresence>
 
-            <div className="mt-8 pt-6 border-t border-border/40 text-center space-y-3">
-              <p className="text-xs text-muted-foreground">
+            <div className="mt-8 pt-6 border-t border-border/40 dark:border-white/10 text-center space-y-3">
+              <p className="text-xs text-muted-foreground dark:text-[#9DB0A9]">
                 New doctor or clinic in Vadodara?{" "}
                 <Link
                   to="/register"
-                  className="text-primary font-bold hover:underline"
+                  className="text-primary dark:text-[#3FD1B3] font-bold hover:underline"
                 >
                   Register your clinic
                 </Link>
@@ -401,7 +401,7 @@ function LoginPage() {
               <div className="pt-2">
                 <a
                   href="tel:+919727076119"
-                  className="text-xs text-primary font-bold hover:underline"
+                  className="text-xs text-primary dark:text-[#3FD1B3] font-bold hover:underline"
                 >
                   Direct Depot Helpline: +91 97270 76119
                 </a>

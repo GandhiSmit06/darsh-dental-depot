@@ -253,35 +253,35 @@ export function DentalAiChatbot() {
           <button
             type="button"
             onClick={() => setIsOpen(true)}
-            className="group relative flex items-center gap-2.5 px-4 py-3 rounded-full bg-gradient-to-r from-primary via-sky-600 to-primary bg-[length:200%_auto] hover:bg-[position:right_center] text-white shadow-xl shadow-primary/30 hover:shadow-2xl hover:shadow-primary/50 hover:scale-105 active:scale-95 transition-all duration-300 border border-white/20 cursor-pointer"
+            className="group relative flex items-center gap-2.5 px-4 py-3 rounded-full bg-gradient-to-r from-primary via-sky-600 to-primary dark:bg-[#12A488] dark:hover:bg-[#3FD1B3] bg-[length:200%_auto] hover:bg-[position:right_center] text-white dark:text-[#04110E] dark:font-bold shadow-xl shadow-primary/30 dark:shadow-[#12A488]/30 hover:shadow-2xl hover:scale-105 active:scale-95 transition-all duration-300 border border-white/20 cursor-pointer"
           >
             <div className="relative">
               <Bot className="h-5 w-5 animate-bounce" />
               <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 dark:bg-[#3FD1B3] opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500 dark:bg-[#3FD1B3]"></span>
               </span>
             </div>
             <div className="text-left leading-tight hidden sm:block">
               <div className="text-xs font-black tracking-wide">Darsh AI Assistant</div>
-              <div className="text-[10px] text-white/80 font-medium">Dental & Orders Help</div>
+              <div className="text-[10px] text-white/80 dark:text-[#04110E]/80 font-medium">Dental & Orders Help</div>
             </div>
           </button>
         )}
 
         {/* ── Chatbot Window Popup ── */}
         {isOpen && (
-          <div className="w-[360px] sm:w-[410px] h-[580px] max-h-[85vh] bg-background/98 backdrop-blur-xl border border-border/80 shadow-2xl rounded-3xl flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-5 duration-300">
+          <div className="w-[360px] sm:w-[410px] h-[580px] max-h-[85vh] bg-background/98 dark:bg-[#070B0A] backdrop-blur-xl border border-border/80 dark:border-white/10 shadow-2xl rounded-3xl flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-5 duration-300">
             {/* Header */}
-            <div className="p-3.5 bg-gradient-to-r from-primary via-sky-600 to-primary text-white flex items-center justify-between shadow-xs">
+            <div className="p-3.5 bg-gradient-to-r from-primary via-sky-600 to-primary dark:bg-gradient-to-r dark:from-[#10201C] dark:to-[#0A100F] dark:border-b dark:border-white/10 text-white flex items-center justify-between shadow-xs">
               <div className="flex items-center gap-2.5">
-                <div className="h-9 w-9 rounded-2xl bg-white/15 backdrop-blur-xs border border-white/20 grid place-items-center text-white shrink-0">
+                <div className="h-9 w-9 rounded-2xl bg-white/15 dark:bg-[#12A488]/20 backdrop-blur-xs border border-white/20 dark:border-[#12A488]/40 grid place-items-center text-white dark:text-[#3FD1B3] shrink-0">
                   <Bot className="h-5 w-5" />
                 </div>
                 <div>
                   <div className="text-sm font-extrabold flex items-center gap-1.5 leading-tight">
                     Darsh Dental AI
-                    <Badge variant="secondary" className="bg-white/20 text-white text-[9px] px-1.5 py-0 h-4 border-0">
+                    <Badge variant="secondary" className="bg-white/20 dark:bg-[#12A488]/25 text-white dark:text-[#3FD1B3] text-[9px] px-1.5 py-0 h-4 border-0">
                       ⚡ Gemini 2.5
                     </Badge>
                   </div>
@@ -327,7 +327,7 @@ export function DentalAiChatbot() {
                     className={`flex items-start gap-2 ${isBot ? "justify-start" : "justify-end"}`}
                   >
                     {isBot && (
-                      <div className="h-7 w-7 rounded-xl bg-primary/10 text-primary border border-primary/20 grid place-items-center shrink-0 mt-0.5">
+                      <div className="h-7 w-7 rounded-xl bg-primary/10 dark:bg-[#10201C] text-primary dark:text-[#3FD1B3] border border-primary/20 dark:border-white/10 grid place-items-center shrink-0 mt-0.5">
                         <Bot className="h-3.5 w-3.5" />
                       </div>
                     )}
@@ -337,14 +337,14 @@ export function DentalAiChatbot() {
                       <div
                         className={`p-3 rounded-2xl leading-relaxed ${
                           isBot
-                            ? "bg-muted/70 text-foreground border border-border/60 rounded-tl-xs shadow-2xs"
-                            : "bg-primary text-primary-foreground rounded-tr-xs shadow-xs font-medium"
+                            ? "bg-muted/70 dark:bg-gradient-to-br dark:from-[#10201C] dark:to-[#0A100F] text-foreground dark:text-[#F2F6F4] border border-border/60 dark:border-white/10 rounded-tl-xs shadow-2xs"
+                            : "bg-primary dark:bg-[#12A488] text-primary-foreground dark:text-[#04110E] rounded-tr-xs shadow-xs font-semibold"
                         }`}
                       >
                         <div className="whitespace-pre-line break-words text-[11.5px]">{m.text}</div>
                         <div
                           className={`text-[9px] mt-1 text-right ${
-                            isBot ? "text-muted-foreground" : "text-primary-foreground/70"
+                            isBot ? "text-muted-foreground dark:text-[#9DB0A9]" : "text-primary-foreground/70 dark:text-[#04110E]/70"
                           }`}
                         >
                           {m.timestamp}
@@ -371,7 +371,7 @@ export function DentalAiChatbot() {
                           <Button
                             size="sm"
                             onClick={() => handleOpenTallyInvoice()}
-                            className="text-xs h-8 font-bold bg-primary hover:bg-primary/90 text-white rounded-xl gap-1.5 shadow-xs"
+                            className="text-xs h-8 font-bold bg-primary hover:bg-primary/90 dark:bg-[#12A488] dark:hover:bg-[#3FD1B3] text-white dark:text-[#04110E] rounded-xl gap-1.5 shadow-xs"
                           >
                             <FileText className="h-3.5 w-3.5" />
                             Open Tally GST Bill (PDF)
@@ -394,7 +394,7 @@ export function DentalAiChatbot() {
                     </div>
 
                     {!isBot && (
-                      <div className="h-7 w-7 rounded-xl bg-primary text-white grid place-items-center shrink-0 mt-0.5 font-bold text-[10px]">
+                      <div className="h-7 w-7 rounded-xl bg-primary dark:bg-[#12A488] text-white dark:text-[#04110E] grid place-items-center shrink-0 mt-0.5 font-bold text-[10px]">
                         {user?.fullName ? user.fullName[0].toUpperCase() : <UserIcon className="h-3.5 w-3.5" />}
                       </div>
                     )}
@@ -404,11 +404,11 @@ export function DentalAiChatbot() {
 
               {loading && (
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <div className="h-7 w-7 rounded-xl bg-primary/10 text-primary grid place-items-center shrink-0">
+                  <div className="h-7 w-7 rounded-xl bg-primary/10 dark:bg-[#10201C] text-primary dark:text-[#3FD1B3] grid place-items-center shrink-0">
                     <Bot className="h-3.5 w-3.5 animate-spin" />
                   </div>
-                  <div className="p-2.5 rounded-2xl bg-muted/60 text-muted-foreground italic flex items-center gap-1.5">
-                    <Loader2 className="h-3 w-3 animate-spin text-primary" />
+                  <div className="p-2.5 rounded-2xl bg-muted/60 dark:bg-[#0B1210] dark:border dark:border-white/10 text-muted-foreground dark:text-[#9DB0A9] italic flex items-center gap-1.5">
+                    <Loader2 className="h-3 w-3 animate-spin text-primary dark:text-[#3FD1B3]" />
                     Thinking with Gemini...
                   </div>
                 </div>
@@ -418,7 +418,7 @@ export function DentalAiChatbot() {
             </div>
 
             {/* Role-Aware Quick Suggestion Chips */}
-            <div className="border-t border-border/50 bg-muted/20">
+            <div className="border-t border-border/50 dark:border-white/10 bg-muted/20 dark:bg-[#0B1210]">
               <ChatQuickChips role={role} onSelect={(prompt) => handleSendMessage(prompt)} />
             </div>
 
@@ -428,7 +428,7 @@ export function DentalAiChatbot() {
                 e.preventDefault();
                 handleSendMessage();
               }}
-              className="p-2.5 border-t border-border/80 bg-background flex items-center gap-2"
+              className="p-2.5 border-t border-border/80 dark:border-white/10 bg-background dark:bg-[#070B0A] flex items-center gap-2"
             >
               <Input
                 value={input}
@@ -440,14 +440,14 @@ export function DentalAiChatbot() {
                     ? "Ask about low stock, dispatches..."
                     : "Ask about dental materials, clinic registration..."
                 }
-                className="h-10 text-xs rounded-xl bg-muted/50 focus-visible:ring-1"
+                className="h-10 text-xs rounded-xl bg-muted/50 dark:bg-[#0B1210] dark:border-white/10 dark:text-[#F2F6F4] dark:placeholder-[#9DB0A9]/60 focus-visible:ring-1"
                 disabled={loading}
               />
               <Button
                 type="submit"
                 size="sm"
                 disabled={!input.trim() || loading}
-                className="h-10 w-10 p-0 rounded-xl bg-primary hover:bg-primary/90 text-white shrink-0 shadow-xs"
+                className="h-10 w-10 p-0 rounded-xl bg-primary hover:bg-primary/90 dark:bg-[#12A488] dark:hover:bg-[#3FD1B3] text-white dark:text-[#04110E] shrink-0 shadow-xs"
               >
                 {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
               </Button>

@@ -11,7 +11,11 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const saved = (typeof window !== "undefined" && localStorage.getItem("theme")) as Theme | null;
-    if (saved) setTheme(saved);
+    if (saved) {
+      setTheme(saved);
+    } else {
+      setTheme("light");
+    }
   }, []);
 
   useEffect(() => {

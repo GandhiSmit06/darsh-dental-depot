@@ -164,8 +164,8 @@ function Overview() {
         </div>
       )}
 
-      <Card className="p-6">
-        <h3 className="font-semibold mb-4">Recommended for you</h3>
+      <Card className="p-6 dark:bg-gradient-to-br dark:from-[#10201C] dark:to-[#0A100F] dark:border-white/10">
+        <h3 className="font-semibold mb-4 text-foreground">Recommended for you</h3>
         {recommended.loading ? <LoadingSpinner /> : recommended.error ? <ErrorBanner onRetry={recommended.retry} /> : !recommended.data?.length ? <EmptyBanner label="No recommendations available" /> : (
           <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
             {recommended.data.map((p) => (
@@ -398,33 +398,33 @@ function CartSection({ onNavigateToOrders }: { onNavigateToOrders?: () => void }
         <EmptyBanner label="Your cart is currently empty" />
       ) : (
         <div className="grid lg:grid-cols-3 gap-6">
-          <Card className="lg:col-span-2 divide-y divide-border/60 rounded-3xl overflow-hidden shadow-sm">
+          <Card className="lg:col-span-2 divide-y divide-border/60 dark:divide-white/10 rounded-3xl overflow-hidden shadow-sm dark:bg-gradient-to-br dark:from-[#10201C] dark:to-[#0A100F] dark:border-white/10">
             {cart.map((item) => (
-              <div key={item.cartItemId} className="p-4 flex items-center gap-4 hover:bg-muted/20 transition-colors">
+              <div key={item.cartItemId} className="p-4 flex items-center gap-4 hover:bg-muted/20 dark:hover:bg-white/5 transition-colors">
                 {item.imageUrl ? (
-                  <img src={item.imageUrl} alt={item.name} className="h-16 w-16 rounded-2xl object-cover border shrink-0" />
+                  <img src={item.imageUrl} alt={item.name} className="h-16 w-16 rounded-2xl object-cover border dark:border-white/10 shrink-0" />
                 ) : (
-                  <div className="h-16 w-16 rounded-2xl bg-muted grid place-items-center text-muted-foreground shrink-0">
+                  <div className="h-16 w-16 rounded-2xl bg-muted dark:bg-[#0B1210] grid place-items-center text-muted-foreground dark:text-[#9DB0A9] shrink-0">
                     <Package className="h-6 w-6" />
                   </div>
                 )}
                 <div className="flex-1 min-w-0">
                   <div className="font-bold text-sm truncate text-foreground">{item.name}</div>
-                  <div className="text-xs text-muted-foreground">{item.brand}</div>
-                  <div className="text-xs font-semibold text-primary mt-1">₹{item.price.toFixed(2)} each</div>
+                  <div className="text-xs text-muted-foreground dark:text-[#9DB0A9]">{item.brand}</div>
+                  <div className="text-xs font-semibold text-primary dark:text-[#3FD1B3] mt-1">₹{item.price.toFixed(2)} each</div>
                 </div>
                 <div className="flex flex-col items-end gap-1">
-                  <div className="flex items-center border rounded-xl bg-background shadow-2xs overflow-hidden">
+                  <div className="flex items-center border dark:border-white/10 rounded-xl bg-background dark:bg-[#0B1210] shadow-2xs overflow-hidden">
                     <button 
-                      className="px-2.5 py-1.5 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors disabled:opacity-40" 
+                      className="px-2.5 py-1.5 hover:bg-muted dark:hover:bg-[#10201C] text-muted-foreground dark:text-[#9DB0A9] hover:text-foreground dark:hover:text-[#F2F6F4] transition-colors disabled:opacity-40" 
                       onClick={() => updateQuantity(item.cartItemId, Math.max(1, item.quantity - 1))}
                       disabled={item.quantity <= 1}
                     >
                       <Minus className="h-3 w-3" />
                     </button>
-                    <span className="w-8 text-center text-xs font-bold">{item.quantity}</span>
+                    <span className="w-8 text-center text-xs font-bold text-foreground">{item.quantity}</span>
                     <button 
-                      className="px-2.5 py-1.5 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors disabled:opacity-40" 
+                      className="px-2.5 py-1.5 hover:bg-muted dark:hover:bg-[#10201C] text-muted-foreground dark:text-[#9DB0A9] hover:text-foreground dark:hover:text-[#F2F6F4] transition-colors disabled:opacity-40" 
                       onClick={() => updateQuantity(item.cartItemId, item.quantity + 1, item.stock)}
                       disabled={item.stock !== undefined && item.quantity >= item.stock}
                       title={item.stock !== undefined && item.quantity >= item.stock ? `Max stock available (${item.stock})` : undefined}
@@ -433,13 +433,13 @@ function CartSection({ onNavigateToOrders }: { onNavigateToOrders?: () => void }
                     </button>
                   </div>
                   {item.stock !== undefined && (
-                    <span className="text-[10px] text-muted-foreground font-medium">
+                    <span className="text-[10px] text-muted-foreground dark:text-[#9DB0A9] font-medium">
                       Max: {item.stock} in stock
                     </span>
                   )}
                 </div>
                 <div className="w-24 text-right font-black text-foreground">₹{(item.price * item.quantity).toFixed(2)}</div>
-                <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-destructive" onClick={() => removeItem(item.cartItemId)}>
+                <Button variant="ghost" size="icon" className="text-muted-foreground dark:text-[#9DB0A9] hover:text-destructive" onClick={() => removeItem(item.cartItemId)}>
                   <Trash2 className="h-4 w-4" />
                 </Button>
               </div>
@@ -447,31 +447,31 @@ function CartSection({ onNavigateToOrders }: { onNavigateToOrders?: () => void }
           </Card>
 
           {/* Cart Summary Card */}
-          <Card className="p-6 h-fit rounded-3xl shadow-sm border border-border/80 space-y-4">
-            <h3 className="font-bold text-lg">Order Summary</h3>
+          <Card className="p-6 h-fit rounded-3xl shadow-sm border border-border/80 dark:border-white/10 dark:bg-gradient-to-br dark:from-[#10201C] dark:to-[#0A100F] space-y-4">
+            <h3 className="font-bold text-lg text-foreground">Order Summary</h3>
             <div className="space-y-2.5 text-sm">
-              <div className="flex justify-between text-muted-foreground">
+              <div className="flex justify-between text-muted-foreground dark:text-[#9DB0A9]">
                 <span>Subtotal ({cart.length} items)</span>
                 <span className="font-semibold text-foreground">₹{total.toFixed(2)}</span>
               </div>
-              <div className="flex justify-between text-muted-foreground">
+              <div className="flex justify-between text-muted-foreground dark:text-[#9DB0A9]">
                 <span className="flex items-center gap-1">
-                  <Truck className="h-3.5 w-3.5 text-primary" /> Vadodara Delivery
+                  <Truck className="h-3.5 w-3.5 text-primary dark:text-[#3FD1B3]" /> Vadodara Delivery
                 </span>
-                <span className="text-emerald-600 font-bold">FREE</span>
+                <span className="text-emerald-600 dark:text-[#3FD1B3] font-bold">FREE</span>
               </div>
-              <div className="border-t pt-2.5 flex justify-between font-bold text-base">
-                <span>Total Amount</span>
-                <span className="text-primary font-black">₹{total.toFixed(2)}</span>
+              <div className="border-t border-border/60 dark:border-white/10 pt-2.5 flex justify-between font-bold text-base">
+                <span className="text-foreground">Total Amount</span>
+                <span className="text-primary dark:text-[#3FD1B3] font-black">₹{total.toFixed(2)}</span>
               </div>
             </div>
 
-            <Button className="w-full rounded-2xl h-12 text-sm font-bold shadow-md shadow-primary/20" onClick={handleOpenCheckout}>
+            <Button className="w-full rounded-2xl h-12 text-sm font-bold bg-[#12A488] hover:bg-[#3FD1B3] text-[#04110E] shadow-md shadow-[#12A488]/20 transition-colors" onClick={handleOpenCheckout}>
               Proceed to Checkout
             </Button>
 
-            <div className="p-3 rounded-2xl bg-secondary/50 border border-border/60 text-[11px] text-muted-foreground flex items-center gap-2">
-              <ShieldCheck className="h-4 w-4 text-emerald-600 shrink-0" />
+            <div className="p-3 rounded-2xl bg-secondary/50 dark:bg-[#0B1210] border border-border/60 dark:border-white/10 text-[11px] text-muted-foreground dark:text-[#9DB0A9] flex items-center gap-2">
+              <ShieldCheck className="h-4 w-4 text-emerald-600 dark:text-[#3FD1B3] shrink-0" />
               <span>100% Genuine Dental Supplies • Direct Dispatch from Kevdabaug Depot</span>
             </div>
           </Card>
@@ -480,90 +480,90 @@ function CartSection({ onNavigateToOrders }: { onNavigateToOrders?: () => void }
 
       {/* ── Checkout & Address Dialog ── */}
       <Dialog open={showCheckoutModal} onOpenChange={setShowCheckoutModal}>
-        <DialogContent className="max-w-lg rounded-3xl border border-border/80 shadow-xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-lg rounded-3xl border border-border/80 dark:border-white/10 dark:bg-[#070B0A] shadow-xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="text-xl font-bold font-heading flex items-center gap-2">
-              <Truck className="h-5 w-5 text-primary" />
+            <DialogTitle className="text-xl font-bold font-heading flex items-center gap-2 text-foreground">
+              <Truck className="h-5 w-5 text-primary dark:text-[#3FD1B3]" />
               Clinic Delivery Details
             </DialogTitle>
           </DialogHeader>
 
           <div className="space-y-4 py-2">
             {/* Step 1: Delivery Address */}
-            <div className="space-y-3 p-4 rounded-2xl bg-muted/40 border border-border/70">
+            <div className="space-y-3 p-4 rounded-2xl bg-muted/40 dark:bg-[#0B1210] border border-border/70 dark:border-white/10">
               <div className="flex items-center gap-2">
-                <MapPin className="h-4 w-4 text-primary" />
-                <span className="font-bold text-sm">1. Delivery Address (Vadodara Clinic)</span>
+                <MapPin className="h-4 w-4 text-primary dark:text-[#3FD1B3]" />
+                <span className="font-bold text-sm text-foreground">1. Delivery Address (Vadodara Clinic)</span>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <Label className="text-xs">Clinic / Hospital Name</Label>
+                  <Label className="text-xs text-muted-foreground dark:text-[#9DB0A9]">Clinic / Hospital Name</Label>
                   <Input 
                     value={clinicName} 
                     onChange={e => setClinicName(e.target.value)} 
                     placeholder="e.g. Smile Dental Clinic"
-                    className="h-9 text-xs rounded-xl"
+                    className="h-9 text-xs rounded-xl dark:bg-[#10201C] dark:border-white/10 dark:text-[#F2F6F4]"
                   />
                 </div>
                 <div className="space-y-1">
-                  <Label className="text-xs">Contact Mobile Number *</Label>
+                  <Label className="text-xs text-muted-foreground dark:text-[#9DB0A9]">Contact Mobile Number *</Label>
                   <Input 
                     value={contactPhone} 
                     onChange={e => setContactPhone(e.target.value)} 
                     placeholder="+91 98765 43210"
-                    className="h-9 text-xs rounded-xl"
+                    className="h-9 text-xs rounded-xl dark:bg-[#10201C] dark:border-white/10 dark:text-[#F2F6F4]"
                   />
                 </div>
               </div>
 
               <div className="space-y-1">
-                <Label className="text-xs">Street / Complex / Shop Address *</Label>
+                <Label className="text-xs text-muted-foreground dark:text-[#9DB0A9]">Street / Complex / Shop Address *</Label>
                 <Input 
                   value={streetAddress} 
                   onChange={e => setStreetAddress(e.target.value)} 
                   placeholder="e.g. 2nd Floor, Vraj Vihar Complex, Kevdabaug"
-                  className="h-9 text-xs rounded-xl"
+                  className="h-9 text-xs rounded-xl dark:bg-[#10201C] dark:border-white/10 dark:text-[#F2F6F4]"
                 />
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div className="space-y-1 sm:col-span-2">
-                  <Label className="text-xs">Landmark</Label>
+                  <Label className="text-xs text-muted-foreground dark:text-[#9DB0A9]">Landmark</Label>
                   <Input 
                     value={landmark} 
                     onChange={e => setLandmark(e.target.value)} 
                     placeholder="e.g. Near Char Rasta"
-                    className="h-9 text-xs rounded-xl"
+                    className="h-9 text-xs rounded-xl dark:bg-[#10201C] dark:border-white/10 dark:text-[#F2F6F4]"
                   />
                 </div>
                 <div className="space-y-1">
-                  <Label className="text-xs">Pincode</Label>
+                  <Label className="text-xs text-muted-foreground dark:text-[#9DB0A9]">Pincode</Label>
                   <Input 
                     value={pincode} 
                     onChange={e => setPincode(e.target.value)} 
                     placeholder="390001"
-                    className="h-9 text-xs rounded-xl"
+                    className="h-9 text-xs rounded-xl dark:bg-[#10201C] dark:border-white/10 dark:text-[#F2F6F4]"
                   />
                 </div>
               </div>
 
               <div className="space-y-1">
-                <Label className="text-xs">Special Instructions (Optional)</Label>
+                <Label className="text-xs text-muted-foreground dark:text-[#9DB0A9]">Special Instructions (Optional)</Label>
                 <Input 
                   value={deliveryNotes} 
                   onChange={e => setDeliveryNotes(e.target.value)} 
                   placeholder="e.g. Deliver before lunch break / Call doctor upon arrival"
-                  className="h-9 text-xs rounded-xl"
+                  className="h-9 text-xs rounded-xl dark:bg-[#10201C] dark:border-white/10 dark:text-[#F2F6F4]"
                 />
               </div>
             </div>
 
             {/* Step 2: Payment Method */}
-            <div className="space-y-3.5 p-4 rounded-2xl bg-muted/30 border border-border/70">
+            <div className="space-y-3.5 p-4 rounded-2xl bg-muted/30 dark:bg-[#0B1210] border border-border/70 dark:border-white/10">
               <div className="flex items-center gap-2">
-                <CreditCard className="h-4 w-4 text-primary" />
-                <span className="font-bold text-sm">2. Select Payment Method</span>
+                <CreditCard className="h-4 w-4 text-primary dark:text-[#3FD1B3]" />
+                <span className="font-bold text-sm text-foreground">2. Select Payment Method</span>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -571,53 +571,53 @@ function CartSection({ onNavigateToOrders }: { onNavigateToOrders?: () => void }
                   onClick={() => setPaymentMethod("razorpay")}
                   className={`p-3.5 rounded-2xl border-2 cursor-pointer transition-all ${
                     paymentMethod === "razorpay" 
-                      ? "border-primary bg-primary/5 shadow-xs" 
-                      : "border-border/80 bg-card hover:border-primary/40"
+                      ? "border-primary dark:border-[#12A488] bg-primary/5 dark:bg-[#12A488]/10 shadow-xs" 
+                      : "border-border/80 dark:border-white/10 bg-card dark:bg-[#10201C] hover:border-primary/40 dark:hover:border-[#3FD1B3]/40"
                   }`}
                 >
                   <div className="flex items-center justify-between mb-1.5">
                     <div className="flex items-center gap-2">
-                      <CreditCard className="h-4 w-4 text-primary" />
-                      <span className="font-bold text-xs">Razorpay Online</span>
+                      <CreditCard className="h-4 w-4 text-primary dark:text-[#3FD1B3]" />
+                      <span className="font-bold text-xs text-foreground">Razorpay Online</span>
                     </div>
                     {paymentMethod === "razorpay" && (
-                      <span className="h-2 w-2 rounded-full bg-primary" />
+                      <span className="h-2 w-2 rounded-full bg-primary dark:bg-[#3FD1B3]" />
                     )}
                   </div>
-                  <p className="text-[11px] text-muted-foreground">UPI, Cards & NetBanking</p>
+                  <p className="text-[11px] text-muted-foreground dark:text-[#9DB0A9]">UPI, Cards & NetBanking</p>
                 </div>
 
                 <div 
                   onClick={() => setPaymentMethod("cod")}
                   className={`p-3.5 rounded-2xl border-2 cursor-pointer transition-all ${
                     paymentMethod === "cod" 
-                      ? "border-primary bg-primary/5 shadow-xs" 
-                      : "border-border/80 bg-card hover:border-primary/40"
+                      ? "border-primary dark:border-[#12A488] bg-primary/5 dark:bg-[#12A488]/10 shadow-xs" 
+                      : "border-border/80 dark:border-white/10 bg-card dark:bg-[#10201C] hover:border-primary/40 dark:hover:border-[#3FD1B3]/40"
                   }`}
                 >
                   <div className="flex items-center justify-between mb-1.5">
                     <div className="flex items-center gap-2">
-                      <Banknote className="h-4 w-4 text-emerald-600" />
-                      <span className="font-bold text-xs">Pay on Delivery</span>
+                      <Banknote className="h-4 w-4 text-emerald-600 dark:text-[#3FD1B3]" />
+                      <span className="font-bold text-xs text-foreground">Pay on Delivery</span>
                     </div>
                     {paymentMethod === "cod" && (
-                      <span className="h-2 w-2 rounded-full bg-primary" />
+                      <span className="h-2 w-2 rounded-full bg-primary dark:bg-[#3FD1B3]" />
                     )}
                   </div>
-                  <p className="text-[11px] text-muted-foreground">Pay cash or scan courier UPI QR</p>
+                  <p className="text-[11px] text-muted-foreground dark:text-[#9DB0A9]">Pay cash or scan courier UPI QR</p>
                 </div>
               </div>
             </div>
           </div>
 
           <DialogFooter className="gap-2 sm:gap-0">
-            <Button variant="outline" onClick={() => setShowCheckoutModal(false)} disabled={isCheckingOut} className="rounded-xl">
+            <Button variant="outline" onClick={() => setShowCheckoutModal(false)} disabled={isCheckingOut} className="rounded-xl dark:border-white/10 dark:bg-[#0B1210] dark:text-[#F2F6F4]">
               Cancel
             </Button>
             <Button 
               disabled={isCheckingOut} 
               onClick={handleProcessOrder}
-              className="rounded-xl font-bold shadow-md shadow-primary/20 gap-2 w-full h-12 rounded-2xl font-extrabold text-sm bg-gradient-to-r from-[#0b57d0] via-[#0284c7] to-[#0284c7] hover:opacity-95 text-white shadow-lg shadow-primary/20 flex items-center justify-center gap-2"
+              className="rounded-2xl font-bold gap-2 w-full h-12 text-sm bg-[#12A488] hover:bg-[#3FD1B3] text-[#04110E] shadow-lg shadow-[#12A488]/20 flex items-center justify-center transition-colors"
             >
               {isCheckingOut ? (
                 <>
@@ -865,18 +865,18 @@ function OrdersSection() {
       ) : activeOrder.error ? (
         <ErrorBanner onRetry={activeOrder.retry} />
       ) : activeOrder.data && (
-        <Card className="overflow-hidden border-2 border-primary/20 bg-gradient-to-b from-card via-background to-primary/5 rounded-3xl shadow-lg">
+        <Card className="overflow-hidden border border-border/80 dark:border-white/10 bg-gradient-to-b from-card via-background to-primary/5 dark:from-[#10201C] dark:via-[#0B1210] dark:to-[#070B0A] rounded-3xl shadow-lg">
           {/* Top Live Bar */}
-          <div className="bg-primary/10 px-5 py-3 border-b border-primary/15 flex items-center justify-between flex-wrap gap-2">
+          <div className="bg-primary/10 dark:bg-[#12A488]/15 px-5 py-3 border-b border-primary/15 dark:border-white/10 flex items-center justify-between flex-wrap gap-2">
             <div className="flex items-center gap-2">
               <span className="relative flex h-2.5 w-2.5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 dark:bg-[#3FD1B3] opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500 dark:bg-[#3FD1B3]"></span>
               </span>
               <span className="text-xs font-bold text-foreground uppercase tracking-wider">
                 LIVE DISPATCH TRACKING
               </span>
-              <span className="text-xs text-muted-foreground hidden sm:inline">• Same-Day Vadodara Delivery</span>
+              <span className="text-xs text-muted-foreground dark:text-[#9DB0A9] hidden sm:inline">• Same-Day Vadodara Delivery</span>
             </div>
 
             <Badge className={`${orderStatusInfo.badge} font-bold text-xs capitalize py-1 px-3`}>
@@ -888,20 +888,20 @@ function OrdersSection() {
             {/* Header with Order ID & Cancel Option */}
             <div className="flex items-start justify-between flex-wrap gap-4">
               <div>
-                <span className="text-xs font-mono font-bold text-primary block">
+                <span className="text-xs font-mono font-bold text-primary dark:text-[#3FD1B3] block">
                   ORDER #{activeOrder.data.orderId}
                 </span>
                 <h3 className={`text-lg sm:text-xl font-extrabold ${orderStatusInfo.color} mt-0.5`}>
                   {orderStatusInfo.title}
                 </h3>
-                <p className="text-xs text-muted-foreground mt-1 max-w-lg">
+                <p className="text-xs text-muted-foreground dark:text-[#9DB0A9] mt-1 max-w-lg">
                   {orderStatusInfo.description}
                 </p>
               </div>
 
               <div className="flex items-center gap-2 flex-wrap justify-end">
                 <div className="text-right mr-2">
-                  <div className="text-xs text-muted-foreground">{activeOrder.data.itemCount} Items</div>
+                  <div className="text-xs text-muted-foreground dark:text-[#9DB0A9]">{activeOrder.data.itemCount} Items</div>
                   <div className="text-lg font-black text-foreground">₹{activeOrder.data.total.toFixed(2)}</div>
                 </div>
 
@@ -909,7 +909,7 @@ function OrdersSection() {
                   variant="outline"
                   size="sm"
                   onClick={() => setSelectedInvoiceOrder(buildInvoiceDataFromDoctorOrder(activeOrder.data, user))}
-                  className="text-xs h-9 font-bold border-primary/30 text-primary hover:bg-primary/10 gap-1.5 shadow-xs"
+                  className="text-xs h-9 font-bold border-primary/30 dark:border-[#12A488]/30 text-primary dark:text-[#3FD1B3] hover:bg-primary/10 dark:hover:bg-[#12A488]/15 gap-1.5 shadow-xs"
                 >
                   <FileText className="h-3.5 w-3.5" />
                   Tally GST Invoice
@@ -919,9 +919,9 @@ function OrdersSection() {
                   variant="outline"
                   size="sm"
                   onClick={() => openDoctorSupportWhatsApp(activeOrder.data!.orderId, user?.fullName)}
-                  className="text-xs h-9 font-bold border-emerald-500/30 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/10 gap-1.5 shadow-xs"
+                  className="text-xs h-9 font-bold border-emerald-500/30 dark:border-[#12A488]/30 text-emerald-700 dark:text-[#3FD1B3] hover:bg-emerald-500/10 dark:hover:bg-[#12A488]/15 gap-1.5 shadow-xs"
                 >
-                  <MessageSquare className="h-3.5 w-3.5 text-emerald-600" />
+                  <MessageSquare className="h-3.5 w-3.5 text-emerald-600 dark:text-[#3FD1B3]" />
                   WhatsApp
                 </Button>
 
@@ -944,10 +944,10 @@ function OrdersSection() {
             <div className="py-2">
               <div className="relative flex items-center justify-between max-w-2xl mx-auto">
                 {/* Background line */}
-                <div className="absolute top-5 left-6 right-6 h-1 bg-border/80 rounded-full" />
+                <div className="absolute top-5 left-6 right-6 h-1 bg-border/80 dark:bg-white/10 rounded-full" />
                 {/* Active animated fill line */}
                 <div 
-                  className="absolute top-5 left-6 h-1 bg-gradient-to-r from-primary via-sky-500 to-emerald-500 rounded-full transition-all duration-700 ease-out" 
+                  className="absolute top-5 left-6 h-1 bg-gradient-to-r from-primary via-sky-500 to-emerald-500 dark:from-[#12A488] dark:to-[#3FD1B3] rounded-full transition-all duration-700 ease-out" 
                   style={{ width: `calc(${getProgressWidth(activeOrder.data.status)} - 2rem)` }} 
                 />
 
@@ -959,17 +959,17 @@ function OrdersSection() {
                       <div 
                         className={`h-11 w-11 rounded-2xl grid place-items-center border-2 transition-all duration-500 ${
                           done 
-                            ? "bg-gradient-to-br from-primary to-sky-600 border-primary text-white shadow-md shadow-primary/20 scale-105" 
-                            : "bg-card border-border text-muted-foreground"
-                        } ${isCurrent ? "ring-4 ring-primary/20 animate-pulse" : ""}`}
+                            ? "bg-gradient-to-br from-primary to-sky-600 dark:from-[#12A488] dark:to-[#3FD1B3] border-primary dark:border-[#12A488] text-white dark:text-[#04110E] shadow-md shadow-primary/20 dark:shadow-[#12A488]/20 scale-105" 
+                            : "bg-card dark:bg-[#0B1210] border-border dark:border-white/10 text-muted-foreground dark:text-[#9DB0A9]"
+                        } ${isCurrent ? "ring-4 ring-primary/20 dark:ring-[#12A488]/30 animate-pulse" : ""}`}
                       >
                         <s.icon className="h-5 w-5" />
                       </div>
                       <div>
-                        <span className={`text-xs font-bold block ${done ? "text-foreground" : "text-muted-foreground"}`}>
+                        <span className={`text-xs font-bold block ${done ? "text-foreground" : "text-muted-foreground dark:text-[#9DB0A9]"}`}>
                           {s.label}
                         </span>
-                        <span className="text-[10px] text-muted-foreground leading-tight hidden sm:block">
+                        <span className="text-[10px] text-muted-foreground dark:text-[#9DB0A9] leading-tight hidden sm:block">
                           {s.desc}
                         </span>
                       </div>
@@ -980,39 +980,39 @@ function OrdersSection() {
             </div>
 
             {/* Shop Depot Contact & Destination Info Card */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-3 border-t border-border/60">
-              <div className="p-3.5 rounded-2xl bg-muted/40 border border-border/60 flex items-start gap-3">
-                <div className="h-9 w-9 rounded-xl bg-primary/10 text-primary grid place-items-center shrink-0">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-3 border-t border-border/60 dark:border-white/10">
+              <div className="p-3.5 rounded-2xl bg-muted/40 dark:bg-[#0B1210] border border-border/60 dark:border-white/10 flex items-start gap-3">
+                <div className="h-9 w-9 rounded-xl bg-primary/10 dark:bg-[#12A488]/15 text-primary dark:text-[#3FD1B3] grid place-items-center shrink-0">
                   <MapPin className="h-4 w-4" />
                 </div>
                 <div className="text-xs">
                   <span className="font-bold text-foreground block">Dispatched From:</span>
-                  <p className="text-muted-foreground">Darsh Dental Depot, Kevdabaug, Vadodara</p>
-                  <p className="text-[11px] text-muted-foreground mt-0.5">Vraj Vihar Complex, Char Rasta</p>
+                  <p className="text-muted-foreground dark:text-[#9DB0A9]">Darsh Dental Depot, Kevdabaug, Vadodara</p>
+                  <p className="text-[11px] text-muted-foreground dark:text-[#9DB0A9] mt-0.5">Vraj Vihar Complex, Char Rasta</p>
                 </div>
               </div>
 
-              <div className="p-3.5 rounded-2xl bg-muted/40 border border-border/60 flex items-center justify-between gap-3">
+              <div className="p-3.5 rounded-2xl bg-muted/40 dark:bg-[#0B1210] border border-border/60 dark:border-white/10 flex items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
-                  <div className="h-9 w-9 rounded-xl bg-emerald-500/10 text-emerald-600 grid place-items-center shrink-0">
+                  <div className="h-9 w-9 rounded-xl bg-emerald-500/10 dark:bg-[#12A488]/15 text-emerald-600 dark:text-[#3FD1B3] grid place-items-center shrink-0">
                     <Phone className="h-4 w-4" />
                   </div>
                   <div className="text-xs">
                     <span className="font-bold text-foreground block">Have a Question?</span>
-                    <p className="text-muted-foreground">Direct Depot Helpline</p>
+                    <p className="text-muted-foreground dark:text-[#9DB0A9]">Direct Depot Helpline</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <button
                     type="button"
                     onClick={() => openDoctorSupportWhatsApp(activeOrder.data!.orderId, user?.fullName)}
-                    className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-xs transition-colors"
+                    className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 dark:bg-[#12A488] dark:hover:bg-[#3FD1B3] text-white dark:text-[#04110E] font-bold text-xs shadow-xs transition-colors"
                   >
                     <MessageSquare className="h-3 w-3" /> WhatsApp
                   </button>
                   <a
                     href="tel:+919727076119"
-                    className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-primary hover:bg-primary/90 text-white font-bold text-xs shadow-xs transition-colors"
+                    className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-primary hover:bg-primary/90 dark:bg-[#10201C] dark:border dark:border-white/15 dark:text-[#F2F6F4] font-bold text-xs shadow-xs transition-colors"
                   >
                     <Phone className="h-3 w-3" /> Call
                   </a>
@@ -1022,23 +1022,23 @@ function OrdersSection() {
 
             {/* Items inside this order breakdown */}
             {activeOrder.data.products && activeOrder.data.products.length > 0 && (
-              <div className="space-y-2 pt-2 border-t border-border/60">
-                <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider block">
+              <div className="space-y-2 pt-2 border-t border-border/60 dark:border-white/10">
+                <span className="text-xs font-bold text-muted-foreground dark:text-[#9DB0A9] uppercase tracking-wider block">
                   Items in this order:
                 </span>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   {activeOrder.data.products.map((item, idx) => (
-                    <div key={idx} className="flex items-center gap-3 p-2.5 rounded-xl bg-background border border-border/80">
+                    <div key={idx} className="flex items-center gap-3 p-2.5 rounded-xl bg-background dark:bg-[#070B0A] border border-border/80 dark:border-white/10">
                       {item.image ? (
-                        <img src={item.image} alt={item.name} className="h-10 w-10 rounded-lg object-cover border shrink-0" />
+                        <img src={item.image} alt={item.name} className="h-10 w-10 rounded-lg object-cover border dark:border-white/10 shrink-0" />
                       ) : (
-                        <div className="h-10 w-10 rounded-lg bg-muted grid place-items-center text-muted-foreground shrink-0">
+                        <div className="h-10 w-10 rounded-lg bg-muted dark:bg-[#0B1210] grid place-items-center text-muted-foreground dark:text-[#9DB0A9] shrink-0">
                           <Package className="h-5 w-5" />
                         </div>
                       )}
                       <div className="min-w-0 flex-1">
                         <div className="text-xs font-semibold truncate text-foreground">{item.name}</div>
-                        <div className="text-[11px] text-muted-foreground">{item.brand} • Qty: {item.quantity}</div>
+                        <div className="text-[11px] text-muted-foreground dark:text-[#9DB0A9]">{item.brand} • Qty: {item.quantity}</div>
                       </div>
                       <div className="text-xs font-bold text-foreground">
                         ₹{(item.price * item.quantity).toFixed(2)}
@@ -1054,7 +1054,7 @@ function OrdersSection() {
 
       {/* Past Orders Table */}
       <div className="space-y-3 pt-2">
-        <h2 className="text-lg font-bold font-heading">All Order Records</h2>
+        <h2 className="text-lg font-bold font-heading text-foreground">All Order Records</h2>
         {history.loading ? (
           <LoadingSpinner label="Loading records..." />
         ) : history.error ? (
@@ -1062,25 +1062,25 @@ function OrdersSection() {
         ) : !history.data?.length ? (
           <EmptyBanner label="No past orders recorded" />
         ) : (
-          <Card className="overflow-hidden rounded-2xl border shadow-xs">
+          <Card className="overflow-hidden rounded-2xl border dark:border-white/10 dark:bg-gradient-to-br dark:from-[#10201C] dark:to-[#0A100F] shadow-xs">
             <Table>
               <TableHeader>
-                <TableRow className="bg-muted/30">
-                  <TableHead className="font-bold">Order #</TableHead>
-                  <TableHead className="font-bold">Items</TableHead>
-                  <TableHead className="font-bold">Total Amount</TableHead>
-                  <TableHead className="font-bold">Payment</TableHead>
-                  <TableHead className="font-bold">Status</TableHead>
-                  <TableHead className="font-bold">Date & Time</TableHead>
-                  <TableHead className="font-bold text-right">Invoice & Action</TableHead>
+                <TableRow className="bg-muted/30 dark:bg-[#0B1210] dark:border-white/10">
+                  <TableHead className="font-bold text-foreground">Order #</TableHead>
+                  <TableHead className="font-bold text-foreground">Items</TableHead>
+                  <TableHead className="font-bold text-foreground">Total Amount</TableHead>
+                  <TableHead className="font-bold text-foreground">Payment</TableHead>
+                  <TableHead className="font-bold text-foreground">Status</TableHead>
+                  <TableHead className="font-bold text-foreground">Date & Time</TableHead>
+                  <TableHead className="font-bold text-right text-foreground">Invoice & Action</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {history.data.map((o) => (
-                  <TableRow key={o.orderId} className="hover:bg-muted/40 transition-colors">
-                    <TableCell className="font-mono font-bold text-xs text-primary">{o.orderId}</TableCell>
+                  <TableRow key={o.orderId} className="hover:bg-muted/40 hover:dark:bg-white/5 dark:border-white/10 transition-colors">
+                    <TableCell className="font-mono font-bold text-xs text-primary dark:text-[#3FD1B3]">{o.orderId}</TableCell>
                     <TableCell>
-                      <span className="text-xs font-semibold bg-muted px-2 py-0.5 rounded-md">
+                      <span className="text-xs font-semibold bg-muted dark:bg-[#0B1210] dark:border dark:border-white/10 px-2 py-0.5 rounded-md text-foreground">
                         {o.itemCount} item{o.itemCount > 1 ? "s" : ""}
                       </span>
                     </TableCell>
@@ -1088,17 +1088,17 @@ function OrdersSection() {
                     <TableCell>
                       <div className="space-y-1">
                         {o.paymentMethod?.toLowerCase() === "razorpay" ? (
-                          <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-sky-500/10 text-sky-700 dark:text-sky-300 border border-sky-500/20">
-                            <CreditCard className="h-3 w-3 text-sky-600" /> Razorpay
+                          <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-sky-500/10 dark:bg-[#12A488]/15 text-sky-700 dark:text-[#3FD1B3] border border-sky-500/20 dark:border-[#12A488]/30">
+                            <CreditCard className="h-3 w-3 text-sky-600 dark:text-[#3FD1B3]" /> Razorpay
                           </div>
                         ) : (
-                          <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20">
-                            <Banknote className="h-3 w-3 text-emerald-600" /> COD
+                          <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-500/10 dark:bg-[#12A488]/15 text-emerald-700 dark:text-[#3FD1B3] border border-emerald-500/20 dark:border-[#12A488]/30">
+                            <Banknote className="h-3 w-3 text-emerald-600 dark:text-[#3FD1B3]" /> COD
                           </div>
                         )}
                         <div>
                           {o.paymentStatus?.toLowerCase() === "paid" ? (
-                            <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-600 dark:text-emerald-400">
+                            <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-600 dark:text-[#3FD1B3]">
                               <CheckCircle2 className="h-3 w-3" /> Paid
                             </span>
                           ) : (
@@ -1110,14 +1110,14 @@ function OrdersSection() {
                       </div>
                     </TableCell>
                     <TableCell><StatusBadge status={o.status as any} /></TableCell>
-                    <TableCell className="text-muted-foreground text-xs whitespace-nowrap">{o.date}</TableCell>
+                    <TableCell className="text-muted-foreground dark:text-[#9DB0A9] text-xs whitespace-nowrap">{o.date}</TableCell>
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-1.5">
                         <Button
                           variant="outline"
                           size="sm"
                           onClick={() => setSelectedInvoiceOrder(buildInvoiceDataFromDoctorOrder(o, user))}
-                          className="text-xs h-8 font-semibold border-primary/30 text-primary hover:bg-primary/10 gap-1 px-2.5"
+                          className="text-xs h-8 font-semibold border-primary/30 dark:border-[#12A488]/30 text-primary dark:text-[#3FD1B3] hover:bg-primary/10 dark:hover:bg-[#12A488]/15 gap-1 px-2.5"
                           title="View & Download Tally GST Invoice"
                         >
                           <FileText className="h-3.5 w-3.5" />
@@ -1127,7 +1127,7 @@ function OrdersSection() {
                           variant="ghost"
                           size="icon"
                           onClick={() => openDoctorSupportWhatsApp(o.orderId, user?.fullName)}
-                          className="h-8 w-8 text-emerald-600 hover:bg-emerald-500/10"
+                          className="h-8 w-8 text-emerald-600 dark:text-[#3FD1B3] hover:bg-emerald-500/10 dark:hover:bg-[#12A488]/15"
                           title="Inquire on WhatsApp"
                         >
                           <MessageSquare className="h-3.5 w-3.5" />
@@ -1228,12 +1228,16 @@ function NotificationsSection({ onNavigate }: { onNavigate: (tab: string) => voi
       </div>
 
       {/* Filter Tabs */}
-      <div className="flex items-center gap-2 border-b border-border/50 pb-3">
+      <div className="flex items-center gap-2 border-b border-border/50 dark:border-white/10 pb-3">
         <Button
           variant={filter === "all" ? "default" : "ghost"}
           size="sm"
           onClick={() => setFilter("all")}
-          className="rounded-xl text-xs h-8 px-3.5"
+          className={`rounded-xl text-xs h-8 px-3.5 ${
+            filter === "all"
+              ? "dark:bg-[#12A488] dark:text-[#04110E] font-bold"
+              : "dark:text-[#9DB0A9] hover:dark:text-[#F2F6F4]"
+          }`}
         >
           All ({notifications.length})
         </Button>
@@ -1241,7 +1245,11 @@ function NotificationsSection({ onNavigate }: { onNavigate: (tab: string) => voi
           variant={filter === "order" ? "default" : "ghost"}
           size="sm"
           onClick={() => setFilter("order")}
-          className="rounded-xl text-xs h-8 px-3.5"
+          className={`rounded-xl text-xs h-8 px-3.5 ${
+            filter === "order"
+              ? "dark:bg-[#12A488] dark:text-[#04110E] font-bold"
+              : "dark:text-[#9DB0A9] hover:dark:text-[#F2F6F4]"
+          }`}
         >
           <ShoppingBag className="h-3.5 w-3.5 mr-1.5" /> Orders & Delivery (
           {notifications.filter((n) => n.type === "order").length})
@@ -1250,7 +1258,11 @@ function NotificationsSection({ onNavigate }: { onNavigate: (tab: string) => voi
           variant={filter === "stock" ? "default" : "ghost"}
           size="sm"
           onClick={() => setFilter("stock")}
-          className="rounded-xl text-xs h-8 px-3.5"
+          className={`rounded-xl text-xs h-8 px-3.5 ${
+            filter === "stock"
+              ? "dark:bg-[#12A488] dark:text-[#04110E] font-bold"
+              : "dark:text-[#9DB0A9] hover:dark:text-[#F2F6F4]"
+          }`}
         >
           <Package className="h-3.5 w-3.5 mr-1.5 text-amber-500" /> Wishlist & Restock (
           {notifications.filter((n) => n.type === "stock").length})
@@ -1261,12 +1273,12 @@ function NotificationsSection({ onNavigate }: { onNavigate: (tab: string) => voi
       {loading ? (
         <LoadingSpinner label="Checking live alerts..." />
       ) : filtered.length === 0 ? (
-        <Card className="p-12 text-center space-y-3 rounded-3xl border-dashed">
-          <div className="h-14 w-14 rounded-2xl bg-primary/10 text-primary mx-auto grid place-items-center">
+        <Card className="p-12 text-center space-y-3 rounded-3xl border-dashed dark:border-white/10 dark:bg-gradient-to-br dark:from-[#10201C] dark:to-[#0A100F]">
+          <div className="h-14 w-14 rounded-2xl bg-primary/10 dark:bg-[#12A488]/15 text-primary dark:text-[#3FD1B3] mx-auto grid place-items-center">
             <Bell className="h-7 w-7 opacity-70" />
           </div>
-          <h3 className="font-bold text-lg">No Notifications</h3>
-          <p className="text-xs text-muted-foreground max-w-sm mx-auto leading-relaxed">
+          <h3 className="font-bold text-lg text-foreground">No Notifications</h3>
+          <p className="text-xs text-muted-foreground dark:text-[#9DB0A9] max-w-sm mx-auto leading-relaxed">
             You're all caught up! New orders placed, Vadodara dispatch milestones, and restocked wishlist items will appear here automatically.
           </p>
         </Card>
@@ -1276,20 +1288,20 @@ function NotificationsSection({ onNavigate }: { onNavigate: (tab: string) => voi
             <Card
               key={n.id}
               onClick={() => handleItemClick(n)}
-              className={`p-4 rounded-2xl border transition-all cursor-pointer hover:shadow-md hover:border-primary/40 flex flex-col sm:flex-row sm:items-center justify-between gap-4 ${
+              className={`p-4 rounded-2xl border transition-all cursor-pointer hover:shadow-md hover:border-primary/40 dark:hover:border-[#3FD1B3]/40 flex flex-col sm:flex-row sm:items-center justify-between gap-4 ${
                 !n.isRead
-                  ? "bg-primary/5 border-primary/30 shadow-xs"
-                  : "bg-card border-border/70 opacity-90"
+                  ? "bg-primary/5 dark:bg-[#10201C] border-primary/30 dark:border-[#12A488]/40 shadow-xs"
+                  : "bg-card dark:bg-[#0A100F] border-border/70 dark:border-white/10 opacity-90"
               }`}
             >
               <div className="flex items-start gap-3.5 min-w-0">
                 <div
                   className={`h-11 w-11 rounded-2xl grid place-items-center shrink-0 ${
                     n.type === "order"
-                      ? "bg-primary/15 text-primary"
+                      ? "bg-primary/15 dark:bg-[#12A488]/15 text-primary dark:text-[#3FD1B3]"
                       : n.type === "stock"
                       ? "bg-amber-500/15 text-amber-600 dark:text-amber-400"
-                      : "bg-secondary text-foreground"
+                      : "bg-secondary dark:bg-[#0B1210] text-foreground"
                   }`}
                 >
                   {n.type === "order" ? (
@@ -1305,13 +1317,13 @@ function NotificationsSection({ onNavigate }: { onNavigate: (tab: string) => voi
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="font-bold text-sm text-foreground">{n.title}</span>
                     {!n.isRead && (
-                      <span className="h-2 w-2 rounded-full bg-primary animate-pulse" />
+                      <span className="h-2 w-2 rounded-full bg-primary dark:bg-[#3FD1B3] animate-pulse" />
                     )}
-                    <span className="text-[11px] text-muted-foreground flex items-center gap-1">
+                    <span className="text-[11px] text-muted-foreground dark:text-[#9DB0A9] flex items-center gap-1">
                       <Clock className="h-3 w-3" /> {n.time}
                     </span>
                   </div>
-                  <p className="text-xs text-muted-foreground leading-relaxed">
+                  <p className="text-xs text-muted-foreground dark:text-[#9DB0A9] leading-relaxed">
                     {n.message}
                   </p>
                 </div>
@@ -1319,7 +1331,7 @@ function NotificationsSection({ onNavigate }: { onNavigate: (tab: string) => voi
 
               <div className="shrink-0 flex items-center gap-2 self-end sm:self-center">
                 {n.actionTab && (
-                  <Button variant="secondary" size="sm" className="rounded-xl text-xs h-8 px-3 font-semibold">
+                  <Button variant="secondary" size="sm" className="rounded-xl text-xs h-8 px-3 font-semibold dark:bg-[#0B1210] dark:border dark:border-white/10 dark:text-[#F2F6F4] hover:dark:bg-[#10201C]">
                     {n.actionTab === "orders" ? "Track Order" : n.actionTab === "wishlist" ? "View Wishlist" : "View"}
                     <ChevronRight className="h-3.5 w-3.5 ml-1" />
                   </Button>
@@ -1333,19 +1345,19 @@ function NotificationsSection({ onNavigate }: { onNavigate: (tab: string) => voi
   );
 }
 
-// ─── Settings (unchanged) ───────────────────────────────────────────────────
+// ─── Settings ───────────────────────────────────────────────────────────────
 
 function SettingsSection() {
   const { data: profile } = useApiData<DoctorProfile>(doctorApi.getProfile);
   
   return (
     <div className="space-y-5 max-w-2xl">
-      <h1 className="text-2xl font-bold">Settings</h1>
-      <Card className="p-6 space-y-4">
-        <div><Label className="mb-1.5">Full name</Label><Input defaultValue={profile?.name || ""} /></div>
-        <div><Label className="mb-1.5">Clinic</Label><Input defaultValue={profile?.clinicName || ""} /></div>
-        <div className="flex items-center justify-between"><span className="text-sm">Order updates via email</span><Switch defaultChecked /></div>
-        <Button onClick={() => toast.success("Saved")}>Save</Button>
+      <h1 className="text-2xl font-bold font-heading text-foreground">Settings</h1>
+      <Card className="p-6 space-y-4 dark:bg-gradient-to-br dark:from-[#10201C] dark:to-[#0A100F] dark:border-white/10">
+        <div><Label className="mb-1.5 text-muted-foreground dark:text-[#9DB0A9]">Full name</Label><Input defaultValue={profile?.name || ""} className="dark:bg-[#0B1210] dark:border-white/10 dark:text-[#F2F6F4]" /></div>
+        <div><Label className="mb-1.5 text-muted-foreground dark:text-[#9DB0A9]">Clinic</Label><Input defaultValue={profile?.clinicName || ""} className="dark:bg-[#0B1210] dark:border-white/10 dark:text-[#F2F6F4]" /></div>
+        <div className="flex items-center justify-between"><span className="text-sm text-foreground">Order updates via email</span><Switch defaultChecked /></div>
+        <Button onClick={() => toast.success("Saved")} className="bg-[#12A488] hover:bg-[#3FD1B3] text-[#04110E] font-bold transition-colors">Save</Button>
       </Card>
     </div>
   );

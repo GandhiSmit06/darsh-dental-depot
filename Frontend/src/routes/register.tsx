@@ -249,10 +249,10 @@ function RegisterPage() {
     <PublicLayout>
       <div className="container mx-auto px-4 py-16 max-w-2xl relative">
         {/* Background glow */}
-        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-96 h-96 bg-primary/15 rounded-full blur-3xl -z-10 pointer-events-none" />
+        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-96 h-96 bg-primary/15 dark:bg-[#12A488]/10 rounded-full blur-3xl -z-10 pointer-events-none" />
 
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-          <Card className="p-8 sm:p-10 glass-card border border-border/70 rounded-3xl shadow-xl backdrop-blur-xl">
+          <Card className="p-8 sm:p-10 glass-card border border-border/70 dark:border-white/10 dark:bg-gradient-to-br dark:from-[#10201C] dark:to-[#0A100F] rounded-3xl shadow-xl backdrop-blur-xl">
             <AnimatePresence mode="wait">
               {step === 1 ? (
                 <motion.div
@@ -263,13 +263,13 @@ function RegisterPage() {
                   transition={{ duration: 0.3 }}
                 >
                   {/* Vadodara Restriction Notice */}
-                  <div className="p-4 rounded-2xl bg-primary/10 border border-primary/20 mb-6 flex items-start gap-3">
-                    <MapPin className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+                  <div className="p-4 rounded-2xl bg-primary/10 dark:bg-[#12A488]/15 border border-primary/20 dark:border-[#12A488]/30 mb-6 flex items-start gap-3">
+                    <MapPin className="h-5 w-5 text-primary dark:text-[#3FD1B3] shrink-0 mt-0.5" />
                     <div className="text-xs">
-                      <span className="font-extrabold text-primary block">
+                      <span className="font-extrabold text-primary dark:text-[#3FD1B3] block">
                         📍 Exclusively For Doctors & Clinics in Vadodara, Gujarat
                       </span>
-                      <p className="text-muted-foreground mt-0.5 leading-relaxed">
+                      <p className="text-muted-foreground dark:text-[#9DB0A9] mt-0.5 leading-relaxed">
                         This portal is dedicated strictly to dental surgeons with clinics located in Vadodara for same-day local depot fulfillment from Darsh Dental Depot.
                       </p>
                     </div>
@@ -277,13 +277,13 @@ function RegisterPage() {
 
                   {/* Header */}
                   <div className="text-center mb-8 space-y-1.5">
-                    <div className="mx-auto h-12 w-12 rounded-2xl bg-gradient-to-br from-primary via-sky-600 to-indigo-600 text-white grid place-items-center mb-3 shadow-md">
+                    <div className="mx-auto h-12 w-12 rounded-2xl bg-gradient-to-br from-primary via-sky-600 to-indigo-600 dark:from-[#12A488] dark:to-[#3FD1B3] text-white dark:text-[#04110E] grid place-items-center mb-3 shadow-md">
                       <Stethoscope className="h-6 w-6" />
                     </div>
                     <h1 className="text-2xl sm:text-3xl font-extrabold font-heading tracking-tight text-foreground">
                       Doctor Account Registration
                     </h1>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-xs text-muted-foreground dark:text-[#9DB0A9]">
                       Only genuine Gmail and Indian mobile numbers are accepted for verification
                     </p>
                   </div>
@@ -292,11 +292,11 @@ function RegisterPage() {
                     {/* Doctor & Clinic Name */}
                     <div className="grid sm:grid-cols-2 gap-4">
                       <div>
-                        <Label className="text-xs font-semibold mb-1.5 block">Doctor Full Name *</Label>
+                        <Label className="text-xs font-semibold mb-1.5 block text-foreground">Doctor Full Name *</Label>
                         <Input
                           {...register("fullName")}
                           placeholder="Dr. Rajesh Patel"
-                          className="rounded-xl bg-background/80 border-border/60 text-sm h-11 focus:border-primary"
+                          className="rounded-xl bg-background/80 dark:bg-[#0B1210] border-border/60 dark:border-white/10 dark:text-[#F2F6F4] text-sm h-11 focus:border-primary dark:focus:border-[#12A488]"
                         />
                         {errors.fullName && (
                           <p className="text-xs text-destructive mt-1">{errors.fullName.message}</p>
@@ -304,11 +304,11 @@ function RegisterPage() {
                       </div>
 
                       <div>
-                        <Label className="text-xs font-semibold mb-1.5 block">Dental Clinic / Hospital Name *</Label>
+                        <Label className="text-xs font-semibold mb-1.5 block text-foreground">Dental Clinic / Hospital Name *</Label>
                         <Input
                           {...register("clinicName")}
                           placeholder="Smile Dental Clinic"
-                          className="rounded-xl bg-background/80 border-border/60 text-sm h-11 focus:border-primary"
+                          className="rounded-xl bg-background/80 dark:bg-[#0B1210] border-border/60 dark:border-white/10 dark:text-[#F2F6F4] text-sm h-11 focus:border-primary dark:focus:border-[#12A488]"
                         />
                         {errors.clinicName && (
                           <p className="text-xs text-destructive mt-1">{errors.clinicName.message}</p>
@@ -319,12 +319,12 @@ function RegisterPage() {
                     {/* Email & Phone */}
                     <div className="grid sm:grid-cols-2 gap-4">
                       <div>
-                        <Label className="text-xs font-semibold mb-1.5 block">Genuine Email / Gmail *</Label>
+                        <Label className="text-xs font-semibold mb-1.5 block text-foreground">Genuine Email / Gmail *</Label>
                         <Input
                           type="email"
                           {...register("email")}
                           placeholder="dr.patel@gmail.com"
-                          className="rounded-xl bg-background/80 border-border/60 text-sm h-11 focus:border-primary"
+                          className="rounded-xl bg-background/80 dark:bg-[#0B1210] border-border/60 dark:border-white/10 dark:text-[#F2F6F4] text-sm h-11 focus:border-primary dark:focus:border-[#12A488]"
                         />
                         {errors.email && (
                           <p className="text-xs text-destructive mt-1">{errors.email.message}</p>
@@ -332,13 +332,13 @@ function RegisterPage() {
                       </div>
 
                       <div>
-                        <Label className="text-xs font-semibold mb-1.5 block">Mobile Number (10 digits) *</Label>
+                        <Label className="text-xs font-semibold mb-1.5 block text-foreground">Mobile Number (10 digits) *</Label>
                         <Input
                           type="tel"
                           {...register("phone")}
                           placeholder="9876543210"
                           maxLength={10}
-                          className="rounded-xl bg-background/80 border-border/60 text-sm h-11 focus:border-primary"
+                          className="rounded-xl bg-background/80 dark:bg-[#0B1210] border-border/60 dark:border-white/10 dark:text-[#F2F6F4] text-sm h-11 focus:border-primary dark:focus:border-[#12A488]"
                         />
                         {errors.phone && (
                           <p className="text-xs text-destructive mt-1">{errors.phone.message}</p>
@@ -349,16 +349,16 @@ function RegisterPage() {
                     {/* Vadodara Locality Dropdown & Pin Code */}
                     <div className="grid sm:grid-cols-2 gap-4">
                       <div>
-                        <Label className="text-xs font-semibold mb-1.5 block">Vadodara Clinic Locality *</Label>
+                        <Label className="text-xs font-semibold mb-1.5 block text-foreground">Vadodara Clinic Locality *</Label>
                         <Controller
                           control={control}
                           name="vadodaraArea"
                           render={({ field }) => (
                             <Select value={field.value} onValueChange={field.onChange}>
-                              <SelectTrigger className="w-full rounded-xl bg-background/80 border-border/60 text-sm h-11">
+                              <SelectTrigger className="w-full rounded-xl bg-background/80 dark:bg-[#0B1210] border-border/60 dark:border-white/10 dark:text-[#F2F6F4] text-sm h-11">
                                 <SelectValue placeholder="Select Vadodara Area" />
                               </SelectTrigger>
-                              <SelectContent className="glass-card max-h-56">
+                              <SelectContent className="glass-card dark:bg-[#070B0A] dark:border-white/10 max-h-56">
                                 {VADODARA_AREAS.map((area) => (
                                   <SelectItem key={area} value={area} className="text-xs">
                                     {area}
@@ -374,12 +374,12 @@ function RegisterPage() {
                       </div>
 
                       <div>
-                        <Label className="text-xs font-semibold mb-1.5 block">Vadodara PIN Code (3900xx) *</Label>
+                        <Label className="text-xs font-semibold mb-1.5 block text-foreground">Vadodara PIN Code (3900xx) *</Label>
                         <Input
                           {...register("pincode")}
                           placeholder="390001"
                           maxLength={6}
-                          className="rounded-xl bg-background/80 border-border/60 text-sm h-11 focus:border-primary"
+                          className="rounded-xl bg-background/80 dark:bg-[#0B1210] border-border/60 dark:border-white/10 dark:text-[#F2F6F4] text-sm h-11 focus:border-primary dark:focus:border-[#12A488]"
                         />
                         {errors.pincode && (
                           <p className="text-xs text-destructive mt-1">{errors.pincode.message}</p>
@@ -389,13 +389,13 @@ function RegisterPage() {
 
                     {/* DCI Number */}
                     <div>
-                      <Label className="text-xs font-semibold mb-1.5 block">
+                      <Label className="text-xs font-semibold mb-1.5 block text-foreground">
                         Dental Council Registration / License No. *
                       </Label>
                       <Input
                         {...register("medicalRegistrationNumber")}
                         placeholder="e.g. GDC-A-12345 / DCI Registration"
-                        className="rounded-xl bg-background/80 border-border/60 text-sm h-11 focus:border-primary"
+                        className="rounded-xl bg-background/80 dark:bg-[#0B1210] border-border/60 dark:border-white/10 dark:text-[#F2F6F4] text-sm h-11 focus:border-primary dark:focus:border-[#12A488]"
                       />
                       {errors.medicalRegistrationNumber && (
                         <p className="text-xs text-destructive mt-1">
@@ -406,14 +406,14 @@ function RegisterPage() {
 
                     {/* Clinic Street Address */}
                     <div>
-                      <Label className="text-xs font-semibold mb-1.5 block">
+                      <Label className="text-xs font-semibold mb-1.5 block text-foreground">
                         Clinic Street Address (Vadodara) *
                       </Label>
                       <Textarea
                         rows={2}
                         {...register("address")}
                         placeholder="Shop/Flat No., Building Name, Opposite Landmark, Road Name"
-                        className="rounded-xl bg-background/80 border-border/60 text-sm focus:border-primary"
+                        className="rounded-xl bg-background/80 dark:bg-[#0B1210] border-border/60 dark:border-white/10 dark:text-[#F2F6F4] text-sm focus:border-primary dark:focus:border-[#12A488]"
                       />
                       {errors.address && (
                         <p className="text-xs text-destructive mt-1">{errors.address.message}</p>
@@ -423,12 +423,12 @@ function RegisterPage() {
                     {/* Passwords */}
                     <div className="grid sm:grid-cols-2 gap-4">
                       <div>
-                        <Label className="text-xs font-semibold mb-1.5 block">Password (min 8 chars) *</Label>
+                        <Label className="text-xs font-semibold mb-1.5 block text-foreground">Password (min 8 chars) *</Label>
                         <Input
                           type="password"
                           {...register("password")}
                           placeholder="••••••••"
-                          className="rounded-xl bg-background/80 border-border/60 text-sm h-11 focus:border-primary"
+                          className="rounded-xl bg-background/80 dark:bg-[#0B1210] border-border/60 dark:border-white/10 dark:text-[#F2F6F4] text-sm h-11 focus:border-primary dark:focus:border-[#12A488]"
                         />
                         {errors.password && (
                           <p className="text-xs text-destructive mt-1">{errors.password.message}</p>
@@ -436,12 +436,12 @@ function RegisterPage() {
                       </div>
 
                       <div>
-                        <Label className="text-xs font-semibold mb-1.5 block">Confirm Password *</Label>
+                        <Label className="text-xs font-semibold mb-1.5 block text-foreground">Confirm Password *</Label>
                         <Input
                           type="password"
                           {...register("confirmPassword")}
                           placeholder="••••••••"
-                          className="rounded-xl bg-background/80 border-border/60 text-sm h-11 focus:border-primary"
+                          className="rounded-xl bg-background/80 dark:bg-[#0B1210] border-border/60 dark:border-white/10 dark:text-[#F2F6F4] text-sm h-11 focus:border-primary dark:focus:border-[#12A488]"
                         />
                         {errors.confirmPassword && (
                           <p className="text-xs text-destructive mt-1">{errors.confirmPassword.message}</p>
@@ -451,7 +451,7 @@ function RegisterPage() {
 
                     <Button
                       type="submit"
-                      className="w-full rounded-2xl h-12 text-sm font-bold bg-gradient-to-r from-primary via-sky-600 to-indigo-600 hover:opacity-95 text-white shadow-lg btn-shine mt-4"
+                      className="w-full rounded-2xl h-12 text-sm font-bold bg-[#12A488] hover:bg-[#3FD1B3] text-[#04110E] shadow-lg shadow-[#12A488]/20 btn-shine mt-4 transition-colors"
                       disabled={isSubmitting}
                     >
                       {isSubmitting ? "Sending Verification Code..." : "Verify & Register Clinic"}{" "}
@@ -469,7 +469,7 @@ function RegisterPage() {
                   transition={{ duration: 0.3 }}
                   className="space-y-6 text-center py-4"
                 >
-                  <div className="mx-auto h-16 w-16 rounded-3xl bg-primary/10 text-primary grid place-items-center mb-4 border border-primary/20 shadow-inner">
+                  <div className="mx-auto h-16 w-16 rounded-3xl bg-primary/10 dark:bg-[#12A488]/15 text-primary dark:text-[#3FD1B3] grid place-items-center mb-4 border border-primary/20 dark:border-[#12A488]/30 shadow-inner">
                     <KeyRound className="h-8 w-8 animate-pulse" />
                   </div>
 
@@ -477,18 +477,18 @@ function RegisterPage() {
                     <h2 className="text-2xl font-extrabold text-foreground">
                       Verify Your Account
                     </h2>
-                    <p className="text-xs sm:text-sm text-muted-foreground max-w-md mx-auto">
+                    <p className="text-xs sm:text-sm text-muted-foreground dark:text-[#9DB0A9] max-w-md mx-auto">
                       We have sent a 6-digit verification code to:
                     </p>
-                    <div className="inline-flex items-center gap-2 bg-secondary/80 px-4 py-1.5 rounded-full border border-border/60 text-xs font-semibold text-foreground">
-                      <Mail className="h-3.5 w-3.5 text-primary" />
+                    <div className="inline-flex items-center gap-2 bg-secondary/80 dark:bg-[#0B1210] px-4 py-1.5 rounded-full border border-border/60 dark:border-white/10 text-xs font-semibold text-foreground">
+                      <Mail className="h-3.5 w-3.5 text-primary dark:text-[#3FD1B3]" />
                       <span>{pendingEmail}</span>
                     </div>
                   </div>
 
                   <form onSubmit={handleVerifyOtp} className="space-y-6 max-w-sm mx-auto mt-6">
                     <div>
-                      <Label className="text-xs font-semibold text-muted-foreground block mb-2">
+                      <Label className="text-xs font-semibold text-muted-foreground dark:text-[#9DB0A9] block mb-2">
                         Enter 6-Digit OTP Code
                       </Label>
                       <Input
@@ -498,14 +498,14 @@ function RegisterPage() {
                         value={otpValue}
                         onChange={(e) => setOtpValue(e.target.value.replace(/\D/g, ""))}
                         placeholder="••••••"
-                        className="text-center text-3xl font-mono tracking-widest h-14 rounded-2xl bg-background/90 border-2 border-primary/40 focus:border-primary shadow-inner font-bold"
+                        className="text-center text-3xl font-mono tracking-widest h-14 rounded-2xl bg-background/90 dark:bg-[#0B1210] border-2 border-primary/40 dark:border-[#12A488]/40 dark:text-[#3FD1B3] focus:border-primary dark:focus:border-[#12A488] shadow-inner font-bold"
                         autoFocus
                       />
                     </div>
 
                     <Button
                       type="submit"
-                      className="w-full rounded-2xl h-12 text-sm font-bold bg-gradient-to-r from-primary via-sky-600 to-indigo-600 hover:opacity-95 text-white shadow-lg btn-shine"
+                      className="w-full rounded-2xl h-12 text-sm font-bold bg-[#12A488] hover:bg-[#3FD1B3] text-[#04110E] shadow-lg shadow-[#12A488]/20 btn-shine transition-colors"
                       disabled={isVerifying || otpValue.length < 6}
                     >
                       {isVerifying ? "Verifying Code..." : "Verify & Open Doctor Portal"}
@@ -514,17 +514,17 @@ function RegisterPage() {
                   </form>
 
                   {/* Resend & Back options */}
-                  <div className="space-y-3 pt-4 border-t border-border/40">
-                    <div className="text-xs text-muted-foreground flex items-center justify-center gap-2">
+                  <div className="space-y-3 pt-4 border-t border-border/40 dark:border-white/10">
+                    <div className="text-xs text-muted-foreground dark:text-[#9DB0A9] flex items-center justify-center gap-2">
                       <span>Didn't receive the OTP?</span>
                       {countdown > 0 ? (
-                        <span className="font-semibold text-primary">Resend in {countdown}s</span>
+                        <span className="font-semibold text-primary dark:text-[#3FD1B3]">Resend in {countdown}s</span>
                       ) : (
                         <button
                           type="button"
                           onClick={handleResendOtp}
                           disabled={resending}
-                          className="font-bold text-primary hover:underline inline-flex items-center gap-1"
+                          className="font-bold text-primary dark:text-[#3FD1B3] hover:underline inline-flex items-center gap-1"
                         >
                           <RotateCcw className="h-3 w-3" />
                           {resending ? "Sending..." : "Resend Code"}
@@ -536,7 +536,7 @@ function RegisterPage() {
                       <button
                         type="button"
                         onClick={() => setStep(1)}
-                        className="text-xs text-muted-foreground hover:text-foreground underline"
+                        className="text-xs text-muted-foreground dark:text-[#9DB0A9] hover:text-foreground dark:hover:text-[#F2F6F4] underline"
                       >
                         ← Edit Registration Details
                       </button>
@@ -546,22 +546,22 @@ function RegisterPage() {
               )}
             </AnimatePresence>
 
-            <div className="mt-8 pt-6 border-t border-border/40 text-center space-y-3">
-              <p className="text-xs text-muted-foreground">
+            <div className="mt-8 pt-6 border-t border-border/40 dark:border-white/10 text-center space-y-3">
+              <p className="text-xs text-muted-foreground dark:text-[#9DB0A9]">
                 Already have an account?{" "}
-                <Link to="/login" className="text-primary font-bold hover:underline">
+                <Link to="/login" className="text-primary dark:text-[#3FD1B3] font-bold hover:underline">
                   Sign in to Doctor Portal
                 </Link>
               </p>
 
-              <div className="p-3 rounded-2xl bg-secondary/50 border border-border/40 flex items-center justify-between text-xs">
+              <div className="p-3 rounded-2xl bg-secondary/50 dark:bg-[#0B1210] border border-border/40 dark:border-white/10 flex items-center justify-between text-xs">
                 <div className="flex items-center gap-2">
-                  <Phone className="h-4 w-4 text-primary" />
-                  <span className="text-muted-foreground">Need direct phone assistance?</span>
+                  <Phone className="h-4 w-4 text-primary dark:text-[#3FD1B3]" />
+                  <span className="text-muted-foreground dark:text-[#9DB0A9]">Need direct phone assistance?</span>
                 </div>
                 <a
                   href="tel:+919727076119"
-                  className="font-extrabold text-primary hover:underline"
+                  className="font-extrabold text-primary dark:text-[#3FD1B3] hover:underline"
                 >
                   +91 97270 76119
                 </a>

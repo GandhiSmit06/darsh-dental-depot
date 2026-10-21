@@ -150,7 +150,7 @@ export const notificationService = {
         // Read local wishlist items
         let wishlistItems: Array<{ productId: string; name: string }> = [];
         try {
-          const raw = localStorage.getItem("ddd_wishlist_items");
+          const raw = typeof window !== "undefined" ? localStorage.getItem("ddd_wishlist_items") : null;
           if (raw) wishlistItems = JSON.parse(raw);
         } catch {
           wishlistItems = [];

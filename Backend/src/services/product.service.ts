@@ -6,6 +6,7 @@ import { exportToCSV, parseCSVBuffer } from '../helpers/csv.helper';
 import { redisClient } from '../config/redis';
 import { IProduct } from '../interfaces/product.interface';
 import { Types } from 'mongoose';
+import { escapeRegex } from '../utils/sanitize';
 
 export class ProductService {
   async createProduct(data: Partial<IProduct>, createdBy: string) {
@@ -33,7 +34,7 @@ export class ProductService {
 
     if (req.query.category) filter.category = req.query.category;
     if (req.query.status) filter.status = req.query.status;
-    if (req.query.brand) filter.brand = { $regex: req.query.brand, $options: 'i' };
+    if (req.query.brand) filter.brand = { $regex: escapeRegex(String(req.query.brand).trim()), $options: 'i' };
     if (req.query.minPrice || req.query.maxPrice) {
       filter.sellingPrice = {
         ...(req.query.minPrice ? { $gte: parseFloat(req.query.minPrice as string) } : {}),

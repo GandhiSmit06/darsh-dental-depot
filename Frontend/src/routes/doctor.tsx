@@ -1,5 +1,6 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Navigate } from "@tanstack/react-router";
 import { useState, useEffect, useCallback, useRef } from "react";
+import { AccessDenied } from "@/components/dashboard/AccessDenied";
 import {
   LayoutDashboard, ShoppingCart, Heart, ShoppingBag, Bell, Settings, Package,
   CheckCircle2, Truck, Plus, Minus, Trash2, Loader2, Phone, MapPin, Clock, Sparkles, RefreshCw,
@@ -109,6 +110,20 @@ function useApiData<T>(fetcher: () => Promise<{ data: T } | { products: T }>) {
 
 function DoctorDashboard() {
   const [active, setActive] = useState("dashboard");
+  const { user, isAuthenticated, isLoading: authLoading } = useAuth();
+
+  if (authLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" search={{ redirect: "/doctor" }} />;
+  }
+
   return (
     <DashboardLayout title="Doctor" role="Doctor" items={items} active={active} onChange={setActive}>
       {active === "dashboard" && <Overview />}

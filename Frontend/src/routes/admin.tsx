@@ -1,5 +1,6 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Navigate } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
+import { AccessDenied } from "@/components/dashboard/AccessDenied";
 import {
   LayoutDashboard, Users, Package, ShoppingBag, BarChart3, FileText, Settings,
   DollarSign, TrendingUp, Activity, Download, Trash2, Loader2, Bell, CheckCircle2,
@@ -87,7 +88,7 @@ interface DashboardData {
 
 function AdminDashboard() {
   const [active, setActive] = useState("dashboard");
-  const { isAuthenticated, isLoading: authLoading } = useAuth();
+  const { user, isAuthenticated, isLoading: authLoading } = useAuth();
 
   // Dashboard data
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
@@ -96,7 +97,7 @@ function AdminDashboard() {
 
   // Fetch dashboard data
   const fetchDashboardData = async () => {
-    if (!isAuthenticated) return;
+    if (!isAuthenticated || user?.role !== "admin") return;
 
     setDashboardLoading(true);
     setDashboardError(null);
@@ -114,10 +115,26 @@ function AdminDashboard() {
 
   // Fetch data when auth status changes or component mounts
   useEffect(() => {
-    if (isAuthenticated) {
+    if (isAuthenticated && user?.role === "admin") {
       fetchDashboardData();
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, user?.role]);
+
+  if (authLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" search={{ redirect: "/admin" }} />;
+  }
+
+  if (user?.role !== "admin") {
+    return <AccessDenied requiredRole="Administrator" currentRole={user?.role} />;
+  }
 
   // Handle logout
   const handleLogout = () => {

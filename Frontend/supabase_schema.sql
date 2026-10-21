@@ -132,19 +132,27 @@ alter table public.orders enable row level security;
 alter table public.order_items enable row level security;
 alter table public.reviews enable row level security;
 
--- Profiles Policies
-create policy "Public profiles are viewable by everyone" 
-  on public.profiles for select using (true);
+-- Profiles Policies: Doctors can view and update only their own profile; admins can manage all
+create policy "Users can view own profile or admins view all" 
+  on public.profiles for select using (
+    auth.uid() = id or exists (select 1 from public.profiles where id = auth.uid() and role in ('admin', 'shop_owner'))
+  );
 
-create policy "Users can update their own profile" 
-  on public.profiles for update using (auth.uid() = id);
+-- Users can only update their own non-role profile attributes (preventing self-promotion to admin)
+create policy "Users can update their own profile without role escalation" 
+  on public.profiles for update using (auth.uid() = id)
+  with check (
+    auth.uid() = id and 
+    role = (select p.role from public.profiles p where p.id = auth.uid()) and
+    is_verified = (select p.is_verified from public.profiles p where p.id = auth.uid())
+  );
 
 create policy "Admins can manage all profiles" 
   on public.profiles for all using (
     exists (select 1 from public.profiles where id = auth.uid() and role in ('admin', 'shop_owner'))
   );
 
--- Products Policies
+-- Products Policies: Public read-only for active catalog; write restricted to depot management
 create policy "Anyone can view active products" 
   on public.products for select using (true);
 
@@ -153,6 +161,7 @@ create policy "Admins can insert products"
     exists (select 1 from public.profiles where id = auth.uid() and role in ('admin', 'shop_owner'))
   );
 
+-- Products update/delete restricted to admins
 create policy "Admins can update products" 
   on public.products for update using (
     exists (select 1 from public.profiles where id = auth.uid() and role in ('admin', 'shop_owner'))
@@ -163,16 +172,27 @@ create policy "Admins can delete products"
     exists (select 1 from public.profiles where id = auth.uid() and role in ('admin', 'shop_owner'))
   );
 
--- Orders Policies
+-- Orders Policies: Strict isolation
 create policy "Users can view their own orders" 
-  on public.orders for select using (auth.uid() = user_id or exists (select 1 from public.profiles where id = auth.uid() and role in ('admin', 'shop_owner')));
+  on public.orders for select using (
+    auth.uid() = user_id or exists (select 1 from public.profiles where id = auth.uid() and role in ('admin', 'shop_owner'))
+  );
 
 create policy "Authenticated users can create orders" 
   on public.orders for insert with check (auth.uid() = user_id);
 
-create policy "Users and admins can update orders" 
+-- Only depot admins can update order status or payment status; users can only cancel pending orders
+create policy "Admins can update all orders" 
   on public.orders for update using (
-    auth.uid() = user_id or exists (select 1 from public.profiles where id = auth.uid() and role in ('admin', 'shop_owner'))
+    exists (select 1 from public.profiles where id = auth.uid() and role in ('admin', 'shop_owner'))
+  );
+
+create policy "Users can cancel their own pending orders" 
+  on public.orders for update using (
+    auth.uid() = user_id and order_status = 'pending'
+  )
+  with check (
+    auth.uid() = user_id and order_status in ('pending', 'cancelled')
   );
 
 -- Order Items Policies

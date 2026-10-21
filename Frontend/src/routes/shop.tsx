@@ -1,5 +1,6 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Navigate } from "@tanstack/react-router";
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import { AccessDenied } from "@/components/dashboard/AccessDenied";
 import {
   LayoutDashboard,
   Package,
@@ -216,6 +217,23 @@ function useApiData<T>(fetcher: () => Promise<{ data: T }>) {
 function ShopDashboard() {
   const [active, setActive] = useState("dashboard");
   const [search, setSearch] = useState("");
+  const { user, isAuthenticated, isLoading: authLoading } = useAuth();
+
+  if (authLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" search={{ redirect: "/shop" }} />;
+  }
+
+  if (user?.role !== "shop_owner" && user?.role !== "admin") {
+    return <AccessDenied requiredRole="Shop Owner / Depot Admin" currentRole={user?.role} />;
+  }
 
   return (
     <DashboardLayout

@@ -27,7 +27,7 @@ export const registerValidator = [
     }),
   body('role')
     .optional()
-    .isIn(['doctor', 'shop_owner']).withMessage('Role must be doctor or shop_owner'),
+    .isIn(['doctor']).withMessage('Public registration is restricted to doctor accounts only'),
   body('clinicName').optional().trim(),
   body('address').optional().trim(),
   body('medicalRegistrationNumber').optional().trim(),

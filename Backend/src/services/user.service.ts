@@ -4,6 +4,8 @@ import { getPagination, buildMeta } from '../utils/pagination';
 import { exportToCSV } from '../helpers/csv.helper';
 import { Request } from 'express';
 
+import { escapeRegex } from '../utils/sanitize';
+
 export class UserService {
   async getAllUsers(req: Request) {
     const { page, limit, skip, sort } = getPagination(req);
@@ -13,9 +15,10 @@ export class UserService {
     if (req.query.isVerified !== undefined) filter.isVerified = req.query.isVerified === 'true';
     if (req.query.isActive !== undefined) filter.isActive = req.query.isActive === 'true';
     if (req.query.search) {
+      const escaped = escapeRegex(String(req.query.search).trim());
       filter.$or = [
-        { fullName: { $regex: req.query.search, $options: 'i' } },
-        { email: { $regex: req.query.search, $options: 'i' } },
+        { fullName: { $regex: escaped, $options: 'i' } },
+        { email: { $regex: escaped, $options: 'i' } },
       ];
     }
 

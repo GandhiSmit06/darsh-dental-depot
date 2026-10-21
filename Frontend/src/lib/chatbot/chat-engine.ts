@@ -12,10 +12,10 @@ export interface ChatMessage {
   cardData?: any;
 }
 
-const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY || "";
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api/v1";
 
 /**
- * Executes a Gemini API request with fallback to Local Smart Matcher
+ * Executes an AI request via secure Backend proxy with fallback to Local Smart Matcher
  */
 export async function sendChatMessage(
   history: ChatMessage[],
@@ -31,49 +31,35 @@ export async function sendChatMessage(
 
   let replyText = "";
 
-  // Try Google Gemini API if key is available
-  if (GEMINI_API_KEY && !GEMINI_API_KEY.includes("your_key")) {
-    try {
-      const systemInstruction = buildSystemPrompt(context);
+  // Query secure Backend Chat Proxy (hides API keys and enforces server-side rate limits)
+  try {
+    const systemInstruction = buildSystemPrompt(context);
 
-      // Build conversation contents in Gemini format
-      const contents = history.slice(-6).map((m) => ({
-        role: m.sender === "user" ? "user" : "model",
-        parts: [{ text: m.text }],
-      }));
+    // Build conversation contents in standard format
+    const contents = history.slice(-6).map((m) => ({
+      role: m.sender === "user" ? "user" : "model",
+      parts: [{ text: m.text }],
+    }));
 
-      // Append current user message
-      contents.push({
-        role: "user",
-        parts: [{ text: prompt }],
-      });
+    const response = await fetch(`${API_URL}/chat/message`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        prompt,
+        history: contents,
+        systemInstruction,
+      }),
+    });
 
-      const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            systemInstruction: {
-              parts: [{ text: systemInstruction }],
-            },
-            contents,
-            generationConfig: {
-              temperature: 0.7,
-              maxOutputTokens: 800,
-            },
-          }),
-        }
-      );
-
-      if (response.ok) {
-        const data = await response.json();
-        replyText = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+    if (response.ok) {
+      const data = await response.json();
+      if (data.success && data.text) {
+        replyText = data.text;
       }
-    } catch {
-      // Graceful fallback to smart local rules
-      replyText = "";
     }
+  } catch {
+    // Graceful fallback to smart local rules
+    replyText = "";
   }
 
   // Fallback to Intelligent Rule Engine if Gemini returned empty

@@ -12,6 +12,7 @@ import { env } from './config/env';
 import { globalRateLimiter } from './middleware/rateLimiter';
 import { requestLogger } from './middleware/requestLogger';
 import { errorHandler } from './middleware/errorHandler';
+import { sanitizeInput } from './middleware/sanitizeInput';
 import apiRouter from './routes/index';
 
 const app: Application = express();
@@ -20,15 +21,67 @@ const app: Application = express();
 app.set('trust proxy', 1);
 
 // ─── Security Headers ─────────────────────────────────────────────────────────
-app.use(helmet());
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'", "'unsafe-inline'", 'https://checkout.razorpay.com'],
+        connectSrc: [
+          "'self'",
+          'https://*.supabase.co',
+          'https://api.razorpay.com',
+          'https://generativelanguage.googleapis.com',
+          'http://localhost:*',
+          'http://127.0.0.1:*',
+        ],
+        imgSrc: [
+          "'self'",
+          'data:',
+          'blob:',
+          'https://res.cloudinary.com',
+          'https://images.unsplash.com',
+          'https://*.supabase.co',
+        ],
+        styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+        fontSrc: ["'self'", 'https://fonts.gstatic.com', 'data:'],
+        frameSrc: ["'self'", 'https://api.razorpay.com'],
+      },
+    },
+    crossOriginEmbedderPolicy: false,
+    crossOriginResourcePolicy: { policy: 'cross-origin' },
+    referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
+    hsts:
+      env.NODE_ENV === 'production'
+        ? { maxAge: 31536000, includeSubDomains: true, preload: true }
+        : false,
+  }),
+);
 
 // ─── CORS ─────────────────────────────────────────────────────────────────────
+const allowedOrigins = [
+  env.FRONTEND_URL,
+  'http://localhost:8080',
+  'http://localhost:3000',
+  'http://localhost:5173',
+  'http://127.0.0.1:8080',
+  'http://127.0.0.1:3000',
+].filter(Boolean);
+
 app.use(
   cors({
-    origin: env.FRONTEND_URL,
+    origin: (requestOrigin, callback) => {
+      // Allow requests with no origin (like mobile apps, curl, or server-to-server)
+      if (!requestOrigin) return callback(null, true);
+      if (allowedOrigins.includes(requestOrigin) || env.NODE_ENV === 'development') {
+        callback(null, true);
+      } else {
+        callback(new Error('Blocked by CORS policy'));
+      }
+    },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
   }),
 );
 
@@ -36,13 +89,14 @@ app.use(
 app.use('/api/v1/payments/stripe/webhook', express.raw({ type: 'application/json' }));
 
 // ─── Body Parsers ─────────────────────────────────────────────────────────────
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(express.json({ limit: '5mb' }));
+app.use(express.urlencoded({ extended: true, limit: '5mb' }));
 app.use(cookieParser());
 
 // ─── Security Middleware ──────────────────────────────────────────────────────
 app.use(mongoSanitize());   // Prevent NoSQL injection
 app.use(hpp());             // HTTP Parameter Pollution protection
+app.use(sanitizeInput);     // XSS and Prototype Pollution defense
 
 // ─── Rate Limiting ────────────────────────────────────────────────────────────
 app.use(globalRateLimiter);

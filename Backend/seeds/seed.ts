@@ -13,7 +13,11 @@ async function seed() {
   // Check and create core administrative accounts if they do not already exist
   const adminExists = await User.findOne({ email: 'admin@darshdental.com' });
   if (!adminExists) {
-    const adminPassword = await hashPassword('Admin@123456');
+    const rawAdminPass = process.env.SEED_ADMIN_PASSWORD || 'Admin@123456';
+    if (env.NODE_ENV === 'production' && !process.env.SEED_ADMIN_PASSWORD) {
+      console.warn('⚠️ WARNING: Using default Admin password in production! Please set SEED_ADMIN_PASSWORD.');
+    }
+    const adminPassword = await hashPassword(rawAdminPass);
     await User.create({
       role: 'admin',
       fullName: 'Darsh Admin',
@@ -28,7 +32,11 @@ async function seed() {
 
   const shopOwnerExists = await User.findOne({ email: 'shop@darshdental.com' });
   if (!shopOwnerExists) {
-    const shopOwnerPassword = await hashPassword('Shop@123456');
+    const rawShopPass = process.env.SEED_SHOP_PASSWORD || 'Shop@123456';
+    if (env.NODE_ENV === 'production' && !process.env.SEED_SHOP_PASSWORD) {
+      console.warn('⚠️ WARNING: Using default Shop Owner password in production! Please set SEED_SHOP_PASSWORD.');
+    }
+    const shopOwnerPassword = await hashPassword(rawShopPass);
     await User.create({
       role: 'shop_owner',
       fullName: 'Darsh Dental Depot',

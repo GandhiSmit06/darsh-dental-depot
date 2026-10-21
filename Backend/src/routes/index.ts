@@ -14,6 +14,7 @@ import uploadRoutes from './upload.routes';
 import shopRoutes from './shop.routes';
 import doctorRoutes from './doctor.routes';
 import adminRoutes from './admin.routes';
+import chatRoutes from './chat.routes';
 
 const router = Router();
 
@@ -32,5 +33,6 @@ router.use('/upload', uploadRoutes);
 router.use('/shop', shopRoutes);
 router.use('/doctor', doctorRoutes);
 router.use('/admin', adminRoutes);
+router.use('/chat', chatRoutes);
 
 export default router;

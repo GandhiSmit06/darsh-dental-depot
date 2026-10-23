@@ -1,0 +1,203 @@
+.code-slots {
+  --cs-accent: #12A488;
+  --cs-ink: #3FD1B3;
+  --cs-slot: #131F1C;
+  --cs-digit: #04110E;
+  --cs-danger: #ef4444;
+  --cs-size: 44px;
+  --cs-height: 52px;
+  --cs-gap: 8px;
+  --cs-radius: 12px;
+  --cs-font: 22px;
+
+  position: relative;
+  display: inline-block;
+}
+
+:root:not(.dark) .code-slots {
+  --cs-accent: #0284c7;
+  --cs-ink: #0284c7;
+  --cs-slot: #f1f5f9;
+  --cs-digit: #ffffff;
+  --cs-danger: #ef4444;
+}
+
+.code-slots__row {
+  position: relative;
+  display: inline-flex;
+  gap: var(--cs-gap);
+  cursor: text;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition: opacity 200ms ease;
+}
+
+.code-slots__row[data-disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.code-slots__input {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: transparent;
+  caret-color: transparent;
+  font-size: 16px;
+  opacity: 0;
+  cursor: inherit;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.code-slots__wash {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  border-radius: var(--cs-radius);
+  background: var(--cs-accent);
+  color: var(--cs-digit);
+  pointer-events: none;
+}
+
+.code-slots__check {
+  display: grid;
+  place-items: center;
+}
+
+.code-slots__slot {
+  position: relative;
+  width: var(--cs-size);
+  height: var(--cs-height);
+  border-radius: var(--cs-radius);
+  overflow: hidden;
+  background: var(--cs-slot);
+  border: 1.5px solid rgba(125, 125, 125, 0.2);
+  transition: background-color 200ms ease, border-color 200ms ease, box-shadow 200ms ease;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+:root:not(.dark) .code-slots__slot {
+  border-color: #cbd5e1;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .code-slots__row[data-status='idle']:not([data-disabled]):hover .code-slots__slot:not([data-active]) {
+    background: color-mix(in srgb, var(--cs-ink) 4%, var(--cs-slot));
+  }
+}
+
+.code-slots__slot[data-active] {
+  background: color-mix(in srgb, var(--cs-ink) 8%, var(--cs-slot));
+  border-color: var(--cs-ink);
+  box-shadow: 0 0 0 1px var(--cs-ink);
+}
+
+.code-slots__row[data-status='error'] .code-slots__slot {
+  background: color-mix(in srgb, var(--cs-danger) 20%, var(--cs-slot));
+  border-color: var(--cs-danger);
+  box-shadow: 0 0 0 1px var(--cs-danger);
+}
+
+.code-slots__row[data-status='error'] .code-slots__fill {
+  background: var(--cs-danger);
+}
+
+.code-slots__fill {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--cs-accent);
+  transform-origin: center;
+  transition: background-color 200ms ease;
+}
+
+.code-slots__digit {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  color: var(--cs-digit);
+  font-family: inherit;
+  font-size: var(--cs-font);
+  font-weight: 700;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.code-slots__caret {
+  position: absolute;
+  z-index: 3;
+  top: 25%;
+  left: calc(var(--cs-size) / 2 - 0.75px);
+  width: 2px;
+  height: 50%;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.code-slots__caret[data-show] {
+  opacity: 1;
+}
+
+.code-slots__caret-line {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: var(--cs-ink);
+  border-radius: 9999px;
+  animation: code-slots-blink 1s linear infinite;
+}
+
+@keyframes code-slots-blink {
+  0%,
+  49.9% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+
+.code-slots__sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .code-slots__digit,
+  .code-slots__check {
+    transform: none !important;
+    transition: opacity 150ms ease;
+  }
+
+  .code-slots__caret-line {
+    animation: none;
+  }
+
+  .code-slots__wash {
+    opacity: 0;
+    transition: opacity 200ms ease;
+  }
+
+  .code-slots__row[data-status='success'] .code-slots__wash {
+    opacity: 1;
+  }
+}

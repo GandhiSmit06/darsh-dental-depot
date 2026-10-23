@@ -10,6 +10,7 @@ import { z } from "zod";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { authApi, ApiError } from "@/lib/api";
+import { CodeSlots } from "@/components/ui/CodeSlots";
 import { toast } from "sonner";
 import {
   Sparkles,
@@ -62,6 +63,7 @@ function LoginPage() {
   const [targetEmail, setTargetEmail] = useState("");
   const [otpStep, setOtpStep] = useState<"enter_id" | "enter_otp">("enter_id");
   const [otpCode, setOtpCode] = useState("");
+  const [otpStatus, setOtpStatus] = useState<"idle" | "error" | "success">("idle");
   const [otpSending, setOtpSending] = useState(false);
   const [otpVerifying, setOtpVerifying] = useState(false);
   const [countdown, setCountdown] = useState(60);
@@ -126,6 +128,8 @@ function LoginPage() {
       setTargetEmail(res.target || cleanId);
       setOtpStep("enter_otp");
       setCountdown(60);
+      setOtpStatus("idle");
+      setOtpCode("");
       toast.success(res.message || "Login OTP sent successfully!");
     } catch (err: any) {
       toast.error(err.message || "Failed to send login OTP. Check if account exists.");
@@ -135,9 +139,10 @@ function LoginPage() {
   };
 
   // 3. OTP Login: Verify OTP Code & Auto-Login
-  const handleVerifyOtp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!otpCode || otpCode.length < 6) {
+  const handleVerifyOtp = async (e?: React.FormEvent, customOtp?: string) => {
+    if (e) e.preventDefault();
+    const code = (customOtp || otpCode).trim();
+    if (!code || code.length < 6) {
       toast.error("Please enter the 6-digit OTP code");
       return;
     }
@@ -146,13 +151,17 @@ function LoginPage() {
     try {
       const res = await authApi.verifyLoginOtp({
         identifier: otpIdentifier.trim(),
-        otp: otpCode.trim(),
+        otp: code,
       });
 
+      setOtpStatus("success");
       setSession(res.data.user, res.data.accessToken, res.data.refreshToken);
       toast.success(`Welcome back, ${res.data.user.fullName}!`);
-      nav({ to: getDashboardRoute(res.data.user.role) });
+      setTimeout(() => {
+        nav({ to: getDashboardRoute(res.data.user.role) });
+      }, 700);
     } catch (err: any) {
+      setOtpStatus("error");
       toast.error(err.message || "Invalid or expired OTP code.");
     } finally {
       setOtpVerifying(false);
@@ -324,7 +333,7 @@ function LoginPage() {
                     </form>
                   ) : (
                     /* Step 2: Enter OTP */
-                    <form onSubmit={handleVerifyOtp} className="space-y-5 text-center">
+                    <form onSubmit={(e) => handleVerifyOtp(e)} className="space-y-5 text-center">
                       <div className="space-y-1">
                         <p className="text-xs text-muted-foreground dark:text-[#9DB0A9]">
                           Enter the OTP verification code sent to:
@@ -334,16 +343,23 @@ function LoginPage() {
                         </span>
                       </div>
 
-                      <div>
-                        <Input
-                          type="text"
-                          inputMode="numeric"
-                          maxLength={8}
+                      <div className="py-2 flex justify-center w-full">
+                        <CodeSlots
+                          length={6}
                           value={otpCode}
-                          onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, "").slice(0, 8))}
-                          placeholder="••••••••"
-                          className="text-center text-2xl font-mono tracking-widest h-12 rounded-2xl bg-background/90 dark:bg-[#0B1210] border-2 border-primary/40 dark:border-[#12A488]/40 dark:text-[#3FD1B3] focus:border-primary dark:focus:border-[#12A488] shadow-inner font-bold"
+                          status={otpStatus}
+                          onChange={(code) => {
+                            setOtpCode(code);
+                            if (otpStatus !== "idle") setOtpStatus("idle");
+                          }}
+                          onComplete={(code) => {
+                            handleVerifyOtp(undefined, code);
+                          }}
+                          disabled={otpVerifying}
                           autoFocus
+                          slotSize={46}
+                          gap={8}
+                          radius={14}
                         />
                       </div>
 

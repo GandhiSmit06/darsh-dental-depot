@@ -22,6 +22,8 @@ import {
   Tag,
   ShoppingCart,
   Package,
+  Layers,
+  LayoutGrid,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -34,6 +36,7 @@ import {
 } from "@/components/ui/accordion";
 import { PublicLayout } from "@/components/site/PublicLayout";
 import { ProductCard, type ProductCardProps } from "@/components/site/ProductCard";
+import { DepthCarousel } from "@/components/ui/DepthCarousel";
 import { productsApi } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
 import { useQuery } from "@tanstack/react-query";
@@ -127,6 +130,7 @@ function HomePage() {
   const navigate = useNavigate();
   const [heroSearch, setHeroSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
+  const [specialtyViewMode, setSpecialtyViewMode] = useState<"carousel" | "grid">("carousel");
   const [depotStatus, setDepotStatus] = useState<{ isOpen: boolean; label: string }>({
     isOpen: false,
     label: "Mon–Sat Depot • Vadodara",
@@ -494,10 +498,10 @@ function HomePage() {
         </div>
       </div>
 
-      {/* ─── Explore by Clinical Speciality (8 Specialty Cards Grid) ──────── */}
+      {/* ─── Explore by Clinical Speciality (3D DepthCarousel + Grid Toggle) ─ */}
       <section className="container mx-auto px-4 py-8 mb-6">
         <ScrollReveal>
-          <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-6 gap-4">
             <div>
               <span className="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-sky-50 dark:bg-sky-950/60 text-[#0284c7] dark:text-sky-300 border border-sky-100 dark:border-sky-900/60 mb-2">
                 Structured Catalog
@@ -509,56 +513,155 @@ function HomePage() {
                 Original dental materials and equipment organized for clinical precision.
               </p>
             </div>
-            <Button
-              variant="outline"
-              asChild
-              className="rounded-full border-sky-200 dark:border-sky-800 text-[#0284c7] hover:bg-sky-50 dark:hover:bg-sky-950/40 text-xs font-semibold px-4 h-9"
-            >
-              <Link to="/products">
-                View Complete Catalog <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
-              </Link>
-            </Button>
+
+            <div className="flex items-center gap-3 flex-wrap">
+              {/* View Switcher Toggle */}
+              <div className="inline-flex items-center gap-1 bg-slate-100 dark:bg-slate-900/90 p-1 rounded-xl border border-slate-200/80 dark:border-slate-800 shadow-xs">
+                <button
+                  type="button"
+                  onClick={() => setSpecialtyViewMode("carousel")}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                    specialtyViewMode === "carousel"
+                      ? "bg-white dark:bg-[#12A488] text-slate-900 dark:text-[#04110E] shadow-xs"
+                      : "text-slate-500 hover:text-slate-800 dark:hover:text-white"
+                  }`}
+                  aria-label="3D Depth Stack View"
+                >
+                  <Layers className="h-3.5 w-3.5" />
+                  <span className="hidden sm:inline">3D Depth Stack</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSpecialtyViewMode("grid")}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                    specialtyViewMode === "grid"
+                      ? "bg-white dark:bg-[#12A488] text-slate-900 dark:text-[#04110E] shadow-xs"
+                      : "text-slate-500 hover:text-slate-800 dark:hover:text-white"
+                  }`}
+                  aria-label="Grid View"
+                >
+                  <LayoutGrid className="h-3.5 w-3.5" />
+                  <span className="hidden sm:inline">Grid View</span>
+                </button>
+              </div>
+
+              <Button
+                variant="outline"
+                asChild
+                className="rounded-full border-sky-200 dark:border-sky-800 text-[#0284c7] hover:bg-sky-50 dark:hover:bg-sky-950/40 text-xs font-semibold px-4 h-9"
+              >
+                <Link to="/products">
+                  View Catalog <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
+                </Link>
+              </Button>
+            </div>
           </div>
         </ScrollReveal>
 
-        <StaggerContainer
-          staggerDelay={0.06}
-          className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3 sm:gap-4"
-        >
-          {clinicalSpecialties.map((item) => (
-            <StaggerItem key={item.title} scale>
-              <Link
-                to="/products"
-                search={{ category: item.category } as Record<string, unknown>}
-                className="group block h-full"
-              >
-                <div className="h-full bg-white dark:bg-slate-900/90 rounded-2xl border border-slate-200/80 dark:border-slate-800 p-3 shadow-xs hover:shadow-md hover:border-[#0284c7]/50 transition-all duration-300 flex flex-col justify-between">
-                  <div>
-                    <div className="h-20 w-full rounded-xl overflow-hidden bg-slate-50 dark:bg-slate-800/40 flex items-center justify-center p-1.5">
-                      <img
-                        src={item.image}
-                        alt={item.title}
-                        className="h-full w-full object-contain group-hover:scale-105 transition-transform duration-300"
-                        loading="lazy"
-                      />
-                    </div>
-                    <h3 className="font-bold text-sm text-slate-900 dark:text-white mt-2.5 group-hover:text-[#0284c7] dark:group-hover:text-[#3FD1B3] transition-colors leading-tight">
+        {specialtyViewMode === "carousel" ? (
+          <div className="relative w-full h-[470px] sm:h-[500px] my-3 rounded-3xl overflow-hidden bg-gradient-to-b from-sky-50/40 via-white to-sky-50/30 dark:from-[#070B0A] dark:via-[#0B1210] dark:to-[#070B0A] border border-slate-200/70 dark:border-white/10 shadow-sm flex items-center justify-center">
+            <DepthCarousel
+              items={clinicalSpecialties.map((item) => ({
+                image: item.image,
+                alt: item.title,
+                title: item.title,
+                desc: item.desc,
+                category: item.category,
+              }))}
+              cardWidth={290}
+              cardHeight={380}
+              radius={20}
+              depth={220}
+              spread={90}
+              tilt={22}
+              tiltDirection="right"
+              perspective={1400}
+              visibleCards={4}
+              falloff={0.2}
+              blur={6}
+              autoplay
+              autoplayDelay={3200}
+              loop
+              showControls
+              showIndicators
+              onItemClick={(_index, item) => {
+                if (item.category) {
+                  navigate({
+                    to: "/products",
+                    search: { category: item.category } as Record<string, unknown>,
+                  });
+                }
+              }}
+              renderCard={(item) => (
+                <div className="relative w-full h-full bg-[#0b0d12] flex flex-col justify-between overflow-hidden group select-none">
+                  <div className="w-full h-3/5 bg-white/5 p-4 flex items-center justify-center overflow-hidden">
+                    <img
+                      src={item.image}
+                      alt={item.title || item.alt || ""}
+                      className="w-full h-full object-contain group-hover:scale-108 transition-transform duration-500"
+                      draggable={false}
+                    />
+                  </div>
+                  <div className="p-4.5 bg-gradient-to-t from-[#070B0A] via-[#0A100F]/95 to-transparent flex flex-col justify-end flex-1 z-10 text-left">
+                    <span className="text-[10px] font-bold text-[#0284c7] dark:text-[#3FD1B3] uppercase tracking-wider mb-1">
+                      Clinical Specialty
+                    </span>
+                    <h4 className="text-white font-extrabold text-lg tracking-tight font-heading leading-tight group-hover:text-[#3FD1B3] transition-colors">
                       {item.title}
-                    </h3>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 line-clamp-2 leading-relaxed">
+                    </h4>
+                    <p className="text-slate-300 text-xs mt-1 line-clamp-2 leading-relaxed">
                       {item.desc}
                     </p>
-                  </div>
-                  <div className="pt-2.5 flex justify-end">
-                    <span className="h-5 w-5 rounded-full border border-slate-200 dark:border-slate-700 group-hover:border-[#0284c7] group-hover:bg-[#0284c7] group-hover:text-white text-slate-400 grid place-items-center transition-all">
-                      <ArrowRight className="h-3 w-3" />
-                    </span>
+                    <div className="mt-3.5 flex items-center justify-between text-xs font-semibold text-slate-200 border-t border-white/10 pt-2.5">
+                      <span className="text-[#0284c7] dark:text-[#3FD1B3] flex items-center gap-1 group-hover:underline">
+                        Explore Category <ArrowRight className="h-3.5 w-3.5" />
+                      </span>
+                    </div>
                   </div>
                 </div>
-              </Link>
-            </StaggerItem>
-          ))}
-        </StaggerContainer>
+              )}
+            />
+          </div>
+        ) : (
+          <StaggerContainer
+            staggerDelay={0.06}
+            className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3 sm:gap-4"
+          >
+            {clinicalSpecialties.map((item) => (
+              <StaggerItem key={item.title} scale>
+                <Link
+                  to="/products"
+                  search={{ category: item.category } as Record<string, unknown>}
+                  className="group block h-full"
+                >
+                  <div className="h-full bg-white dark:bg-slate-900/90 rounded-2xl border border-slate-200/80 dark:border-slate-800 p-3 shadow-xs hover:shadow-md hover:border-[#0284c7]/50 transition-all duration-300 flex flex-col justify-between">
+                    <div>
+                      <div className="h-20 w-full rounded-xl overflow-hidden bg-slate-50 dark:bg-slate-800/40 flex items-center justify-center p-1.5">
+                        <img
+                          src={item.image}
+                          alt={item.title}
+                          className="h-full w-full object-contain group-hover:scale-105 transition-transform duration-300"
+                          loading="lazy"
+                        />
+                      </div>
+                      <h3 className="font-bold text-sm text-slate-900 dark:text-white mt-2.5 group-hover:text-[#0284c7] dark:group-hover:text-[#3FD1B3] transition-colors leading-tight">
+                        {item.title}
+                      </h3>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 line-clamp-2 leading-relaxed">
+                        {item.desc}
+                      </p>
+                    </div>
+                    <div className="pt-2.5 flex justify-end">
+                      <span className="h-5 w-5 rounded-full border border-slate-200 dark:border-slate-700 group-hover:border-[#0284c7] group-hover:bg-[#0284c7] group-hover:text-white text-slate-400 grid place-items-center transition-all">
+                        <ArrowRight className="h-3 w-3" />
+                      </span>
+                    </div>
+                  </div>
+                </Link>
+              </StaggerItem>
+            ))}
+          </StaggerContainer>
+        )}
       </section>
 
       {/* ─── Featured Products Section ───────────────────────────────────── */}

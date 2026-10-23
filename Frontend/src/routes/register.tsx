@@ -20,6 +20,7 @@ import { z } from "zod";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { authApi, ApiError } from "@/lib/api";
+import { CodeSlots } from "@/components/ui/CodeSlots";
 import {
   Sparkles,
   ShieldCheck,
@@ -135,6 +136,7 @@ function RegisterPage() {
   const [pendingPhone, setPendingPhone] = useState("");
   const [pendingName, setPendingName] = useState("");
   const [otpValue, setOtpValue] = useState("");
+  const [otpStatus, setOtpStatus] = useState<"idle" | "error" | "success">("idle");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
   const [countdown, setCountdown] = useState(60);
@@ -207,9 +209,10 @@ function RegisterPage() {
     }
   };
 
-  const handleVerifyOtp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!otpValue || otpValue.length < 6) {
+  const handleVerifyOtp = async (e?: React.FormEvent, customOtp?: string) => {
+    if (e) e.preventDefault();
+    const code = (customOtp || otpValue).trim();
+    if (!code || code.length < 6) {
       toast.error("Please enter the complete 6-digit OTP code");
       return;
     }
@@ -218,13 +221,17 @@ function RegisterPage() {
     try {
       const res = await authApi.verifyRegisterOtp({
         email: pendingEmail,
-        otp: otpValue.trim(),
+        otp: code,
       });
 
+      setOtpStatus("success");
       setSession(res.data.user, res.data.accessToken, res.data.refreshToken);
       toast.success(`Welcome to Darsh Dental Depot, Dr. ${res.data.user.fullName}!`);
-      nav({ to: "/doctor" });
+      setTimeout(() => {
+        nav({ to: "/doctor" });
+      }, 700);
     } catch (err: any) {
+      setOtpStatus("error");
       toast.error(err.message || "Invalid or expired OTP. Please try again.");
     } finally {
       setIsVerifying(false);
@@ -237,6 +244,8 @@ function RegisterPage() {
     try {
       const res = await authApi.sendRegisterOtp(lastPayload);
       setCountdown(60);
+      setOtpStatus("idle");
+      setOtpValue("");
       toast.success(res.message || "New OTP sent to your email and phone!");
     } catch (err: any) {
       toast.error(err.message || "Failed to resend OTP");
@@ -486,21 +495,30 @@ function RegisterPage() {
                     </div>
                   </div>
 
-                  <form onSubmit={handleVerifyOtp} className="space-y-6 max-w-sm mx-auto mt-6">
-                    <div>
-                      <Label className="text-xs font-semibold text-muted-foreground dark:text-[#9DB0A9] block mb-2">
+                  <form onSubmit={(e) => handleVerifyOtp(e)} className="space-y-6 max-w-sm mx-auto mt-6">
+                    <div className="flex flex-col items-center">
+                      <Label className="text-xs font-semibold text-muted-foreground dark:text-[#9DB0A9] block mb-3 text-center">
                         Enter 6-Digit OTP Code
                       </Label>
-                      <Input
-                        type="text"
-                        inputMode="numeric"
-                        maxLength={6}
-                        value={otpValue}
-                        onChange={(e) => setOtpValue(e.target.value.replace(/\D/g, ""))}
-                        placeholder="••••••"
-                        className="text-center text-3xl font-mono tracking-widest h-14 rounded-2xl bg-background/90 dark:bg-[#0B1210] border-2 border-primary/40 dark:border-[#12A488]/40 dark:text-[#3FD1B3] focus:border-primary dark:focus:border-[#12A488] shadow-inner font-bold"
-                        autoFocus
-                      />
+                      <div className="py-2 flex justify-center w-full">
+                        <CodeSlots
+                          length={6}
+                          value={otpValue}
+                          status={otpStatus}
+                          onChange={(code) => {
+                            setOtpValue(code);
+                            if (otpStatus !== "idle") setOtpStatus("idle");
+                          }}
+                          onComplete={(code) => {
+                            handleVerifyOtp(undefined, code);
+                          }}
+                          disabled={isVerifying}
+                          autoFocus
+                          slotSize={46}
+                          gap={8}
+                          radius={14}
+                        />
+                      </div>
                     </div>
 
                     <Button

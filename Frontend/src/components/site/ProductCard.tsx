@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { useState } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { doctorApi } from "@/lib/api";
+import { AddToCartAnimation } from "./AddToCartAnimation";
 
 export interface ProductCardProps {
   product: any;
@@ -23,6 +24,7 @@ export function ProductCard({ product, onAdd, onWishlist }: ProductCardProps) {
 
   const [isLiked, setIsLiked] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
+  const [isAdded, setIsAdded] = useState(false);
   const inStock = (product.stock ?? 1) > 0;
   const price = product.price ?? product.sellingPrice ?? 0;
   const originalPrice = product.purchasePrice ? Math.round(price * 1.25) : Math.round(price * 1.2);
@@ -94,10 +96,13 @@ export function ProductCard({ product, onAdd, onWishlist }: ProductCardProps) {
     try {
       await doctorApi.addToCart(productId, 1);
       toast.success(`Added ${product.name} to clinic cart!`);
+      setIsAdded(true);
+      setTimeout(() => setIsAdded(false), 2400);
     } catch (err: any) {
       toast.error(err.message || "Failed to add item to cart");
     } finally {
-      setIsAdding(false);
+      // Allow animation cycle to conclude smoothly
+      setTimeout(() => setIsAdding(false), 1400);
     }
   };
 
@@ -228,22 +233,16 @@ export function ProductCard({ product, onAdd, onWishlist }: ProductCardProps) {
                 </Link>
               </Button>
             ) : (
-              <Button
-                size="sm"
-                disabled={!inStock || isAdding}
+              <AddToCartAnimation
                 onClick={handleAddToCart}
-                className="rounded-xl px-3.5 h-8 text-xs font-bold bg-[#12A488] hover:bg-[#3FD1B3] text-[#04110E] shadow-sm hover:shadow-md transition-all active:scale-95 disabled:opacity-70"
-              >
-                {isAdding ? (
-                  <>
-                    <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" /> Adding...
-                  </>
-                ) : (
-                  <>
-                    <ShoppingCart className="h-3.5 w-3.5 mr-1" /> Add
-                  </>
-                )}
-              </Button>
+                disabled={!inStock}
+                isAdding={isAdding}
+                isAdded={isAdded}
+                mode="onAction"
+                pillColor="#0A1B17"
+                textColor="#3FD1B3"
+                className="h-8 w-28 shrink-0 rounded-xl"
+              />
             )}
           </div>
         </div>

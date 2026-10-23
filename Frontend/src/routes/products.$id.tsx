@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { PublicLayout } from "@/components/site/PublicLayout";
 import { ProductCard } from "@/components/site/ProductCard";
+import { AddToCartAnimation } from "@/components/site/AddToCartAnimation";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
@@ -60,6 +61,7 @@ function ProductDetail() {
   const [activeImg, setActiveImg] = useState(0);
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [addingToCart, setAddingToCart] = useState(false);
+  const [addedToCart, setAddedToCart] = useState(false);
 
   const { data: productResponse, isLoading: productLoading } = useQuery({
     queryKey: ["product", id],
@@ -132,10 +134,12 @@ function ProductDetail() {
     try {
       await doctorApi.addToCart(product._id, qty);
       toast.success(`Added ${qty} × ${product.name} to clinic cart`);
+      setAddedToCart(true);
+      setTimeout(() => setAddedToCart(false), 2400);
     } catch (err: any) {
       toast.error(err.message || "Failed to add to cart");
     } finally {
-      setAddingToCart(false);
+      setTimeout(() => setAddingToCart(false), 1400);
     }
   };
 
@@ -312,15 +316,17 @@ function ProductDetail() {
                     </button>
                   </div>
 
-                  <Button
-                    size="lg"
+                  <AddToCartAnimation
                     onClick={handleAddToCart}
-                    disabled={!inStock || addingToCart}
-                    className="flex-1 rounded-2xl h-12 text-sm font-bold bg-[#12A488] hover:bg-[#3FD1B3] text-[#04110E] shadow-lg shadow-[#12A488]/20 btn-shine transition-colors"
-                  >
-                    <ShoppingCart className="h-4 w-4 mr-2" />
-                    {addingToCart ? "Adding to Cart..." : "Add to Clinic Cart"}
-                  </Button>
+                    disabled={!inStock}
+                    isAdding={addingToCart}
+                    isAdded={addedToCart}
+                    mode="onAction"
+                    text="ADD TO CLINIC CART"
+                    pillColor="#0A1B17"
+                    textColor="#3FD1B3"
+                    className="flex-1 h-12 rounded-2xl overflow-hidden"
+                  />
 
                   <Button
                     variant="outline"

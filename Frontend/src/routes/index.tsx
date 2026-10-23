@@ -37,6 +37,7 @@ import {
 import { PublicLayout } from "@/components/site/PublicLayout";
 import { ProductCard, type ProductCardProps } from "@/components/site/ProductCard";
 import { DepthCarousel } from "@/components/ui/DepthCarousel";
+import { GlassSurface } from "@/components/ui/GlassSurface";
 import { productsApi } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
 import { useQuery } from "@tanstack/react-query";
@@ -214,10 +215,23 @@ function HomePage() {
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4 }}
-                className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/90 dark:bg-slate-900/90 border border-slate-200/90 dark:border-slate-800 text-slate-800 dark:text-slate-200 text-xs font-semibold shadow-xs backdrop-blur-xs"
+                className="inline-block"
               >
-                <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                <span>Exclusively Serving Dentists & Dental Clinics in Vadodara</span>
+                <GlassSurface
+                  width="auto"
+                  height={36}
+                  borderRadius={18}
+                  distortionScale={-80}
+                  displace={0.2}
+                  blur={6}
+                  backgroundOpacity={0.12}
+                  className="px-3.5 shadow-xs"
+                >
+                  <div className="flex items-center gap-2 text-slate-800 dark:text-slate-200 text-xs font-semibold select-none">
+                    <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                    <span>Exclusively Serving Dentists & Dental Clinics in Vadodara</span>
+                  </div>
+                </GlassSurface>
               </motion.div>
 
               {/* Main Headline */}
@@ -253,23 +267,34 @@ function HomePage() {
                 transition={{ duration: 0.6, delay: 0.25, ease: [0.16, 1, 0.3, 1] }}
                 className="max-w-xl w-full"
               >
-                <div className="relative flex items-center bg-white dark:bg-slate-900 rounded-full border border-slate-200/90 dark:border-slate-800 shadow-lg shadow-sky-950/5 p-1.5 pl-5 focus-within:ring-2 focus-within:ring-[#0284c7]/40 focus-within:border-[#0284c7] transition-all">
-                  <Search className="h-4 w-4 text-slate-400 shrink-0 mr-3" />
-                  <input
-                    type="text"
-                    value={heroSearch}
-                    onChange={(e) => setHeroSearch(e.target.value)}
-                    placeholder="Search for products, brands or categories..."
-                    className="w-full bg-transparent text-xs sm:text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none"
-                  />
-                  <button
-                    type="submit"
-                    className="h-10 w-10 rounded-full bg-[#0284c7] hover:bg-[#0369a1] text-white flex items-center justify-center shrink-0 shadow-md transition-transform hover:scale-105"
-                    aria-label="Search Depot"
-                  >
-                    <ArrowRight className="h-4 w-4" />
-                  </button>
-                </div>
+                <GlassSurface
+                  width="100%"
+                  height={56}
+                  borderRadius={28}
+                  distortionScale={-140}
+                  displace={0.35}
+                  blur={8}
+                  backgroundOpacity={0.15}
+                  className="shadow-xl shadow-sky-950/5 dark:shadow-black/40 hover:shadow-2xl transition-all"
+                >
+                  <div className="relative flex items-center w-full px-2 pl-3">
+                    <Search className="h-4 w-4 text-slate-400 shrink-0 mr-3" />
+                    <input
+                      type="text"
+                      value={heroSearch}
+                      onChange={(e) => setHeroSearch(e.target.value)}
+                      placeholder="Search for products, brands or categories..."
+                      className="w-full bg-transparent text-xs sm:text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none"
+                    />
+                    <button
+                      type="submit"
+                      className="h-10 w-10 rounded-full bg-[#0284c7] hover:bg-[#0369a1] dark:bg-[#12A488] dark:hover:bg-[#3FD1B3] text-white dark:text-[#04110E] flex items-center justify-center shrink-0 shadow-md transition-transform hover:scale-105"
+                      aria-label="Search Depot"
+                    >
+                      <ArrowRight className="h-4 w-4" />
+                    </button>
+                  </div>
+                </GlassSurface>
               </motion.form>
 
               {/* CTA Action Buttons */}
@@ -453,49 +478,60 @@ function HomePage() {
         </div>
       </section>
 
-      {/* ─── Brand Logos Ribbon (Matching Mockup) ─────────────────────────── */}
+      {/* ─── Brand Logos Ribbon (Refraction GlassSurface) ────────────────── */}
       <div className="container mx-auto px-4 -mt-3 mb-10 relative z-20">
-        <div className="bg-white dark:bg-slate-900/90 border border-slate-200/80 dark:border-slate-800 rounded-2xl shadow-sm px-6 py-4 flex flex-wrap items-center justify-between gap-6">
-          <div className="flex items-center gap-2.5 text-xs font-bold text-slate-700 dark:text-slate-300">
-            <div className="h-7 w-7 rounded-lg bg-sky-50 dark:bg-slate-800 text-[#0284c7] grid place-items-center shrink-0">
-              <Sparkles className="h-4 w-4" />
+        <GlassSurface
+          width="100%"
+          height="auto"
+          borderRadius={20}
+          distortionScale={-110}
+          displace={0.25}
+          blur={8}
+          backgroundOpacity={0.15}
+          className="shadow-sm"
+        >
+          <div className="w-full px-6 py-4 flex flex-wrap items-center justify-between gap-6">
+            <div className="flex items-center gap-2.5 text-xs font-bold text-slate-700 dark:text-slate-300">
+              <div className="h-7 w-7 rounded-lg bg-sky-50 dark:bg-slate-800 text-[#0284c7] grid place-items-center shrink-0">
+                <Sparkles className="h-4 w-4" />
+              </div>
+              <span>Authorized Distributor For Leading Global Brands</span>
             </div>
-            <span>Authorized Distributor For Leading Global Brands</span>
-          </div>
 
-          <div className="flex flex-wrap items-center gap-6 sm:gap-8">
-            <span className="font-black text-red-600 dark:text-slate-200 text-xl font-sans tracking-tighter">
-              3M
-            </span>
-            <span className="font-bold text-[#008f9f] dark:text-[#3FD1B3] text-lg tracking-tight lowercase">
-              ivoclar
-            </span>
-            <span className="font-black italic text-[#006f4e] dark:text-[#12A488] text-xl">
-              'GC'
-            </span>
-            <span className="font-bold text-slate-900 dark:text-white text-sm tracking-tight flex items-center gap-1">
-              <span className="h-2 w-2 rounded-full border-2 border-current" /> Dentsply Sirona
-            </span>
-            <span className="font-black text-slate-900 dark:text-white text-lg tracking-wider">
-              MANI.
-            </span>
-            <span className="font-bold text-red-600 dark:text-slate-200 text-base italic">
-              Zhermack
-            </span>
-            <span className="font-bold text-red-600 dark:text-slate-200 text-sm flex items-center gap-1">
-              <span className="h-3 w-3 rounded-full bg-red-600 dark:bg-slate-200 inline-block" />{" "}
-              septodont
-            </span>
-          </div>
+            <div className="flex flex-wrap items-center gap-6 sm:gap-8">
+              <span className="font-black text-red-600 dark:text-slate-200 text-xl font-sans tracking-tighter">
+                3M
+              </span>
+              <span className="font-bold text-[#008f9f] dark:text-[#3FD1B3] text-lg tracking-tight lowercase">
+                ivoclar
+              </span>
+              <span className="font-black italic text-[#006f4e] dark:text-[#12A488] text-xl">
+                'GC'
+              </span>
+              <span className="font-bold text-slate-900 dark:text-white text-sm tracking-tight flex items-center gap-1">
+                <span className="h-2 w-2 rounded-full border-2 border-current" /> Dentsply Sirona
+              </span>
+              <span className="font-black text-slate-900 dark:text-white text-lg tracking-wider">
+                MANI.
+              </span>
+              <span className="font-bold text-red-600 dark:text-slate-200 text-base italic">
+                Zhermack
+              </span>
+              <span className="font-bold text-red-600 dark:text-slate-200 text-sm flex items-center gap-1">
+                <span className="h-3 w-3 rounded-full bg-red-600 dark:bg-slate-200 inline-block" />{" "}
+                septodont
+              </span>
+            </div>
 
-          <Link
-            to="/products"
-            className="text-xs font-bold text-[#0284c7] hover:underline flex items-center gap-1 shrink-0"
-          >
-            <span>And Many More...</span>
-            <ArrowRight className="h-3.5 w-3.5" />
-          </Link>
-        </div>
+            <Link
+              to="/products"
+              className="text-xs font-bold text-[#0284c7] hover:underline flex items-center gap-1 shrink-0"
+            >
+              <span>And Many More...</span>
+              <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
+          </div>
+        </GlassSurface>
       </div>
 
       {/* ─── Explore by Clinical Speciality (3D DepthCarousel + Grid Toggle) ─ */}

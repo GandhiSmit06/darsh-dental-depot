@@ -517,6 +517,9 @@ function getLocalCart(): DoctorCartItem[] {
 function saveLocalCart(items: DoctorCartItem[]) {
   if (typeof window === "undefined") return;
   localStorage.setItem(getCartKey(), JSON.stringify(items));
+  try {
+    window.dispatchEvent(new CustomEvent("ddd_cart_updated", { detail: { count: items.reduce((s, i) => s + (i.quantity || 1), 0) } }));
+  } catch {}
 }
 
 function getLocalWishlist(): DoctorWishlistItem[] {
@@ -1084,6 +1087,11 @@ export const doctorApi = {
   getCart: async () => {
     const items = getLocalCart();
     return { success: true as const, message: "OK", data: items };
+  },
+
+  getCartCount: (): number => {
+    const items = getLocalCart();
+    return items.reduce((sum, item) => sum + (item.quantity || 1), 0);
   },
 
   addToCart: async (productId: string, quantity = 1) => {

@@ -16,8 +16,9 @@ import {
 } from "lucide-react";
 import { useTheme } from "@/components/theme-provider";
 import { useAuth } from "@/lib/auth-context";
+import { doctorApi } from "@/lib/api";
 import { motion, AnimatePresence } from "framer-motion";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const navLinks = [
   { to: "/", label: "Home" },
@@ -57,6 +58,28 @@ export function Navbar() {
   const { theme, toggle } = useTheme();
   const { user, isAuthenticated, logout } = useAuth();
   const [navSearch, setNavSearch] = useState("");
+  const [cartCount, setCartCount] = useState(0);
+
+  useEffect(() => {
+    const updateCount = () => {
+      try {
+        const count = doctorApi.getCartCount();
+        setCartCount(count);
+      } catch {
+        setCartCount(0);
+      }
+    };
+
+    updateCount();
+
+    window.addEventListener("ddd_cart_updated", updateCount);
+    window.addEventListener("storage", updateCount);
+
+    return () => {
+      window.removeEventListener("ddd_cart_updated", updateCount);
+      window.removeEventListener("storage", updateCount);
+    };
+  }, [user]);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -133,16 +156,18 @@ export function Navbar() {
 
         {/* Right side actions */}
         <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-          {/* Cart Icon with '3' badge matching mockup */}
+          {/* Cart Icon with Dynamic Count Badge */}
           <Link
             to={isAuthenticated && user?.role === "doctor" ? "/doctor" : "/products"}
             className="relative p-2 rounded-full text-slate-700 dark:text-slate-300 hover:text-[#0284c7] hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-            title="Clinic Cart"
+            title={cartCount > 0 ? `Clinic Cart (${cartCount} item${cartCount > 1 ? "s" : ""})` : "Clinic Cart (Empty)"}
           >
             <ShoppingCart className="h-4 w-4" />
-            <span className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full bg-[#0284c7] text-white text-[10px] font-bold flex items-center justify-center shadow-xs">
-              3
-            </span>
+            {cartCount > 0 && (
+              <span className="absolute -top-0.5 -right-0.5 h-4 min-w-4 px-1 rounded-full bg-[#0284c7] text-white text-[10px] font-bold flex items-center justify-center shadow-xs">
+                {cartCount > 99 ? "99+" : cartCount}
+              </span>
+            )}
           </Link>
 
           {/* Theme Toggle */}

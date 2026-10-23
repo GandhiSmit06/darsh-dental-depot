@@ -548,7 +548,7 @@ export const authApi = {
           clinicName: data.clinicName || "",
           address: data.address || "",
           medicalRegistrationNumber: data.medicalRegistrationNumber || "",
-          role: data.role || "doctor",
+          role: "doctor",
         },
       },
     });
@@ -567,8 +567,8 @@ export const authApi = {
         clinic_name: data.clinicName || "",
         address: data.address || "",
         medical_registration_number: data.medicalRegistrationNumber || "",
-        role: data.role || "doctor",
-        is_verified: true,
+        role: "doctor",
+        is_verified: false,
         is_active: true,
       });
     }
@@ -1262,84 +1262,40 @@ export const doctorApi = {
     const cart = getLocalCart();
     if (cart.length === 0) throw new ApiError(400, "Your cart is empty");
 
-    // Product selling prices are already GST-inclusive (calculated from purchase price + GST or manually overridden)
-    const totalPrice = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-    const subtotal = totalPrice;
-    const taxAmount = 0;
-    const orderNumber = `ORD-${new Date().toISOString().slice(0, 10).replace(/-/g, "")}-${Math.random().toString(36).substr(2, 4).toUpperCase()}`;
-
-    // 1. Insert Order
-    const { data: order, error: orderErr } = await supabase
-      .from("orders")
-      .insert([
-        {
-          order_number: orderNumber,
-          user_id: userData.user.id,
-          total_price: totalPrice,
-          subtotal,
-          tax_amount: taxAmount,
-          order_status: "pending",
-          payment_status: "pending",
-          payment_method: payload.paymentMethod,
-          shipping_address: payload.address,
-          notes: payload.notes || "",
-        },
-      ])
-      .select()
-      .single();
-
-    if (orderErr || !order) {
-      throw new ApiError(500, orderErr?.message || "Failed to create order");
-    }
-
-    // 2. Insert Order Items & decrement stock
-    const itemsToInsert = cart.map((item) => ({
-      order_id: order.id,
+    const items = cart.map((item) => ({
       product_id: item.productId,
-      name: item.name,
       quantity: item.quantity,
-      price: item.price,
-      image: item.imageUrl,
     }));
 
-    await supabase.from("order_items").insert(itemsToInsert);
+    // 1. Primary: Use secure server-side RPC to create order with database-verified prices and atomic stock deduction
+    const { data: rpcData, error: rpcErr } = await supabase.rpc("create_doctor_order", {
+      p_items: items,
+      p_payment_method: payload.paymentMethod,
+      p_shipping_address: payload.address,
+      p_notes: payload.notes || "",
+    });
 
-    // Decrement stock for purchased products in Supabase
-    for (const item of cart) {
-      try {
-        const { data: currentProd } = await supabase
-          .from("products")
-          .select("stock")
-          .eq("id", item.productId)
-          .single();
-        if (currentProd && currentProd.stock !== undefined) {
-          const newStock = Math.max(0, currentProd.stock - item.quantity);
-          await supabase
-            .from("products")
-            .update({
-              stock: newStock,
-              status: newStock > 0 ? "active" : "out_of_stock",
-              updated_at: new Date().toISOString(),
-            })
-            .eq("id", item.productId);
-        }
-      } catch (e) {
-        console.warn("Stock update warning:", e);
-      }
+    if (rpcErr || !rpcData || !rpcData.success) {
+      const msg =
+        rpcData?.message ||
+        rpcErr?.message ||
+        "Secure checkout is currently unavailable. Please contact depot support.";
+      console.error("Order creation failed:", msg, rpcErr);
+      throw new ApiError(400, msg);
     }
 
-    // 3. Clear cart
+    // Clear cart only upon verified order creation
     saveLocalCart([]);
 
     return {
       success: true as const,
       message: "Order placed successfully!",
       data: {
-        orderId: order.order_number,
-        dbOrderId: order.id,
-        amount: totalPrice * 100,
+        orderId: rpcData.order_number,
+        dbOrderId: rpcData.order_id,
+        amount: Number(rpcData.total_price) * 100,
         currency: "INR",
-        total: totalPrice,
+        total: Number(rpcData.total_price),
         paymentMethod: payload.paymentMethod,
         message: "Order confirmed for Vadodara clinic dispatch!",
       },
@@ -1347,53 +1303,50 @@ export const doctorApi = {
   },
 
   cancelOrder: async (id: string) => {
-    // 1. Restore stock for order items
-    try {
-      const { data: items } = await supabase
-        .from("order_items")
-        .select("product_id, quantity")
-        .eq("order_id", id);
-
-      if (items && items.length > 0) {
-        for (const item of items) {
-          if (!item.product_id) continue;
-          const { data: prod } = await supabase
-            .from("products")
-            .select("stock")
-            .eq("id", item.product_id)
-            .single();
-          if (prod && prod.stock !== undefined) {
-            const restoredStock = prod.stock + (item.quantity || 1);
-            await supabase
-              .from("products")
-              .update({
-                stock: restoredStock,
-                status: "active",
-                updated_at: new Date().toISOString(),
-              })
-              .eq("id", item.product_id);
-          }
-        }
-      }
-    } catch (e) {
-      console.warn("Stock restore warning:", e);
-    }
-
-    // 2. Update order status in Supabase
-    const { error } = await supabase
-      .from("orders")
-      .update({
-        order_status: "cancelled",
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", id);
+    // Invoke secure atomic PostgreSQL RPC
+    const { data, error } = await supabase.rpc("cancel_doctor_order", { p_order_id: id });
 
     if (error) {
       console.error("Cancel order error:", error);
       throw new ApiError(400, error.message || "Failed to cancel order");
     }
 
-    return { success: true as const, message: "Order cancelled successfully" };
+    if (data && !data.success) {
+      throw new ApiError(400, data.message || "Failed to cancel order");
+    }
+
+    return { success: true as const, message: data?.message || "Order cancelled successfully" };
+  },
+
+  createRazorpayOrder: async (orderId: string) => {
+    const { data: sessionData } = await supabase.auth.getSession();
+    const token = sessionData?.session?.access_token;
+
+    const res = await fetch("/api/create-razorpay-order", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify({ orderId }),
+    });
+
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok || !json.success) {
+      const msg = json.message || "Failed to initialize payment gateway order";
+      console.error("Create Razorpay order error:", msg);
+      throw new ApiError(res.status || 500, msg);
+    }
+
+    return {
+      success: true as const,
+      data: {
+        razorpayOrderId: json.razorpayOrderId as string,
+        amount: json.amount as number,
+        currency: (json.currency || "INR") as string,
+        keyId: (json.keyId || "") as string,
+      },
+    };
   },
 
   verifyRazorpayPayment: async (data: {
@@ -1402,19 +1355,24 @@ export const doctorApi = {
     razorpayPaymentId: string;
     razorpaySignature?: string;
   }) => {
-    const { error } = await supabase
-      .from("orders")
-      .update({
-        payment_status: "paid",
-        payment_method: "razorpay",
-        payment_id: data.razorpayPaymentId,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", data.orderId);
+    // Call server-side verification endpoint on Cloudflare Worker
+    const { data: sessionData } = await supabase.auth.getSession();
+    const token = sessionData?.session?.access_token;
 
-    if (error) {
-      console.error("Failed to update payment status:", error);
-      throw new ApiError(500, "Failed to record payment in database");
+    const res = await fetch("/api/verify-razorpay-payment", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify(data),
+    });
+
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok || !json.success) {
+      const msg = json.message || "Failed to verify payment with server";
+      console.error("Payment verification server error:", msg);
+      throw new ApiError(res.status || 500, msg);
     }
 
     return { success: true as const, message: "Payment verified successfully" };

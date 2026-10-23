@@ -352,10 +352,24 @@ function CartSection({ onNavigateToOrders }: { onNavigateToOrders?: () => void }
 
       // 3. Real Razorpay Standard Checkout SDK
       setShowCheckoutModal(false);
+
+      let rzpOrderId: string | undefined = undefined;
+      try {
+        const rzpOrderRes = await doctorApi.createRazorpayOrder(res.data.dbOrderId);
+        rzpOrderId = rzpOrderRes.data.razorpayOrderId;
+      } catch (orderInitErr: any) {
+        console.error("Razorpay order creation error:", orderInitErr);
+        toast.error(orderInitErr.message || "Failed to initialize payment gateway order.");
+        mutate([]);
+        if (onNavigateToOrders) onNavigateToOrders();
+        return;
+      }
+
       await openRazorpayCheckout({
         amount: total,
         orderNumber: res.data.orderId,
         dbOrderId: res.data.dbOrderId,
+        razorpayOrderId: rzpOrderId,
         customerName: contactName.trim() || user?.fullName || "Doctor",
         customerEmail: user?.email || "",
         customerPhone: contactPhone.trim() || user?.phone || "",
@@ -364,13 +378,13 @@ function CartSection({ onNavigateToOrders }: { onNavigateToOrders?: () => void }
             await doctorApi.verifyRazorpayPayment({
               orderId: res.data.dbOrderId,
               razorpayPaymentId: paymentData.razorpayPaymentId,
-              razorpayOrderId: paymentData.razorpayOrderId,
+              razorpayOrderId: paymentData.razorpayOrderId || rzpOrderId,
               razorpaySignature: paymentData.razorpaySignature,
             });
             toast.success(`🎉 Payment of ₹${total.toFixed(2)} verified! Payment ID: ${paymentData.razorpayPaymentId}`);
           } catch (e: any) {
             console.error("Verification err:", e);
-            toast.success(`🎉 Order placed! Razorpay ID: ${paymentData.razorpayPaymentId}`);
+            toast.error(e.message || `Payment verification failed for ${paymentData.razorpayPaymentId}`);
           }
           mutate([]);
           if (onNavigateToOrders) onNavigateToOrders();

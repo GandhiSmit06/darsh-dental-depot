@@ -117,8 +117,7 @@ function ProductDetail() {
     );
   }
 
-  const defaultImage =
-    "https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?auto=format&fit=crop&w=800&q=80";
+  const defaultImage = "/products/filtek-z350.jpg";
   const gallery = product.images?.length ? product.images : [defaultImage];
   const related = (relatedResponse?.data || [])
     .filter((p: any) => p.category === product.category && p._id !== product._id)

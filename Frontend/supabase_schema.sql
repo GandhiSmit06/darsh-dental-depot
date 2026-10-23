@@ -228,7 +228,7 @@ values
     'active',
     4.9,
     28,
-    array['https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?auto=format&fit=crop&w=800&q=80']
+    array['/products/filtek-z350.jpg']
   ),
   (
     'Dentsply Prime & Bond Universal Adhesive 4ml',
@@ -243,7 +243,7 @@ values
     'active',
     4.8,
     42,
-    array['https://images.unsplash.com/photo-1629909613654-28e377c37b09?auto=format&fit=crop&w=800&q=80']
+    array['/products/prime-bond.jpg']
   ),
   (
     'GC Gold Label 2 Light-Cured Universal Glass Ionomer Cement',
@@ -258,7 +258,7 @@ values
     'active',
     4.7,
     19,
-    array['https://images.unsplash.com/photo-1598256989800-fe5f95da9787?auto=format&fit=crop&w=800&q=80']
+    array['/products/gc-gold-label-2.jpg']
   ),
   (
     'Mani K-Files 25mm Assorted (#15-40) Pack of 6',
@@ -273,7 +273,7 @@ values
     'active',
     4.9,
     64,
-    array['https://images.unsplash.com/photo-1579684385127-1ef15d508118?auto=format&fit=crop&w=800&q=80']
+    array['/products/mani-k-files.jpg']
   ),
   (
     'Septodont Septanest 1:100,000 Articaine Anesthetic Cartridges (Box of 50)',
@@ -288,7 +288,7 @@ values
     'active',
     5.0,
     51,
-    array['https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?auto=format&fit=crop&w=800&q=80']
+    array['/products/septodont-septanest.jpg']
   ),
   (
     'Zhermack Hydrogum 5 Premium Alginate Impression Powder (453g)',
@@ -303,7 +303,7 @@ values
     'active',
     4.8,
     33,
-    array['https://images.unsplash.com/photo-1583912267670-6575ad3726f8?auto=format&fit=crop&w=800&q=80']
+    array['/products/zhermack-hydrogum.jpg']
   )
 on conflict do nothing;
 

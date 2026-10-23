@@ -630,7 +630,7 @@ function HomePage() {
               }}
               renderCard={(item) => (
                 <div className="relative w-full h-full bg-[#0b0d12] flex flex-col justify-between overflow-hidden group select-none">
-                  <div className="w-full h-3/5 bg-white/5 p-4 flex items-center justify-center overflow-hidden">
+                  <div className="w-full h-3/5 bg-white p-3 flex items-center justify-center overflow-hidden">
                     <img
                       src={item.image}
                       alt={item.title || item.alt || ""}
@@ -672,7 +672,7 @@ function HomePage() {
                 >
                   <div className="h-full bg-white dark:bg-slate-900/90 rounded-2xl border border-slate-200/80 dark:border-slate-800 p-3 shadow-xs hover:shadow-md hover:border-[#0284c7]/50 transition-all duration-300 flex flex-col justify-between">
                     <div>
-                      <div className="h-20 w-full rounded-xl overflow-hidden bg-slate-50 dark:bg-slate-800/40 flex items-center justify-center p-1.5">
+                      <div className="h-20 w-full rounded-xl overflow-hidden bg-white p-1.5 flex items-center justify-center border border-slate-100 dark:border-slate-800">
                         <img
                           src={item.image}
                           alt={item.title}

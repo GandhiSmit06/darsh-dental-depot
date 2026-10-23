@@ -32,7 +32,7 @@ export function ChatProductCard({ product }: ChatProductCardProps) {
   const imageUrl =
     product.imageUrl ||
     product.image ||
-    "https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?auto=format&fit=crop&w=400&q=80";
+    "/products/filtek-z350.jpg";
 
   const handleAddToCart = async () => {
     if (!user) {

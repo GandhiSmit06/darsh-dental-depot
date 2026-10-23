@@ -24,18 +24,15 @@ export const categories = [
 
 export const brands = ["3M ESPE", "Ivoclar", "Dentsply Sirona", "GC", "Kerr", "Septodont", "VOCO"];
 
-const img = (seed: string) =>
-  `https://images.unsplash.com/photo-${seed}?auto=format&fit=crop&w=600&q=80`;
-
-const seeds = [
-  "1606811971618-4486d14f3f99",
-  "1588776814546-1ffcf47267a5",
-  "1609840114035-3c981b782dfe",
-  "1581595219315-a187dd40c322",
-  "1606811841689-23dfddce3e95",
-  "1612277795421-9bc7706a4a34",
-  "1583912267550-aabe4ab2c8b9",
-  "1629909613654-28e377c37b09",
+const productImages = [
+  "/products/filtek-z350.jpg",
+  "/products/zhermack-hydrogum.jpg",
+  "/products/mani-k-files.jpg",
+  "/products/ortho-bracket-kit.jpg",
+  "/products/pmt-instrument-kit.jpg",
+  "/products/nitrile-gloves.jpg",
+  "/products/gc-gold-label-2.jpg",
+  "/products/opalescence-whitening.jpg",
 ];
 
 export const products: Product[] = Array.from({ length: 24 }).map((_, i) => {
@@ -61,7 +58,7 @@ export const products: Product[] = Array.from({ length: 24 }).map((_, i) => {
     reviewCount: 12 + (i * 7) % 240,
     description:
       "Premium-grade dental material designed for clinical excellence. Trusted by professionals for consistent results, durability, and patient comfort.",
-    image: img(seeds[i % seeds.length]),
+    image: productImages[i % productImages.length],
   };
 });
 

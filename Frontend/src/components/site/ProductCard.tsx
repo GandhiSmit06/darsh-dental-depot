@@ -35,7 +35,7 @@ export function ProductCard({ product, onAdd, onWishlist }: ProductCardProps) {
     product.imageUrl ||
     product.image ||
     (product.images && product.images[0]) ||
-    "https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?auto=format&fit=crop&w=600&q=80";
+    "/products/filtek-z350.jpg";
 
   const productId = product._id || product.id;
 

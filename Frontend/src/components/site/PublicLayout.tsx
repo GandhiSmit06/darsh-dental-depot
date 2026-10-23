@@ -3,6 +3,7 @@ import { Navbar } from "./Navbar";
 import { Footer } from "./Footer";
 import { Sparkles, ShieldCheck, MapPin, Phone, MessageSquare } from "lucide-react";
 import { PageTransition } from "@/components/animations/PageTransition";
+import { GlassSurface } from "@/components/ui/GlassSurface";
 
 export function PublicLayout({
   children,
@@ -59,6 +60,45 @@ export function PublicLayout({
       <main className="flex-1 relative z-10">
         <PageTransition>{children}</PageTransition>
       </main>
+
+      {/* Floating Refraction Glass Surface Quick Contact Pill for Vadodara Doctors */}
+      <aside aria-label="Quick contact" className="fixed bottom-5 right-5 z-40 hidden md:block">
+        <GlassSurface
+          width="auto"
+          height={46}
+          borderRadius={23}
+          distortionScale={-140}
+          displace={0.4}
+          blur={10}
+          backgroundOpacity={0.16}
+          className="shadow-2xl shadow-sky-950/15 dark:shadow-black/50 hover:scale-102 transition-transform"
+        >
+          <div className="flex items-center gap-3 px-4 py-1 select-none">
+            <span className="relative flex h-2.5 w-2.5">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500" />
+            </span>
+            <div className="text-left text-xs leading-none">
+              <span className="font-extrabold text-slate-900 dark:text-white block tracking-tight">
+                Shiyabaug Depot
+              </span>
+              <span className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">
+                2-Hour Vadodara Delivery
+              </span>
+            </div>
+            <a
+              href="https://wa.me/919727076119?text=Hello%20Darsh%20Dental%20Depot,%20I%20am%20a%20doctor%20in%20Vadodara%20inquiring%20about%20dental%20materials."
+              target="_blank"
+              rel="noreferrer"
+              className="ml-1 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-bold bg-[#12A488] hover:bg-[#3FD1B3] text-[#04110E] shadow-xs transition-colors"
+            >
+              <Phone className="h-3 w-3" />
+              <span>WhatsApp Depot</span>
+            </a>
+          </div>
+        </GlassSurface>
+      </aside>
+
       <Footer />
     </div>
   );

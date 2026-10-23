@@ -9,6 +9,7 @@ import { useState } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { doctorApi } from "@/lib/api";
 import { AddToCartAnimation } from "./AddToCartAnimation";
+import { TiltedCard, TiltedCardLayer } from "@/components/ui/TiltedCard";
 
 export interface ProductCardProps {
   product: any;
@@ -107,67 +108,82 @@ export function ProductCard({ product, onAdd, onWishlist }: ProductCardProps) {
   };
 
   return (
-    <motion.div
-      whileHover={{ y: -6 }}
-      transition={{ type: "spring", stiffness: 350, damping: 25 }}
-      className="h-full"
+    <TiltedCard
+      containerWidth="100%"
+      containerHeight="100%"
+      imageWidth="100%"
+      imageHeight="100%"
+      rotateAmplitude={10}
+      scaleOnHover={1.025}
+      glare={0.35}
+      glareColor="#12A488"
+      shadow={0.35}
+      radius={18}
+      perspective={1000}
+      smoothness={0.65}
+      showTooltip={false}
+      className="h-full w-full"
     >
-      <Card className="overflow-hidden h-full flex flex-col group glass-card glass-card-hover border border-border/60 hover:border-primary/40 rounded-2xl bg-card shadow-sm hover:shadow-xl transition-all duration-300">
+      <Card className="overflow-hidden h-full flex flex-col group glass-card border border-border/60 hover:border-primary/40 rounded-2xl bg-card transition-colors duration-300">
         {/* Product Image Area */}
-        <Link
-          to="/products/$id"
-          params={{ id: productId }}
-          className="relative block aspect-[4/3] bg-muted/40 overflow-hidden"
-        >
-          <img
-            src={imageUrl}
-            alt={product.name}
-            loading="lazy"
-            className="h-full w-full object-cover object-center group-hover:scale-108 transition-transform duration-700 ease-out"
-          />
+        <div className="relative aspect-[4/3] bg-muted/40 overflow-hidden">
+          <Link
+            to="/products/$id"
+            params={{ id: productId }}
+            className="block h-full w-full"
+          >
+            <img
+              src={imageUrl}
+              alt={product.name}
+              loading="lazy"
+              className="h-full w-full object-cover object-center group-hover:scale-108 transition-transform duration-700 ease-out"
+            />
+          </Link>
 
-          {/* Top Floating Badges */}
-          <div className="absolute top-3 left-3 flex flex-col gap-1.5 z-10">
-            {discountPercent > 0 && inStock && (
-              <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold text-[10px] px-2 py-0.5 shadow-sm border-0">
-                <Zap className="h-3 w-3 mr-0.5 inline fill-current" /> {discountPercent}% OFF
+          {/* 3D Floating Badges & Wishlist Layer */}
+          <TiltedCardLayer depth={25}>
+            <div className="absolute top-3 left-3 flex flex-col gap-1.5 z-10 pointer-events-none">
+              {discountPercent > 0 && inStock && (
+                <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold text-[10px] px-2 py-0.5 shadow-sm border-0 pointer-events-auto">
+                  <Zap className="h-3 w-3 mr-0.5 inline fill-current" /> {discountPercent}% OFF
+                </Badge>
+              )}
+              <Badge
+                variant={inStock ? "secondary" : "destructive"}
+                className={`text-[10px] font-semibold px-2 py-0.5 backdrop-blur-md pointer-events-auto ${
+                  inStock
+                    ? "bg-background/85 text-foreground border border-border/40"
+                    : "bg-destructive/90 text-white"
+                }`}
+              >
+                {inStock ? "In Stock" : "Out of Stock"}
               </Badge>
-            )}
-            <Badge
-              variant={inStock ? "secondary" : "destructive"}
-              className={`text-[10px] font-semibold px-2 py-0.5 backdrop-blur-md ${
-                inStock
-                  ? "bg-background/85 text-foreground border border-border/40"
-                  : "bg-destructive/90 text-white"
-              }`}
-            >
-              {inStock ? "In Stock" : "Out of Stock"}
-            </Badge>
-          </div>
-
-          {/* Wishlist Button (Only for doctors / guest clinic buyers) */}
-          {!isManager && (
-            <motion.button
-              whileTap={{ scale: 0.8 }}
-              onClick={handleWishlist}
-              className={`absolute top-3 right-3 h-8 w-8 rounded-full grid place-items-center backdrop-blur-md transition-all z-10 ${
-                isLiked
-                  ? "bg-red-500 text-white shadow-md shadow-red-500/30"
-                  : "bg-background/80 text-muted-foreground hover:text-red-500 hover:bg-background border border-border/40"
-              }`}
-              aria-label="Add to Wishlist"
-            >
-              <Heart className={`h-4 w-4 ${isLiked ? "fill-current" : ""}`} />
-            </motion.button>
-          )}
-
-          {/* Quick Category overlay tag */}
-          {product.category && (
-            <div className="absolute bottom-2 left-3 text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-md bg-black/60 text-white backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-              {product.category}
             </div>
-          )}
-        </Link>
+
+            {/* Wishlist Button (Only for doctors / guest clinic buyers) */}
+            {!isManager && (
+              <motion.button
+                whileTap={{ scale: 0.8 }}
+                onClick={handleWishlist}
+                className={`absolute top-3 right-3 h-8 w-8 rounded-full grid place-items-center backdrop-blur-md transition-all z-10 pointer-events-auto ${
+                  isLiked
+                    ? "bg-red-500 text-white shadow-md shadow-red-500/30"
+                    : "bg-background/80 text-muted-foreground hover:text-red-500 hover:bg-background border border-border/40"
+                }`}
+                aria-label="Add to Wishlist"
+              >
+                <Heart className={`h-4 w-4 ${isLiked ? "fill-current" : ""}`} />
+              </motion.button>
+            )}
+
+            {/* Quick Category overlay tag */}
+            {product.category && (
+              <div className="absolute bottom-2 left-3 text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-md bg-black/60 text-white backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-auto">
+                {product.category}
+              </div>
+            )}
+          </TiltedCardLayer>
+        </div>
 
         {/* Card Content */}
         <div className="p-4 flex flex-col gap-2 flex-1">
@@ -247,6 +263,6 @@ export function ProductCard({ product, onAdd, onWishlist }: ProductCardProps) {
           </div>
         </div>
       </Card>
-    </motion.div>
+    </TiltedCard>
   );
 }

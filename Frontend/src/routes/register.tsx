@@ -21,6 +21,7 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { authApi, ApiError } from "@/lib/api";
 import { CodeSlots } from "@/components/ui/CodeSlots";
+import { GridDistortion } from "@/components/ui/GridDistortion";
 import {
   Sparkles,
   ShieldCheck,
@@ -33,6 +34,9 @@ import {
   RotateCcw,
   CheckCircle2,
   Lock,
+  Clock,
+  Award,
+  Building2,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -255,13 +259,69 @@ function RegisterPage() {
   };
 
   return (
-    <PublicLayout>
-      <div className="container mx-auto px-4 py-16 max-w-2xl relative">
-        {/* Background glow */}
-        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-96 h-96 bg-primary/15 dark:bg-[#12A488]/10 rounded-full blur-3xl -z-10 pointer-events-none" />
+    <PublicLayout hideAnnouncementBar={true} hideFooter={true}>
+      <div className="relative min-h-[calc(100vh-68px)] w-full overflow-hidden flex items-center justify-center py-8 px-4 sm:px-6 lg:px-8">
+        {/* ── Background WebGL2 Grid Distortion Effect (Original High-Res Quality) ── */}
+        <div className="absolute inset-0 z-0 pointer-events-auto">
+          <GridDistortion
+            imageSrc="/design-assets/auth-bg.jpg"
+            grid={18}
+            radius={0.2}
+            strength={0.16}
+            relaxation={0.96}
+            mode="drag"
+            softness={0.15}
+            chroma={0.06}
+            idle={0.25}
+            clickRipple={true}
+            intro={true}
+            className="w-full h-full"
+          />
+          {/* Gentle contrast gradient ensuring the dentist image and clinic are crystal clear */}
+          <div className="absolute inset-0 bg-gradient-to-r from-slate-950/70 via-slate-950/25 to-slate-950/55 dark:from-black/75 dark:via-black/25 dark:to-black/60 pointer-events-none" />
+        </div>
 
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-          <Card className="p-8 sm:p-10 glass-card border border-border/70 dark:border-white/10 dark:bg-gradient-to-br dark:from-[#10201C] dark:to-[#0A100F] rounded-3xl shadow-xl backdrop-blur-xl">
+        {/* ── Main Container: Dentalkart Split Layout ── */}
+        <div className="container mx-auto max-w-6xl relative z-10 grid lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+          {/* Left Column (Desktop): Brand statement & Trust Badges */}
+          <div className="hidden lg:flex lg:col-span-5 flex-col justify-center space-y-6 text-white pr-4 select-none">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-xs font-semibold text-emerald-300 w-fit">
+              <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+              <span>Official Dental Clinic Registration</span>
+            </div>
+
+            <h1 className="text-3xl xl:text-4xl font-black font-heading tracking-tight leading-tight text-white drop-shadow-md">
+              Register Your Clinic with Vadodara's Premier Dental Depot
+            </h1>
+
+            <p className="text-slate-200 text-sm leading-relaxed drop-shadow-sm">
+              Unlock authorized wholesale depot pricing, guaranteed authentic dental supplies, direct 2-hour emergency dispatch in Vadodara, and verified GST tax invoices for your clinic.
+            </p>
+
+            <div className="space-y-3 pt-2">
+              <div className="flex items-center gap-3 text-sm font-semibold text-slate-100 bg-black/25 backdrop-blur-md p-3 rounded-2xl border border-white/10">
+                <Clock className="h-5 w-5 text-[#3FD1B3] shrink-0" />
+                <span>Same-Day 2-Hour Clinic Delivery</span>
+              </div>
+              <div className="flex items-center gap-3 text-sm font-semibold text-slate-100 bg-black/25 backdrop-blur-md p-3 rounded-2xl border border-white/10">
+                <ShieldCheck className="h-5 w-5 text-[#3FD1B3] shrink-0" />
+                <span>100% Genuine 3M, GC, Dentsply & Mani</span>
+              </div>
+              <div className="flex items-center gap-3 text-sm font-semibold text-slate-100 bg-black/25 backdrop-blur-md p-3 rounded-2xl border border-white/10">
+                <Award className="h-5 w-5 text-[#3FD1B3] shrink-0" />
+                <span>Doctor Wholesale Rates & Cash Discounts</span>
+              </div>
+              <div className="flex items-center gap-3 text-sm font-semibold text-slate-100 bg-black/25 backdrop-blur-md p-3 rounded-2xl border border-white/10">
+                <Building2 className="h-5 w-5 text-[#3FD1B3] shrink-0" />
+                <span>Physical Depot at Shiyabaug, Vadodara</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Right Column: Registration Card */}
+          <div className="w-full lg:col-span-7 flex justify-center">
+            <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="w-full">
+              <Card className="p-7 sm:p-9 bg-white/95 dark:bg-[#0B1210]/95 backdrop-blur-xl border border-slate-200/90 dark:border-white/10 rounded-3xl shadow-2xl">
             <AnimatePresence mode="wait">
               {step === 1 ? (
                 <motion.div
@@ -588,6 +648,8 @@ function RegisterPage() {
           </Card>
         </motion.div>
       </div>
-    </PublicLayout>
+    </div>
+  </div>
+</PublicLayout>
   );
 }

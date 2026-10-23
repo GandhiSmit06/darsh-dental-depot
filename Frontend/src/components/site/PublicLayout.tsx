@@ -8,9 +8,11 @@ import { GlassSurface } from "@/components/ui/GlassSurface";
 export function PublicLayout({
   children,
   hideAnnouncementBar = false,
+  hideFooter = false,
 }: {
   children: ReactNode;
   hideAnnouncementBar?: boolean;
+  hideFooter?: boolean;
 }) {
   return (
     <div className="min-h-screen flex flex-col relative overflow-hidden bg-background text-foreground">
@@ -99,7 +101,7 @@ export function PublicLayout({
         </GlassSurface>
       </aside>
 
-      <Footer />
+      {!hideFooter && <Footer />}
     </div>
   );
 }

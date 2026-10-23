@@ -48,3 +48,8 @@ coverage/
 .DS_Store
 Thumbs.db
 screenshots/
+
+# Agent & Design Tooling (Local development only)
+.agent/
+.agents/
+.impeccable/

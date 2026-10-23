@@ -4,6 +4,7 @@ export interface RazorpayCheckoutOptions {
   amount: number; // in Rupees (e.g. 1000)
   orderNumber: string;
   dbOrderId: string;
+  razorpayOrderId?: string;
   customerName: string;
   customerEmail: string;
   customerPhone: string;
@@ -63,12 +64,13 @@ export async function openRazorpayCheckout(options: RazorpayCheckoutOptions): Pr
     ? options.customerEmail.trim()
     : "doctor@darshdental.com";
 
-  const rzpOptions = {
+  const rzpOptions: Record<string, any> = {
     key: razorpayKey,
     amount: Math.round(options.amount * 100), // Amount in paise
     currency: "INR",
     name: "Darsh Dental Depot",
     description: `Order #${options.orderNumber} - Vadodara Dental Supplies`,
+    ...(options.razorpayOrderId ? { order_id: options.razorpayOrderId } : {}),
     prefill: {
       name: (options.customerName || "Doctor").trim(),
       email: sanitizedEmail,

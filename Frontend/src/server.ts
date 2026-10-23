@@ -2,6 +2,10 @@ import "./lib/error-capture";
 
 import { consumeLastCapturedError } from "./lib/error-capture";
 import { renderErrorPage } from "./lib/error-page";
+import {
+  handleCreateRazorpayOrderRequest,
+  handleVerifyPaymentRequest,
+} from "./lib/server-payment";
 
 type ServerEntry = {
   fetch: (request: Request, env: unknown, ctx: unknown) => Promise<Response> | Response;
@@ -69,6 +73,16 @@ async function normalizeCatastrophicSsrResponse(response: Response): Promise<Res
 export default {
   async fetch(request: Request, env: unknown, ctx: unknown) {
     try {
+      const url = new URL(request.url);
+
+      if (url.pathname === "/api/create-razorpay-order") {
+        return await handleCreateRazorpayOrderRequest(request, (env || {}) as Record<string, unknown>);
+      }
+
+      if (url.pathname === "/api/verify-razorpay-payment") {
+        return await handleVerifyPaymentRequest(request, (env || {}) as Record<string, unknown>);
+      }
+
       const handler = await getServerEntry();
       const response = await handler.fetch(request, env, ctx);
       return await normalizeCatastrophicSsrResponse(response);

@@ -38,7 +38,6 @@ import { PublicLayout } from "@/components/site/PublicLayout";
 import { ProductCard, type ProductCardProps } from "@/components/site/ProductCard";
 import { DepthCarousel } from "@/components/ui/DepthCarousel";
 import { GlassSurface } from "@/components/ui/GlassSurface";
-import { HeroToothGraphic } from "@/components/site/HeroToothGraphic";
 import { productsApi } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
 import { useQuery } from "@tanstack/react-query";
@@ -202,10 +201,10 @@ function HomePage() {
 
   return (
     <PublicLayout hideAnnouncementBar={true}>
-      {/* ─── Hero Section (Redesigned per Mockup) ─────────────────────────── */}
-      <section className="bg-gradient-to-b from-sky-50/70 via-white to-sky-50/40 dark:from-[#070B0A] dark:via-[#0A100F] dark:to-[#070B0A] pt-12 pb-14 md:pt-16 md:pb-18 relative overflow-hidden">
+      {/* ─── Hero Section (Redesigned with Full Animated SVG Background) ─── */}
+      <section className="bg-transparent pt-12 pb-14 md:pt-16 md:pb-24 relative overflow-hidden">
         {/* Subtle decorative grid overlay */}
-        <div className="absolute inset-0 grid-pattern opacity-40 pointer-events-none" />
+        <div className="absolute inset-0 grid-pattern opacity-25 pointer-events-none" />
 
         <div className="container mx-auto px-4 relative z-10">
           <div className="grid lg:grid-cols-12 gap-10 lg:gap-8 items-center">
@@ -387,19 +386,16 @@ function HomePage() {
               </motion.div>
             </div>
 
-            {/* Right Column: Animated Clinical Mint Tooth Showcase + Restrained Static Proof Rail */}
-            <div className="lg:col-span-5 relative mt-6 lg:mt-0">
+            {/* Right Column: Open Transparent Stage for Background Animated Tooth + Proof Rail */}
+            <div className="lg:col-span-5 relative mt-6 lg:mt-0 flex flex-col justify-end min-h-[300px] sm:min-h-[360px] lg:min-h-[440px]">
               <motion.div
-                initial={{ opacity: 0, scale: 0.98 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.8, delay: 0.15 }}
-                className="relative mx-auto max-w-lg"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.2 }}
+                className="relative w-full max-w-lg mx-auto"
               >
-                {/* Animated Clinical Mint Tooth Showcase (Dark & Light SVG with Orbital Waves) */}
-                <HeroToothGraphic />
-
                 {/* Restrained Static Proof Rail */}
-                <div className="mt-3.5 grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
                   {/* Proof item 1: Physical Depot & Timing */}
                   <a
                     href={MAPS_URL}

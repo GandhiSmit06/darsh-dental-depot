@@ -15,11 +15,24 @@ export function PublicLayout({
   hideFooter?: boolean;
 }) {
   return (
-    <div className="min-h-screen flex flex-col relative overflow-hidden bg-background text-foreground">
-      {/* Ambient background glow orbs */}
-      <div className="fixed -top-40 -left-40 w-96 h-96 bg-primary/10 rounded-full blur-3xl pointer-events-none -z-10 animate-pulse-slow" />
-      <div className="fixed top-1/3 -right-40 w-96 h-96 bg-sky-500/10 rounded-full blur-3xl pointer-events-none -z-10 animate-float-delayed" />
-      <div className="fixed -bottom-40 left-1/3 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none -z-10 animate-float" />
+    <div className="min-h-screen flex flex-col relative overflow-hidden bg-background/20 text-foreground">
+      {/* ─── Animated Clinical Mint SVG Background for Whole Website (Dark & Light) ─── */}
+      <div className="fixed inset-0 w-full h-full pointer-events-none -z-20 overflow-hidden select-none">
+        {/* Dark Mode Animated Clinical Background */}
+        <img
+          src="/design-assets/hero-clinical-dark.svg"
+          alt=""
+          className="hidden dark:block w-full h-full object-cover object-top"
+          aria-hidden="true"
+        />
+        {/* Light Mode Animated Clinical Background */}
+        <img
+          src="/design-assets/hero-clinical-light.svg"
+          alt=""
+          className="block dark:hidden w-full h-full object-cover object-top"
+          aria-hidden="true"
+        />
+      </div>
 
       {/* Top micro announcement bar */}
       {!hideAnnouncementBar && (

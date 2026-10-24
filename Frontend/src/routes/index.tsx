@@ -38,6 +38,7 @@ import { PublicLayout } from "@/components/site/PublicLayout";
 import { ProductCard, type ProductCardProps } from "@/components/site/ProductCard";
 import { DepthCarousel } from "@/components/ui/DepthCarousel";
 import { GlassSurface } from "@/components/ui/GlassSurface";
+import { HeroToothGraphic } from "@/components/site/HeroToothGraphic";
 import { productsApi } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
 import { useQuery } from "@tanstack/react-query";
@@ -386,25 +387,16 @@ function HomePage() {
               </motion.div>
             </div>
 
-            {/* Right Column: 3D Glossy Tooth & Marble Pedestal + Restrained Static Proof Rail */}
+            {/* Right Column: Animated Clinical Mint Tooth Showcase + Restrained Static Proof Rail */}
             <div className="lg:col-span-5 relative mt-6 lg:mt-0">
               <motion.div
-                initial={{ opacity: 0, scale: 0.96 }}
+                initial={{ opacity: 0, scale: 0.98 }}
                 animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.8, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
+                transition={{ duration: 0.8, delay: 0.15 }}
                 className="relative mx-auto max-w-lg"
               >
-                {/* Subtle ambient cyan glow behind tooth */}
-                <div className="absolute -inset-4 bg-sky-400/20 dark:bg-[#12A488]/15 rounded-full blur-3xl opacity-60 -z-10 pointer-events-none" />
-
-                {/* 3D Tooth on Marble Pedestal centerpiece */}
-                <div className="relative rounded-2xl overflow-hidden shadow-xl border border-white/80 dark:border-white/10 bg-white/50 dark:bg-slate-900/50 backdrop-blur-xs">
-                  <img
-                    src="/design-assets/hero-tooth-pedestal-hd.jpg"
-                    alt="Darsh Dental Depot Tooth and Pedestal Showcase"
-                    className="w-full h-auto object-cover rounded-2xl"
-                  />
-                </div>
+                {/* Animated Clinical Mint Tooth Showcase (Dark & Light SVG with Orbital Waves) */}
+                <HeroToothGraphic />
 
                 {/* Restrained Static Proof Rail */}
                 <div className="mt-3.5 grid grid-cols-1 sm:grid-cols-3 gap-2.5">

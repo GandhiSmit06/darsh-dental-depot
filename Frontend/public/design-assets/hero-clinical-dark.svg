@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Darsh Dental Depot animated clinical mint background">
+  <defs>
+    <linearGradient id="dark-bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#070B0A"/><stop offset=".55" stop-color="#0A1713"/><stop offset="1" stop-color="#030706"/></linearGradient>
+    <radialGradient id="dark-aura"><stop stop-color="#12A488" stop-opacity=".32"/><stop offset=".55" stop-color="#12A488" stop-opacity=".09"/><stop offset="1" stop-color="#12A488" stop-opacity="0"/></radialGradient>
+    <linearGradient id="dark-enamel" x1=".1" y1="0" x2=".9" y2="1"><stop stop-color="#F4FFFC"/><stop offset=".45" stop-color="#BDEFE3"/><stop offset=".78" stop-color="#64CDB8"/><stop offset="1" stop-color="#247E6C"/></linearGradient>
+    <linearGradient id="dark-toothShade" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#FFFFFF" stop-opacity=".9"/><stop offset=".5" stop-color="#C9F6EB" stop-opacity=".15"/><stop offset="1" stop-color="#0B594B" stop-opacity=".6"/></linearGradient>
+    <linearGradient id="dark-ribbon" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#12A488" stop-opacity="0"/><stop offset=".48" stop-color="#3FD1B3" stop-opacity=".8"/><stop offset="1" stop-color="#3FD1B3" stop-opacity="0"/></linearGradient>
+    <pattern id="dark-dots" width="30" height="30" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="1" fill="#A5F3E2" opacity=".3"/></pattern>
+    <filter id="dark-blur"><feGaussianBlur stdDeviation="40"/></filter>
+    <filter id="dark-glow"><feGaussianBlur stdDeviation="9"/></filter>
+    <filter id="dark-shadow" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur in="SourceAlpha" stdDeviation="16" result="b"/><feOffset dy="18" result="o"/><feColorMatrix in="o" type="matrix" values="0 0 0 0 0.02 0 0 0 0 0.35 0 0 0 0 0.27 0 0 0 .55 0" result="s"/><feMerge><feMergeNode in="s"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    <path id="dark-toothShape" d="M-83 -84 C-112 -119 -155 -100 -158 -55 C-162 -12 -137 23 -123 51 C-113 73 -108 113 -87 117 C-63 121 -58 68 -37 65 C-16 63 -10 116 13 117 C38 118 44 74 55 47 C70 12 91 -20 81 -57 C70 -98 31 -115 0 -88 C-27 -66 -52 -66 -83 -84Z"/>
+  </defs>
+  <rect width="1440" height="900" fill="url(#dark-bg)"/>
+  <ellipse cx="1050" cy="425" rx="450" ry="430" fill="url(#dark-aura)"><animate attributeName="cx" values="1020;1130;1020" dur="17s" repeatCount="indefinite"/></ellipse>
+  <ellipse cx="250" cy="800" rx="340" ry="250" fill="url(#dark-aura)" opacity=".7"><animate attributeName="cy" values="800;730;800" dur="13s" repeatCount="indefinite"/></ellipse>
+  <path d="M-100 690 C180 500 260 280 490 370 S720 760 940 620 S1240 300 1540 390" stroke="#12A488" stroke-opacity=".1" stroke-width="90" fill="none" filter="url(#dark-blur)">
+    <animate attributeName="d" dur="19s" repeatCount="indefinite" values="M-100 690 C180 500 260 280 490 370 S720 760 940 620 S1240 300 1540 390;M-100 760 C180 590 280 360 500 420 S740 700 960 570 S1260 360 1540 460;M-100 690 C180 500 260 280 490 370 S720 760 940 620 S1240 300 1540 390"/>
+  </path>
+  <path d="M-120 710 C160 540 245 270 480 350 S730 720 940 620 S1220 350 1560 300" stroke="url(#dark-ribbon)" stroke-width="2" fill="none">
+    <animate attributeName="d" dur="16s" repeatCount="indefinite" values="M-120 710 C160 540 245 270 480 350 S730 720 940 620 S1220 350 1560 300;M-120 760 C170 590 270 350 500 410 S750 680 970 570 S1240 410 1560 380;M-120 710 C160 540 245 270 480 350 S730 720 940 620 S1220 350 1560 300"/>
+  </path>
+  <path d="M-120 750 C170 580 280 320 500 395 S750 760 980 660 S1240 410 1560 360" stroke="url(#dark-ribbon)" stroke-width="1" opacity=".55" fill="none">
+    <animate attributeName="d" dur="21s" repeatCount="indefinite" values="M-120 750 C170 580 280 320 500 395 S750 760 980 660 S1240 410 1560 360;M-120 800 C170 630 300 390 520 450 S770 720 1000 610 S1260 460 1560 430;M-120 750 C170 580 280 320 500 395 S750 760 980 660 S1240 410 1560 360"/>
+  </path>
+  <g opacity=".6"><path d="M810 0 C900 160 850 280 940 410 S1030 660 980 900" stroke="#3FD1B3" stroke-opacity=".13" fill="none"/><path d="M850 0 C940 160 890 280 980 410 S1070 660 1020 900" stroke="#3FD1B3" stroke-opacity=".08" fill="none"/></g>
+  <rect x="790" y="70" width="600" height="350" fill="url(#dark-dots)" opacity=".55"/>
+  <g transform="translate(1050 405)">
+    <circle r="230" fill="url(#dark-aura)" filter="url(#dark-blur)"/>
+    <circle r="170" stroke="#3FD1B3" stroke-opacity=".2" stroke-width="1" fill="none" stroke-dasharray="2 12"><animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="70s" repeatCount="indefinite"/></circle>
+    <circle r="142" stroke="#3FD1B3" stroke-opacity=".48" stroke-width="1.3" fill="none" stroke-dasharray="80 22 8 22"><animateTransform attributeName="transform" type="rotate" from="360" to="0" dur="45s" repeatCount="indefinite"/></circle>
+    <circle r="118" stroke="#A5F3E2" stroke-opacity=".12" stroke-width="1" fill="none"/>
+    <g filter="url(#dark-shadow)">
+      <g transform="translate(0 2) rotate(-10)">
+        <use href="#dark-toothShape" fill="#3FD1B3" opacity=".22" filter="url(#dark-glow)"/>
+        <use href="#dark-toothShape" fill="url(#dark-enamel)" stroke="#D7FFF5" stroke-opacity=".85" stroke-width="2"/>
+        <use href="#dark-toothShape" fill="url(#dark-toothShade)" opacity=".65"/>
+        <path d="M-91 -72 C-72 -92 -49 -84 -30 -72 S10 -62 28 -78 S68 -80 76 -53" stroke="#FFFFFF" stroke-opacity=".8" stroke-width="4" stroke-linecap="round" fill="none"/>
+        <path d="M-42 -57 C-27 -38 -25 -15 -40 0 M22 -56 C7 -33 13 -14 31 1" stroke="#3A9D88" stroke-opacity=".45" stroke-width="3" stroke-linecap="round" fill="none"/>
+        <path d="M-65 45 C-56 67 -58 94 -47 105 M38 44 C27 70 31 91 20 106" stroke="#0D6656" stroke-opacity=".45" stroke-width="5" stroke-linecap="round" fill="none"/>
+      </g>
+    </g>
+    <ellipse cx="-22" cy="-104" rx="70" ry="23" fill="#FFFFFF" opacity=".14" transform="rotate(-20)"/>
+    <circle cx="132" cy="-85" r="4" fill="#A5F3E2"><animate attributeName="opacity" values=".3;1;.3" dur="3s" repeatCount="indefinite"/></circle>
+    <circle cx="-150" cy="55" r="3" fill="#3FD1B3"><animate attributeName="opacity" values=".2;1;.2" dur="4s" repeatCount="indefinite"/></circle>
+  </g>
+  <g fill="#A5F3E2">
+    <circle cx="1220" cy="190" r="2"><animate attributeName="opacity" values=".2;1;.2" dur="4s" repeatCount="indefinite"/></circle>
+    <circle cx="1260" cy="600" r="1.5"><animate attributeName="opacity" values=".2;.8;.2" dur="5s" repeatCount="indefinite"/></circle>
+    <circle cx="810" cy="700" r="2"><animate attributeName="opacity" values=".1;.9;.1" dur="3.5s" repeatCount="indefinite"/></circle>
+    <circle cx="390" cy="230" r="1.5"><animate attributeName="opacity" values=".2;.8;.2" dur="6s" repeatCount="indefinite"/></circle>
+  </g>
+  <rect width="1440" height="900" fill="url(#dark-bg)" opacity=".12"/>
+</svg>

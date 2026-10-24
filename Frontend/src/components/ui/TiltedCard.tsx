@@ -505,11 +505,16 @@ export const TiltedCard: React.FC<TiltedCardProps> = ({
     figure.addEventListener('pointerdown', onDown as any);
     figure.addEventListener('focus', onFocus);
     figure.addEventListener('blur', onBlur);
-    window.addEventListener('pointerup', onUp as any, { passive: true });
-    window.addEventListener('pointercancel', onCancel as any, { passive: true });
-    window.addEventListener('pointermove', onWindowMove as any, { passive: true });
-    document.documentElement.addEventListener('pointerleave', onWindowLeave);
-    window.addEventListener('deviceorientation', onOrientation);
+    const hasTrackWindow = Boolean(settingsRef.current.trackWindow);
+    const hasGyroscope = Boolean(settingsRef.current.gyroscope) && coarse;
+
+    if (hasTrackWindow) {
+      window.addEventListener('pointermove', onWindowMove as any, { passive: true });
+      document.documentElement.addEventListener('pointerleave', onWindowLeave);
+    }
+    if (hasGyroscope) {
+      window.addEventListener('deviceorientation', onOrientation);
+    }
 
     const observer = new IntersectionObserver(entries => {
       visible = entries.some(entry => entry.isIntersecting);
@@ -533,9 +538,13 @@ export const TiltedCard: React.FC<TiltedCardProps> = ({
       figure.removeEventListener('blur', onBlur);
       window.removeEventListener('pointerup', onUp as any);
       window.removeEventListener('pointercancel', onCancel as any);
-      window.removeEventListener('pointermove', onWindowMove as any);
-      document.documentElement.removeEventListener('pointerleave', onWindowLeave);
-      window.removeEventListener('deviceorientation', onOrientation);
+      if (hasTrackWindow) {
+        window.removeEventListener('pointermove', onWindowMove as any);
+        document.documentElement.removeEventListener('pointerleave', onWindowLeave);
+      }
+      if (hasGyroscope) {
+        window.removeEventListener('deviceorientation', onOrientation);
+      }
     };
   }, []);
 

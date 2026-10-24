@@ -14,7 +14,7 @@
   <rect width="1440" height="900" fill="url(#dark-bg)"/>
   <ellipse cx="1050" cy="425" rx="450" ry="430" fill="url(#dark-aura)"><animate attributeName="cx" values="1020;1130;1020" dur="17s" repeatCount="indefinite"/></ellipse>
   <ellipse cx="250" cy="800" rx="340" ry="250" fill="url(#dark-aura)" opacity=".7"><animate attributeName="cy" values="800;730;800" dur="13s" repeatCount="indefinite"/></ellipse>
-  <path d="M-100 690 C180 500 260 280 490 370 S720 760 940 620 S1240 300 1540 390" stroke="#12A488" stroke-opacity=".1" stroke-width="90" fill="none" filter="url(#dark-blur)">
+  <path d="M-100 690 C180 500 260 280 490 370 S720 760 940 620 S1240 300 1540 390" stroke="#12A488" stroke-opacity=".08" stroke-width="60" fill="none">
     <animate attributeName="d" dur="19s" repeatCount="indefinite" values="M-100 690 C180 500 260 280 490 370 S720 760 940 620 S1240 300 1540 390;M-100 760 C180 590 280 360 500 420 S740 700 960 570 S1260 360 1540 460;M-100 690 C180 500 260 280 490 370 S720 760 940 620 S1240 300 1540 390"/>
   </path>
   <path d="M-120 710 C160 540 245 270 480 350 S730 720 940 620 S1220 350 1560 300" stroke="url(#dark-ribbon)" stroke-width="2" fill="none">
@@ -26,7 +26,7 @@
   <g opacity=".6"><path d="M810 0 C900 160 850 280 940 410 S1030 660 980 900" stroke="#3FD1B3" stroke-opacity=".13" fill="none"/><path d="M850 0 C940 160 890 280 980 410 S1070 660 1020 900" stroke="#3FD1B3" stroke-opacity=".08" fill="none"/></g>
   <rect x="790" y="70" width="600" height="350" fill="url(#dark-dots)" opacity=".55"/>
   <g transform="translate(1050 405)">
-    <circle r="230" fill="url(#dark-aura)" filter="url(#dark-blur)"/>
+    <circle r="230" fill="url(#dark-aura)"/>
     <circle r="170" stroke="#3FD1B3" stroke-opacity=".2" stroke-width="1" fill="none" stroke-dasharray="2 12"><animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="70s" repeatCount="indefinite"/></circle>
     <circle r="142" stroke="#3FD1B3" stroke-opacity=".48" stroke-width="1.3" fill="none" stroke-dasharray="80 22 8 22"><animateTransform attributeName="transform" type="rotate" from="360" to="0" dur="45s" repeatCount="indefinite"/></circle>
     <circle r="118" stroke="#A5F3E2" stroke-opacity=".12" stroke-width="1" fill="none"/>

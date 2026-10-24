@@ -819,6 +819,7 @@ const createEngine = (
   };
 
   const onScroll = () => {
+    if (!config.current || config.current.scrollBoost <= 0) return;
     const now = performance.now();
     const y = window.scrollY;
     if (st.scrollT && now > st.scrollT) {
@@ -827,7 +828,7 @@ const createEngine = (
     }
     st.scrollY = y;
     st.scrollT = now;
-    if (config.current.scrollBoost > 0) wake();
+    wake();
   };
 
   const onMotion = () => {

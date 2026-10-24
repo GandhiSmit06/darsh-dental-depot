@@ -76,7 +76,7 @@ export function ScrollReveal({
       whileInView="visible"
       viewport={{ once, margin: "-60px" }}
       className={className}
-      style={{ willChange: "transform, opacity", ...style }}
+      style={style}
     >
       {children}
     </motion.div>

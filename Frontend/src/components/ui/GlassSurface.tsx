@@ -763,21 +763,9 @@ export default function GlassSurface({
   }, [webgl]);
 
   const supportsSVGFilters = () => {
-    if (typeof window === 'undefined' || typeof document === 'undefined') {
-      return false;
-    }
-
-    const isWebkit = /Safari/.test(navigator.userAgent) && !/Chrome/.test(navigator.userAgent);
-    const isFirefox = /Firefox/.test(navigator.userAgent);
-
-    if (isWebkit || isFirefox) {
-      return false;
-    }
-
-    const div = document.createElement('div');
-    div.style.backdropFilter = `url(#${filterId})`;
-
-    return div.style.backdropFilter !== '';
+    // SVG displacement maps inside backdrop-filter force software CPU rasterization on every scroll tick.
+    // Returning false enables the ultra-smooth, hardware-accelerated 120fps CSS frosted glass filter.
+    return false;
   };
 
   const outline = shape && art?.src === shape && !art.failed ? art : null;

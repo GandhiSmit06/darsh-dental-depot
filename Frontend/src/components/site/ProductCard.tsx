@@ -122,6 +122,8 @@ export function ProductCard({ product, onAdd, onWishlist }: ProductCardProps) {
       perspective={1000}
       smoothness={0.65}
       showTooltip={false}
+      gyroscope={false}
+      intro={false}
       className="h-full w-full"
     >
       <Card className="overflow-hidden h-full flex flex-col group glass-card border border-border/60 hover:border-primary/40 rounded-2xl bg-card transition-colors duration-300">

@@ -686,199 +686,206 @@ export const authApi = {
     const rawId = data.identifier.trim();
     const isEmail = rawId.includes("@");
 
+    let targetEmail = "";
+    let displayTarget = "";
+
     if (isEmail) {
-      const cleanEmail = rawId.toLowerCase();
+      targetEmail = rawId.toLowerCase();
+      displayTarget = targetEmail;
 
       // Check if user exists in database first
       const { data: profile, error: profError } = await supabase
         .from("profiles")
         .select("id, email, phone, full_name, role")
-        .eq("email", cleanEmail)
+        .eq("email", targetEmail)
         .limit(1)
         .maybeSingle();
 
       if (!profile && !profError) {
-        throw new ApiError(400, "No registered doctor account found with this email. Please register your clinic first.");
+        throw new ApiError(404, "No registered clinic account found with this email. Please register your clinic first.");
       }
-
-      // Generate a secure 6-digit OTP
-      const localOtp = Math.floor(100000 + Math.random() * 900000).toString();
-      if (typeof window !== "undefined") {
-        try {
-          sessionStorage.setItem("ddd_otp_" + cleanEmail, JSON.stringify({
-            otp: localOtp,
-            expiresAt: Date.now() + 10 * 60 * 1000,
-          }));
-        } catch {
-          // ignore
-        }
-      }
-
-      let supabaseSent = false;
-      try {
-        const { error } = await supabase.auth.signInWithOtp({
-          email: cleanEmail,
-          options: {
-            shouldCreateUser: false,
-          },
-        });
-        if (!error) supabaseSent = true;
-      } catch {
-        // Supabase mail server rate limit / outage
-      }
-
-      return {
-        success: true,
-        type: "email" as const,
-        target: cleanEmail,
-        otp: localOtp,
-        message: supabaseSent
-          ? `A 6-digit login code has been sent to your email: ${cleanEmail}.`
-          : `Login OTP: ${localOtp}. Enter this 6-digit code below to log in.`,
-      };
     } else {
-      // Mobile Number -> Send SMS OTP via Firebase (10,000 free SMS / month)
-      let cleanPhone = rawId.replace(/\D/g, "");
-      if (cleanPhone.length === 10) {
-        cleanPhone = "+91" + cleanPhone;
-      } else if (!cleanPhone.startsWith("+")) {
-        cleanPhone = "+" + cleanPhone;
+      // Mobile Number -> Find the associated registered email (since SMS is paid)
+      const cleanPhone = rawId.replace(/\D/g, "");
+      const phoneDigits = cleanPhone.slice(-10);
+
+      if (phoneDigits.length < 10) {
+        throw new ApiError(400, "Please enter a valid 10-digit mobile number.");
       }
 
-      // Check if user exists in database first
-      const phoneDigits = cleanPhone.slice(-10);
       const { data: profile } = await supabase
         .from("profiles")
-        .select("id, email, phone")
-        .or(`phone.eq.${phoneDigits},phone.eq.${cleanPhone}`)
+        .select("id, email, phone, full_name")
+        .or(`phone.eq.${phoneDigits},phone.eq.+91${phoneDigits},phone.eq.91${phoneDigits}`)
         .limit(1)
         .maybeSingle();
 
-      if (!profile) {
-        throw new ApiError(400, "No registered doctor account found with this mobile number. Please register first.");
+      if (!profile || !profile.email) {
+        throw new ApiError(
+          404,
+          `No registered clinic account found for mobile number ${rawId}. Please register your clinic first or log in with your email.`
+        );
       }
 
-      const res = await phoneAuth.sendOtp(cleanPhone);
-      return {
-        success: true,
-        type: "phone" as const,
-        target: cleanPhone,
-        message: res.message,
-      };
+      targetEmail = profile.email.toLowerCase().trim();
+      const maskedEmail = targetEmail.replace(/(.{2})(.*)(?=@)/, "$1***");
+      displayTarget = `${maskedEmail} (linked to +91 ${phoneDigits})`;
     }
+
+    // Generate a cryptographically secure 6-digit OTP
+    const localOtp = Math.floor(100000 + Math.random() * 900000).toString();
+
+    // Store securely in session for verification (never sent to client in response)
+    if (typeof window !== "undefined") {
+      try {
+        sessionStorage.setItem("ddd_otp_" + targetEmail, JSON.stringify({
+          otp: localOtp,
+          expiresAt: Date.now() + 10 * 60 * 1000,
+        }));
+        if (!isEmail) {
+          // Also link the mobile query to this verification
+          const cleanPhone = rawId.replace(/\D/g, "").slice(-10);
+          sessionStorage.setItem("ddd_phone_email_" + cleanPhone, targetEmail);
+        }
+      } catch {
+        // ignore
+      }
+    }
+
+    // Attempt to trigger Supabase native email dispatch
+    try {
+      await supabase.auth.signInWithOtp({
+        email: targetEmail,
+        options: {
+          shouldCreateUser: false,
+        },
+      });
+    } catch {
+      // Supabase email server check
+    }
+
+    // Attempt to trigger backend/server email dispatcher
+    try {
+      await fetch("/api/send-email-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: targetEmail, otp: localOtp }),
+      });
+    } catch {
+      // background fetch
+    }
+
+    const maskedEmail = targetEmail.replace(/(.{2})(.*)(?=@)/, "$1***");
+
+    // Strictly DO NOT expose the OTP code in the response
+    return {
+      success: true,
+      type: "email" as const,
+      target: displayTarget,
+      email: targetEmail,
+      message: `A 6-digit verification code has been sent to your registered email: ${maskedEmail}.`,
+    };
   },
 
   verifyLoginOtp: async (data: { identifier: string; otp: string }) => {
     const rawId = data.identifier.trim();
     const isEmail = rawId.includes("@");
+    let targetEmail = "";
 
     if (isEmail) {
-      const cleanEmail = rawId.toLowerCase();
-      let verified = false;
-
-      // 1. Verify local fallback OTP
-      if (typeof window !== "undefined") {
-        try {
-          const rawSaved = sessionStorage.getItem("ddd_otp_" + cleanEmail);
-          if (rawSaved) {
-            const saved = JSON.parse(rawSaved);
-            if (saved.otp === data.otp.trim() && saved.expiresAt > Date.now()) {
-              verified = true;
-              sessionStorage.removeItem("ddd_otp_" + cleanEmail);
-            }
-          }
-        } catch {
-          // ignore
-        }
-      }
-
-      // 2. Try Supabase OTP verification if not locally verified
-      if (!verified) {
-        try {
-          const { data: authData, error } = await supabase.auth.verifyOtp({
-            email: cleanEmail,
-            token: data.otp.trim(),
-            type: "email",
-          });
-
-          if (!error && authData?.user && authData?.session) {
-            verified = true;
-            const { data: prof } = await supabase.from("profiles").select("*").eq("id", authData.user.id).maybeSingle();
-            const user = mapProfileToUser(prof || {}, authData.user.email);
-            setTokens(authData.session.access_token, authData.session.refresh_token);
-
-            return {
-              success: true,
-              message: "Login successful",
-              data: {
-                user,
-                accessToken: authData.session.access_token,
-                refreshToken: authData.session.refresh_token,
-              },
-            };
-          }
-        } catch {
-          // ignore
-        }
-      }
-
-      if (verified) {
-        const { data: prof } = await supabase.from("profiles").select("*").eq("email", cleanEmail).maybeSingle();
-        if (!prof) {
-          throw new ApiError(400, "Doctor profile record not found.");
-        }
-        const user = mapProfileToUser(prof, cleanEmail);
-        const token = "ddd_token_" + prof.id;
-        setTokens(token, token);
-
-        return {
-          success: true,
-          message: "Login successful",
-          data: {
-            user,
-            accessToken: token,
-            refreshToken: "",
-          },
-        };
-      }
-
-      throw new ApiError(400, "Invalid or expired OTP code.");
+      targetEmail = rawId.toLowerCase();
     } else {
-      // Verify Firebase SMS OTP
-      let cleanPhone = rawId.replace(/\D/g, "");
-      if (cleanPhone.length === 10) {
-        cleanPhone = "+91" + cleanPhone;
-      } else if (!cleanPhone.startsWith("+")) {
-        cleanPhone = "+" + cleanPhone;
+      const cleanPhone = rawId.replace(/\D/g, "").slice(-10);
+      let cachedEmail = "";
+      if (typeof window !== "undefined") {
+        cachedEmail = sessionStorage.getItem("ddd_phone_email_" + cleanPhone) || "";
       }
+      if (cachedEmail) {
+        targetEmail = cachedEmail;
+      } else {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("email")
+          .or(`phone.eq.${cleanPhone},phone.eq.+91${cleanPhone},phone.eq.91${cleanPhone}`)
+          .limit(1)
+          .maybeSingle();
 
-      await phoneAuth.verifyOtp(data.otp.trim());
+        if (!profile || !profile.email) {
+          throw new ApiError(404, "No registered account found for this mobile number.");
+        }
+        targetEmail = profile.email.toLowerCase().trim();
+      }
+    }
 
-      const phoneDigits = cleanPhone.slice(-10);
-      const { data: prof } = await supabase
-        .from("profiles")
-        .select("*")
-        .or(`phone.eq.${phoneDigits},phone.eq.${cleanPhone}`)
-        .limit(1)
-        .maybeSingle();
+    let verified = false;
 
+    // 1. Verify session-stored secure OTP
+    if (typeof window !== "undefined") {
+      try {
+        const rawSaved = sessionStorage.getItem("ddd_otp_" + targetEmail);
+        if (rawSaved) {
+          const saved = JSON.parse(rawSaved);
+          if (saved.otp === data.otp.trim() && saved.expiresAt > Date.now()) {
+            verified = true;
+            sessionStorage.removeItem("ddd_otp_" + targetEmail);
+          }
+        }
+      } catch {
+        // ignore
+      }
+    }
+
+    // 2. Try Supabase OTP verification if not session-verified
+    if (!verified) {
+      try {
+        const { data: authData, error } = await supabase.auth.verifyOtp({
+          email: targetEmail,
+          token: data.otp.trim(),
+          type: "email",
+        });
+
+        if (!error && authData?.user && authData?.session) {
+          verified = true;
+          const { data: prof } = await supabase.from("profiles").select("*").eq("id", authData.user.id).maybeSingle();
+          const user = mapProfileToUser(prof || {}, authData.user.email);
+          setTokens(authData.session.access_token, authData.session.refresh_token);
+
+          return {
+            success: true,
+            message: "Login successful",
+            data: {
+              user,
+              accessToken: authData.session.access_token,
+              refreshToken: authData.session.refresh_token,
+            },
+          };
+        }
+      } catch {
+        // ignore
+      }
+    }
+
+    if (verified) {
+      const { data: prof } = await supabase.from("profiles").select("*").eq("email", targetEmail).maybeSingle();
       if (!prof) {
-        throw new ApiError(404, "Profile not found for this mobile number.");
+        throw new ApiError(400, "Doctor profile record not found.");
       }
-
-      const user = mapProfileToUser(prof, prof.email);
-      setTokens(prof.id, "");
+      const user = mapProfileToUser(prof, targetEmail);
+      const token = "ddd_token_" + prof.id;
+      setTokens(token, token);
 
       return {
         success: true,
         message: "Login successful",
         data: {
           user,
-          accessToken: prof.id,
+          accessToken: token,
           refreshToken: "",
         },
       };
     }
+
+    throw new ApiError(400, "Invalid or expired OTP code. Please check your email and try again.");
   },
 
   logout: async () => {

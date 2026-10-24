@@ -74,7 +74,6 @@ function LoginPage() {
   const [targetDisplay, setTargetDisplay] = useState("");
   const [otpStep, setOtpStep] = useState<"enter_id" | "enter_otp">("enter_id");
   const [otpCode, setOtpCode] = useState("");
-  const [generatedOtp, setGeneratedOtp] = useState<string | null>(null);
   const [otpStatus, setOtpStatus] = useState<"idle" | "error" | "success">("idle");
   const [otpSending, setOtpSending] = useState(false);
   const [otpVerifying, setOtpVerifying] = useState(false);
@@ -125,7 +124,7 @@ function LoginPage() {
     }
   };
 
-  // 2. OTP Login: Send OTP Code
+  // 2. OTP Login: Send OTP Code (Delivered to registered email, never exposed in client)
   const handleSendOtp = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     const cleanId = otpIdentifier.trim();
@@ -141,19 +140,9 @@ function LoginPage() {
       setOtpStep("enter_otp");
       setCountdown(60);
       setOtpStatus("idle");
+      setOtpCode("");
 
-      if (res.otp) {
-        setGeneratedOtp(res.otp);
-        setOtpCode(res.otp);
-        toast.success(`Login OTP: ${res.otp}`, {
-          duration: 10000,
-          description: "Use this 6-digit code to access your doctor account.",
-        });
-      } else {
-        setGeneratedOtp(null);
-        setOtpCode("");
-        toast.success(res.message || "Login OTP sent successfully!");
-      }
+      toast.success(res.message || "A 6-digit verification code has been sent to your registered email.");
     } catch (err: any) {
       toast.error(err.message || "Failed to send login OTP. Check if account exists.");
     } finally {
@@ -389,7 +378,7 @@ function LoginPage() {
 
                             <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1.5">
                               {inputType === "mobile"
-                                ? "We'll send a 6-digit verification code to your phone."
+                                ? "We'll send a 6-digit verification code to the registered email linked to this phone."
                                 : "We'll send a 6-digit one-time code to your registered email."}
                             </p>
                             <div id="recaptcha-container"></div>
@@ -409,32 +398,12 @@ function LoginPage() {
                         <form onSubmit={(e) => handleVerifyOtp(e)} className="space-y-4 pt-2 text-center">
                           <div className="space-y-1">
                             <p className="text-xs text-slate-500 dark:text-slate-400">
-                              Enter the 6-digit code sent to:
+                              Enter the 6-digit code sent to your registered email:
                             </p>
-                            <span className="text-xs font-bold text-slate-800 dark:text-[#3FD1B3] bg-slate-100 dark:bg-white/10 px-3 py-1 rounded-full border border-slate-200 dark:border-white/10 inline-block">
+                            <span className="text-xs font-bold text-slate-800 dark:text-[#3FD1B3] bg-slate-100 dark:bg-white/10 px-3 py-1 rounded-full border border-slate-200 dark:border-white/10 inline-block font-mono">
                               {targetDisplay || otpIdentifier}
                             </span>
                           </div>
-
-                          {/* Helper banner if local verification code was generated */}
-                          {generatedOtp && (
-                            <motion.div
-                              initial={{ opacity: 0, scale: 0.95 }}
-                              animate={{ opacity: 1, scale: 1 }}
-                              className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/40 text-xs text-emerald-800 dark:text-emerald-300 flex items-center justify-between"
-                            >
-                              <span>
-                                Clinic Code: <strong className="font-mono tracking-widest text-sm text-emerald-700 dark:text-emerald-200">{generatedOtp}</strong>
-                              </span>
-                              <button
-                                type="button"
-                                onClick={() => setOtpCode(generatedOtp)}
-                                className="text-[11px] font-bold underline hover:text-emerald-900 dark:hover:text-white"
-                              >
-                                Auto-fill
-                              </button>
-                            </motion.div>
-                          )}
 
                           <div className="py-2 flex justify-center w-full">
                             <CodeSlots

@@ -6,6 +6,7 @@ import {
   handleCreateRazorpayOrderRequest,
   handleVerifyPaymentRequest,
 } from "./lib/server-payment";
+import { handleSendEmailOtpRequest } from "./lib/server-email";
 
 type ServerEntry = {
   fetch: (request: Request, env: unknown, ctx: unknown) => Promise<Response> | Response;
@@ -81,6 +82,10 @@ export default {
 
       if (url.pathname === "/api/verify-razorpay-payment") {
         return await handleVerifyPaymentRequest(request, (env || {}) as Record<string, unknown>);
+      }
+
+      if (url.pathname === "/api/send-email-otp") {
+        return await handleSendEmailOtpRequest(request, (env || {}) as Record<string, unknown>);
       }
 
       const handler = await getServerEntry();

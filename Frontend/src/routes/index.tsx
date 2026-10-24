@@ -38,6 +38,7 @@ import { PublicLayout } from "@/components/site/PublicLayout";
 import { ProductCard, type ProductCardProps } from "@/components/site/ProductCard";
 import { DepthCarousel } from "@/components/ui/DepthCarousel";
 import { GlassSurface } from "@/components/ui/GlassSurface";
+import LogoLoop, { type LogoItem } from "@/components/ui/LogoLoop";
 import { productsApi } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
 import { useQuery } from "@tanstack/react-query";
@@ -59,6 +60,212 @@ const PHONE_NUMBER = "+91 97270 76119";
 const PHONE_RAW = "+919727076119";
 const WHATSAPP_URL =
   "https://wa.me/919727076119?text=Hello%20Darsh%20Dental%20Depot,%20I%20am%20a%20doctor%20in%20Vadodara%20inquiring%20about%20dental%20materials.";
+
+const dentalBrandLogos: LogoItem[] = [
+  {
+    title: "3M Oral Care",
+    href: "/products?brand=3M",
+    hoverColor: "#ED1C24",
+    node: (
+      <span className="font-black text-red-600 dark:text-red-500 text-xl font-sans tracking-tighter">
+        3M
+      </span>
+    ),
+  },
+  {
+    title: "Ivoclar Vivadent",
+    href: "/products?brand=Ivoclar",
+    hoverColor: "#008F9F",
+    node: (
+      <span className="font-bold text-[#008f9f] dark:text-[#3FD1B3] text-lg tracking-tight lowercase">
+        ivoclar
+      </span>
+    ),
+  },
+  {
+    title: "GC Dental Corporation",
+    href: "/products?brand=GC",
+    hoverColor: "#008C4A",
+    node: (
+      <span className="font-black italic text-[#008C4A] dark:text-[#3FD1B3] text-xl">
+        'GC'
+      </span>
+    ),
+  },
+  {
+    title: "Dentsply Sirona",
+    href: "/products?brand=Dentsply",
+    hoverColor: "#00A3E0",
+    node: (
+      <span className="font-bold text-slate-900 dark:text-white text-sm tracking-tight flex items-center gap-1.5 whitespace-nowrap">
+        <span className="h-2 w-2 rounded-full border-2 border-current inline-block" />
+        Dentsply Sirona
+      </span>
+    ),
+  },
+  {
+    title: "MANI Micro-Instruments",
+    href: "/products?brand=MANI",
+    hoverColor: "#E60012",
+    node: (
+      <span className="font-black text-slate-900 dark:text-white text-lg tracking-wider">
+        MANI.
+      </span>
+    ),
+  },
+  {
+    title: "Zhermack Dental",
+    href: "/products?brand=Zhermack",
+    hoverColor: "#005A9C",
+    node: (
+      <span className="font-bold text-red-600 dark:text-slate-200 text-base italic tracking-tight">
+        Zhermack
+      </span>
+    ),
+  },
+  {
+    title: "Septodont Pharmaceuticals",
+    href: "/products?brand=Septodont",
+    hoverColor: "#E30613",
+    node: (
+      <span className="font-bold text-red-600 dark:text-slate-200 text-sm flex items-center gap-1.5 whitespace-nowrap">
+        <span className="h-2.5 w-2.5 rounded-full bg-red-600 dark:bg-slate-200 inline-block" />
+        septodont
+      </span>
+    ),
+  },
+  {
+    title: "Kerr Dental",
+    href: "/products?brand=Kerr",
+    hoverColor: "#00529B",
+    node: (
+      <span className="font-black text-blue-700 dark:text-sky-400 text-lg tracking-tight uppercase">
+        Kerr
+      </span>
+    ),
+  },
+  {
+    title: "Kuraray Noritake",
+    href: "/products?brand=Kuraray",
+    hoverColor: "#003366",
+    node: (
+      <span className="font-bold text-slate-800 dark:text-slate-200 text-base tracking-wide">
+        kuraray
+      </span>
+    ),
+  },
+  {
+    title: "VOCO Dental",
+    href: "/products?brand=VOCO",
+    hoverColor: "#004F9F",
+    node: (
+      <span className="font-black text-[#004F9F] dark:text-sky-300 text-lg tracking-wider">
+        VOCO
+      </span>
+    ),
+  },
+  {
+    title: "Shofu Dental",
+    href: "/products?brand=Shofu",
+    hoverColor: "#C8102E",
+    node: (
+      <span className="font-extrabold text-red-600 dark:text-red-400 text-base tracking-widest uppercase">
+        SHOFU
+      </span>
+    ),
+  },
+  {
+    title: "Coltène / Whaledent",
+    href: "/products?brand=Coltene",
+    hoverColor: "#003865",
+    node: (
+      <span className="font-bold text-slate-900 dark:text-white text-base tracking-tight">
+        COLTENE
+      </span>
+    ),
+  },
+  {
+    title: "Kulzer Mitsui Chemicals",
+    href: "/products?brand=Kulzer",
+    hoverColor: "#0088CE",
+    node: (
+      <span className="font-black text-sky-600 dark:text-sky-400 text-lg tracking-tight">
+        KULZER
+      </span>
+    ),
+  },
+  {
+    title: "Ultradent Products",
+    href: "/products?brand=Ultradent",
+    hoverColor: "#008080",
+    node: (
+      <span className="font-extrabold text-teal-700 dark:text-teal-300 text-base tracking-wider uppercase">
+        ULTRADENT
+      </span>
+    ),
+  },
+  {
+    title: "Hu-Friedy Instruments",
+    href: "/products?brand=Hu-Friedy",
+    hoverColor: "#990000",
+    node: (
+      <span className="font-bold text-slate-800 dark:text-slate-200 text-base italic tracking-tight">
+        Hu-Friedy
+      </span>
+    ),
+  },
+  {
+    title: "BISCO Dental",
+    href: "/products?brand=Bisco",
+    hoverColor: "#D97706",
+    node: (
+      <span className="font-black text-amber-600 dark:text-amber-400 text-base tracking-wider uppercase">
+        BISCO
+      </span>
+    ),
+  },
+  {
+    title: "Straumann Dental Implants",
+    href: "/products?brand=Straumann",
+    hoverColor: "#008F9F",
+    node: (
+      <span className="font-black text-slate-900 dark:text-white text-base tracking-tight flex items-center gap-1">
+        <span className="text-[#008f9f] lowercase">straumann</span>
+      </span>
+    ),
+  },
+  {
+    title: "Tokuyama Dental",
+    href: "/products?brand=Tokuyama",
+    hoverColor: "#2563EB",
+    node: (
+      <span className="font-extrabold text-blue-600 dark:text-blue-400 text-sm tracking-widest uppercase">
+        TOKUYAMA
+      </span>
+    ),
+  },
+  {
+    title: "SDI Dental",
+    href: "/products?brand=SDI",
+    hoverColor: "#1D4ED8",
+    node: (
+      <span className="font-black text-blue-800 dark:text-sky-400 text-lg tracking-tighter">
+        SDI
+      </span>
+    ),
+  },
+  {
+    title: "Woodpecker Medical",
+    href: "/products?brand=Woodpecker",
+    hoverColor: "#059669",
+    node: (
+      <span className="font-bold text-emerald-700 dark:text-emerald-400 text-sm tracking-tight flex items-center gap-1.5 whitespace-nowrap">
+        <span className="h-2 w-2 rounded-full bg-emerald-500 inline-block" />
+        WOODPECKER
+      </span>
+    ),
+  },
+];
 
 const vadodaraAreas = [
   "Alkapuri",
@@ -478,42 +685,33 @@ function HomePage() {
           backgroundOpacity={0.15}
           className="shadow-sm"
         >
-          <div className="w-full px-6 py-4 flex flex-wrap items-center justify-between gap-6">
-            <div className="flex items-center gap-2.5 text-xs font-bold text-slate-700 dark:text-slate-300">
+          <div className="w-full px-4 sm:px-6 py-3 flex flex-col md:flex-row items-center justify-between gap-3 sm:gap-4">
+            <div className="flex items-center gap-2.5 text-xs font-bold text-slate-700 dark:text-slate-300 shrink-0">
               <div className="h-7 w-7 rounded-lg bg-sky-50 dark:bg-slate-800 text-[#0284c7] grid place-items-center shrink-0">
                 <Sparkles className="h-4 w-4" />
               </div>
-              <span>Authorized Distributor For Leading Global Brands</span>
+              <span className="whitespace-nowrap">Authorized Distributor For Leading Global Brands</span>
             </div>
 
-            <div className="flex flex-wrap items-center gap-6 sm:gap-8">
-              <span className="font-black text-red-600 dark:text-slate-200 text-xl font-sans tracking-tighter">
-                3M
-              </span>
-              <span className="font-bold text-[#008f9f] dark:text-[#3FD1B3] text-lg tracking-tight lowercase">
-                ivoclar
-              </span>
-              <span className="font-black italic text-[#006f4e] dark:text-[#12A488] text-xl">
-                'GC'
-              </span>
-              <span className="font-bold text-slate-900 dark:text-white text-sm tracking-tight flex items-center gap-1">
-                <span className="h-2 w-2 rounded-full border-2 border-current" /> Dentsply Sirona
-              </span>
-              <span className="font-black text-slate-900 dark:text-white text-lg tracking-wider">
-                MANI.
-              </span>
-              <span className="font-bold text-red-600 dark:text-slate-200 text-base italic">
-                Zhermack
-              </span>
-              <span className="font-bold text-red-600 dark:text-slate-200 text-sm flex items-center gap-1">
-                <span className="h-3 w-3 rounded-full bg-red-600 dark:bg-slate-200 inline-block" />{" "}
-                septodont
-              </span>
+            <div className="flex-1 w-full min-w-0 overflow-hidden mx-0 md:mx-4 py-1">
+              <LogoLoop
+                logos={dentalBrandLogos}
+                speed={75}
+                direction="left"
+                logoHeight={24}
+                gap={44}
+                pauseOnHover={true}
+                scaleOnHover={true}
+                draggable={true}
+                fadeOut={true}
+                fadeOutWidth={0.08}
+                ariaLabel="Authorized dental material manufacturer brands"
+              />
             </div>
 
             <Link
               to="/products"
-              className="text-xs font-bold text-[#0284c7] hover:underline flex items-center gap-1 shrink-0"
+              className="text-xs font-bold text-[#0284c7] hover:underline flex items-center gap-1 shrink-0 whitespace-nowrap"
             >
               <span>And Many More...</span>
               <ArrowRight className="h-3.5 w-3.5" />

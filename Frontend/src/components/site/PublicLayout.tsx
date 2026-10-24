@@ -5,6 +5,8 @@ import { Sparkles, ShieldCheck, MapPin, Phone, MessageSquare } from "lucide-reac
 import { PageTransition } from "@/components/animations/PageTransition";
 import { GlassSurface } from "@/components/ui/GlassSurface";
 
+import { ScrollBackground } from "./ScrollBackground";
+
 export function PublicLayout({
   children,
   hideAnnouncementBar = false,
@@ -16,30 +18,8 @@ export function PublicLayout({
 }) {
   return (
     <div className="min-h-screen flex flex-col relative overflow-hidden bg-background/20 text-foreground">
-      {/* ─── Animated Clinical Mint SVG Background for Whole Website (Dark & Light) ─── */}
-      <div
-        className="fixed inset-0 w-full h-full pointer-events-none -z-20 overflow-hidden select-none"
-        style={{ transform: "translate3d(0, 0, 0)", backfaceVisibility: "hidden", contain: "strict" }}
-      >
-        {/* Dark Mode Animated Clinical Background */}
-        <img
-          src="/design-assets/hero-clinical-dark.svg"
-          alt=""
-          className="hidden dark:block w-full h-full object-cover object-top"
-          aria-hidden="true"
-          loading="eager"
-          decoding="async"
-        />
-        {/* Light Mode Animated Clinical Background */}
-        <img
-          src="/design-assets/hero-clinical-light.svg"
-          alt=""
-          className="block dark:hidden w-full h-full object-cover object-top"
-          aria-hidden="true"
-          loading="eager"
-          decoding="async"
-        />
-      </div>
+      {/* ─── Scroll-Driven Parallax Clinical Mint SVG Background for Whole Website ─── */}
+      <ScrollBackground />
 
       {/* Top micro announcement bar */}
       {!hideAnnouncementBar && (

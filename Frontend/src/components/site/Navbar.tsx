@@ -15,6 +15,7 @@ import {
   SlidersHorizontal,
 } from "lucide-react";
 import { useTheme } from "@/components/theme-provider";
+import { LiquidToggle, NimbusToggleIcons } from "@/components/ui/liquid-glass-toggle";
 import { useAuth } from "@/lib/auth-context";
 import { doctorApi } from "@/lib/api";
 import { motion, AnimatePresence } from "framer-motion";
@@ -170,26 +171,18 @@ export function Navbar() {
             )}
           </Link>
 
-          {/* Theme Toggle */}
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={toggle}
-            aria-label="Toggle theme"
-            className="rounded-full h-8 w-8 text-slate-600 dark:text-slate-300 hover:text-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800"
-          >
-            <AnimatePresence mode="wait" initial={false}>
-              <motion.div
-                key={theme}
-                initial={{ rotate: -90, scale: 0.8, opacity: 0 }}
-                animate={{ rotate: 0, scale: 1, opacity: 1 }}
-                exit={{ rotate: 90, scale: 0.8, opacity: 0 }}
-                transition={{ duration: 0.15 }}
-              >
-                {theme === "dark" ? <Sun className="h-3.5 w-3.5 text-amber-400" /> : <Moon className="h-3.5 w-3.5 text-sky-600" />}
-              </motion.div>
-            </AnimatePresence>
-          </Button>
+          {/* Liquid Glass Theme Toggle */}
+          <div className="flex items-center">
+            <LiquidToggle
+              size={26}
+              tone={theme === "dark" ? "dark" : "light"}
+              checked={theme === "dark"}
+              onCheckedChange={() => toggle()}
+              icons={{ off: NimbusToggleIcons.sun, on: NimbusToggleIcons.moon }}
+              label="Toggle light / dark mode"
+              className="hover:scale-105 active:scale-95 transition-transform"
+            />
+          </div>
 
           {/* Auth State */}
           {isAuthenticated && user ? (

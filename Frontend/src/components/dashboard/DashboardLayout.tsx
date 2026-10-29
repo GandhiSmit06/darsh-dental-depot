@@ -45,6 +45,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { useTheme } from "@/components/theme-provider";
+import { LiquidToggle, NimbusToggleIcons } from "@/components/ui/liquid-glass-toggle";
 import { useAuth } from "@/lib/auth-context";
 import { notificationService, type AppNotification } from "@/lib/notifications";
 import { toast } from "sonner";
@@ -240,14 +241,17 @@ export function DashboardLayout({
                 </div>
               )}
 
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={toggle}
-                className="rounded-xl h-9 w-9 text-muted-foreground hover:text-foreground"
-              >
-                {theme === "dark" ? <Sun className="h-4 w-4 text-amber-400" /> : <Moon className="h-4 w-4 text-sky-600" />}
-              </Button>
+              <div className="flex items-center">
+                <LiquidToggle
+                  size={26}
+                  tone={theme === "dark" ? "dark" : "light"}
+                  checked={theme === "dark"}
+                  onCheckedChange={() => toggle()}
+                  icons={{ off: NimbusToggleIcons.sun, on: NimbusToggleIcons.moon }}
+                  label="Toggle light / dark mode"
+                  className="hover:scale-105 active:scale-95 transition-transform"
+                />
+              </div>
 
               <NotificationsDropdown
                 role={role}

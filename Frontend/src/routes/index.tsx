@@ -39,6 +39,7 @@ import { ProductCard, type ProductCardProps } from "@/components/site/ProductCar
 import { DepthCarousel } from "@/components/ui/DepthCarousel";
 import { GlassSurface } from "@/components/ui/GlassSurface";
 import LogoLoop, { type LogoItem } from "@/components/ui/LogoLoop";
+import { InteractiveHoverButton } from "@/components/ui/interactive-hover-button";
 import { productsApi } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
 import { useQuery } from "@tanstack/react-query";
@@ -523,17 +524,12 @@ function HomePage() {
                   </Link>
                 </Button>
 
-                <Button
-                  size="lg"
-                  variant="outline"
-                  asChild
-                  className="rounded-md h-11 px-6 text-xs sm:text-sm font-semibold bg-white dark:bg-[#0B1210] hover:bg-slate-50 dark:hover:bg-[#10201C] text-slate-800 dark:text-[#F2F6F4] border-slate-200 dark:border-white/10 shadow-xs transition-colors dark:hover:text-[#3FD1B3]"
-                >
-                  <Link to="/register" className="flex items-center gap-2">
-                    <UserPlus className="h-4 w-4 text-slate-500 dark:text-slate-400" />
-                    <span>Register Vadodara Clinic</span>
-                  </Link>
-                </Button>
+                <Link to="/register" className="inline-block">
+                  <InteractiveHoverButton
+                    text="Register Vadodara Clinic"
+                    className="h-11 px-6 text-xs sm:text-sm font-semibold border-slate-300/80 dark:border-white/10"
+                  />
+                </Link>
               </motion.div>
 
               {/* 4 Horizontal Trust Badges */}
@@ -1205,16 +1201,12 @@ function HomePage() {
                 </a>
               </Button>
 
-              <Button
-                size="lg"
-                variant="outline"
-                asChild
-                className="rounded-md h-11 px-6 border-white/40 dark:border-white/20 text-white hover:bg-white/10 dark:hover:bg-white/10 font-semibold text-sm backdrop-blur-sm"
-              >
-                <a href={MAPS_URL} target="_blank" rel="noreferrer">
-                  <MapPin className="mr-2 h-4 w-4" /> View Store on Google Maps
-                </a>
-              </Button>
+              <a href={MAPS_URL} target="_blank" rel="noreferrer" className="inline-block">
+                <InteractiveHoverButton
+                  text="View Store on Google Maps"
+                  className="h-11 px-6 text-sm font-semibold border-white/40 dark:border-white/20 bg-white/10 text-white hover:border-white backdrop-blur-sm"
+                />
+              </a>
             </div>
           </div>
         </div>

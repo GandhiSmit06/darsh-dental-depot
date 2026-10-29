@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { InteractiveHoverButton } from "@/components/ui/interactive-hover-button";
 import { PublicLayout } from "@/components/site/PublicLayout";
 import {
   Target,
@@ -220,11 +221,12 @@ function AboutPage() {
                   Open Google Maps <ExternalLink className="ml-2 h-4 w-4" />
                 </a>
               </Button>
-              <Button variant="outline" asChild className="rounded-full px-6 h-11 border-border/60 dark:border-white/10 dark:text-[#F2F6F4] dark:hover:text-[#3FD1B3] dark:hover:bg-[#10201C]">
-                <Link to="/products">
-                  Explore Products <ArrowRight className="ml-2 h-4 w-4" />
-                </Link>
-              </Button>
+              <Link to="/products" className="inline-block">
+                <InteractiveHoverButton
+                  text="Explore Dental Catalog"
+                  className="h-11 px-6 text-sm font-semibold border-border/80 dark:border-white/10"
+                />
+              </Link>
             </div>
           </ScrollReveal>
 

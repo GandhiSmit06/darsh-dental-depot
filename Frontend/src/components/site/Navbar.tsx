@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { useTheme } from "@/components/theme-provider";
 import { LiquidToggle, NimbusToggleIcons } from "@/components/ui/liquid-glass-toggle";
+import { InteractiveHoverButton } from "@/components/ui/interactive-hover-button";
 import { useAuth } from "@/lib/auth-context";
 import { doctorApi } from "@/lib/api";
 import { motion, AnimatePresence } from "framer-motion";
@@ -216,16 +217,12 @@ export function Navbar() {
                 <User className="h-3.5 w-3.5" />
                 <span>Sign In</span>
               </Link>
-              <Button
-                size="sm"
-                asChild
-                className="rounded-full text-xs font-semibold px-4 h-8.5 bg-[#0284c7] hover:bg-[#0369a1] text-white shadow-xs"
-              >
-                <Link to="/register" className="flex items-center gap-1">
-                  <span>Doctor Register</span>
-                  <ArrowRight className="h-3.5 w-3.5" />
-                </Link>
-              </Button>
+              <Link to="/register" className="inline-block">
+                <InteractiveHoverButton
+                  text="Doctor Register"
+                  className="h-8.5 min-w-[136px] px-3.5 text-xs font-semibold"
+                />
+              </Link>
             </div>
           )}
 

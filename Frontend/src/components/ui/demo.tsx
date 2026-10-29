@@ -1,5 +1,14 @@
 import * as React from "react"
 import { LiquidToggle, NimbusToggleIcons } from "@/components/ui/liquid-glass-toggle"
+import { InteractiveHoverButton } from "@/components/ui/interactive-hover-button"
+
+export function InteractiveHoverButtonDemo() {
+  return (
+    <div className="relative flex items-center justify-center p-8">
+      <InteractiveHoverButton text="Explore Catalog" />
+    </div>
+  )
+}
 
 export default function Demo() {
   const [dark, setDark] = React.useState(false)
@@ -26,6 +35,12 @@ export default function Demo() {
         icons={{ off: NimbusToggleIcons.sun, on: NimbusToggleIcons.moon }}
         label="Dark mode"
       />
+
+      <InteractiveHoverButton
+        text="Register Clinic"
+        onClick={() => console.log("Clicked")}
+      />
+
       <span
         style={{
           font: "500 12px/1 ui-sans-serif, -apple-system, 'Segoe UI', system-ui, sans-serif",
@@ -33,7 +48,7 @@ export default function Demo() {
           transition: "color .6s ease",
         }}
       >
-        Darsh Dental Depot · Liquid Glass Toggle · Nimbus UI
+        Darsh Dental Depot · Design System Primitives
       </span>
     </div>
   )

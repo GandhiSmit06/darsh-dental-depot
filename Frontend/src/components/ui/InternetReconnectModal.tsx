@@ -6,12 +6,11 @@ import { Button } from "@/components/ui/button";
 
 export function InternetReconnectModal() {
   const queryClient = useQueryClient();
-  const [isOffline, setIsOffline] = useState(
-    typeof navigator !== "undefined" ? !navigator.onLine : false
-  );
+  const [isOffline, setIsOffline] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [isChecking, setIsChecking] = useState(false);
   const [autoRetryCount, setAutoRetryCount] = useState(10);
+  const [imgError, setImgError] = useState(false);
 
   const checkConnection = useCallback(async () => {
     setIsChecking(true);
@@ -42,6 +41,13 @@ export function InternetReconnectModal() {
 
   // Listen to network changes
   useEffect(() => {
+    // Check initial browser status once on client mount
+    if (typeof navigator !== "undefined" && navigator.onLine === false) {
+      setIsOffline(true);
+    } else {
+      setIsOffline(false);
+    }
+
     const handleOffline = () => {
       setIsOffline(true);
       setIsOpen(true);
@@ -122,11 +128,21 @@ export function InternetReconnectModal() {
 
             {/* Animated Plugs SVG Graphic */}
             <div className="relative mx-auto my-2 w-44 h-28 flex items-center justify-center">
-              <img
-                src="/internet-reconnect-plugs.svg"
-                alt="Internet disconnected animation"
-                className="w-full h-full object-contain drop-shadow-[0_4px_16px_rgba(18,164,136,0.3)]"
-              />
+              {!imgError ? (
+                <img
+                  src="/internet-reconnect-plugs.svg"
+                  alt="Connection interrupted animation"
+                  width={176}
+                  height={112}
+                  onError={() => setImgError(true)}
+                  className="w-full h-full object-contain drop-shadow-[0_4px_16px_rgba(18,164,136,0.3)]"
+                  loading="eager"
+                />
+              ) : (
+                <div className="w-16 h-16 rounded-full bg-[#12A488]/15 border border-[#12A488]/30 flex items-center justify-center shadow-inner">
+                  <WifiOff className="w-8 h-8 animate-pulse text-[#3FD1B3]" />
+                </div>
+              )}
             </div>
 
             {/* Modal Heading & Description */}

@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Darsh Dental Depot animated clinical mint background">
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="900" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Darsh Dental Depot animated clinical mint background">
   <defs>
     <linearGradient id="light-bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#F8FAFC"/><stop offset=".55" stop-color="#F0FAF7"/><stop offset="1" stop-color="#FFFFFF"/></linearGradient>
     <radialGradient id="light-aura"><stop stop-color="#028A72" stop-opacity=".20"/><stop offset=".55" stop-color="#028A72" stop-opacity=".05"/><stop offset="1" stop-color="#028A72" stop-opacity="0"/></radialGradient>

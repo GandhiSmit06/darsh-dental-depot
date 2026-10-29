@@ -21,6 +21,13 @@ const sizeMap = {
   xl: "w-44 h-44",
 };
 
+const pixelMap = {
+  sm: 48,
+  md: 80,
+  lg: 128,
+  xl: 176,
+};
+
 export function ClinicalLoader({
   size = "md",
   text,
@@ -28,6 +35,8 @@ export function ClinicalLoader({
   className,
   fullscreen = false,
 }: ClinicalLoaderProps) {
+  const [imgError, setImgError] = React.useState(false);
+
   const content = (
     <div
       role="status"
@@ -47,16 +56,30 @@ export function ClinicalLoader({
           )}
         />
 
-        {/* Animated Clinical SVG */}
-        <img
-          src="/loading.svg"
-          alt="Loading animation"
-          className={cn(
-            "relative z-10 object-contain drop-shadow-[0_4px_20px_rgba(18,164,136,0.25)] transition-transform",
-            sizeMap[size]
-          )}
-          loading="eager"
-        />
+        {/* Animated Clinical SVG with fallback */}
+        {!imgError ? (
+          <img
+            src="/loading.svg"
+            alt="Loading animation"
+            width={pixelMap[size]}
+            height={pixelMap[size]}
+            onError={() => setImgError(true)}
+            className={cn(
+              "relative z-10 object-contain drop-shadow-[0_4px_20px_rgba(18,164,136,0.25)] transition-transform",
+              sizeMap[size]
+            )}
+            loading="eager"
+          />
+        ) : (
+          <div
+            className={cn(
+              "relative z-10 flex items-center justify-center rounded-full border border-[#12A488]/30 bg-[#12A488]/10 text-[#3FD1B3]",
+              sizeMap[size]
+            )}
+          >
+            <div className="w-1/2 h-1/2 rounded-full border-2 border-[#12A488] border-t-[#3FD1B3] animate-spin" />
+          </div>
+        )}
       </div>
 
       {text && (

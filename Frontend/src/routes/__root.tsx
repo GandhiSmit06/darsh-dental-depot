@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
   Outlet,
@@ -8,6 +9,7 @@ import {
   Link,
   type ErrorComponentProps,
 } from "@tanstack/react-router";
+import { WifiOff } from "lucide-react";
 
 import appCss from "../styles.css?url";
 import { Toaster } from "@/components/ui/sonner";
@@ -42,15 +44,26 @@ function NotFoundComponent() {
 function ErrorComponent({ error, reset }: ErrorComponentProps) {
   console.error(error);
   const router = useRouter();
+  const [imgError, setImgError] = useState(false);
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="max-w-md w-full text-center p-8 rounded-3xl border border-border/40 bg-card/60 backdrop-blur-xl shadow-2xl">
         <div className="relative mx-auto w-44 h-28 mb-3 flex items-center justify-center">
-          <img
-            src="/internet-reconnect-plugs.svg"
-            alt="Connection disrupted"
-            className="w-full h-full object-contain drop-shadow-[0_4px_16px_rgba(18,164,136,0.3)]"
-          />
+          {!imgError ? (
+            <img
+              src="/internet-reconnect-plugs.svg"
+              alt="Connection disrupted"
+              width={176}
+              height={112}
+              onError={() => setImgError(true)}
+              className="w-full h-full object-contain drop-shadow-[0_4px_16px_rgba(18,164,136,0.3)]"
+              loading="eager"
+            />
+          ) : (
+            <div className="w-16 h-16 rounded-full bg-[#12A488]/15 border border-[#12A488]/30 flex items-center justify-center shadow-inner">
+              <WifiOff className="w-8 h-8 animate-pulse text-[#3FD1B3]" />
+            </div>
+          )}
         </div>
         <h1 className="text-xl font-bold font-heading text-foreground">Connection or Server Disrupted</h1>
         <p className="mt-2 text-sm text-muted-foreground">
@@ -78,6 +91,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     links: [
       { rel: "icon", type: "image/png", href: "/favicon.png" },
       { rel: "apple-touch-icon", href: "/favicon.png" },
+      { rel: "preload", href: "/loading.svg", as: "image", type: "image/svg+xml" },
+      { rel: "preload", href: "/internet-reconnect-plugs.svg", as: "image", type: "image/svg+xml" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" },

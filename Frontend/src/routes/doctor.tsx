@@ -23,6 +23,7 @@ import { useAuth } from "@/lib/auth-context";
 import { notificationService, type AppNotification } from "@/lib/notifications";
 import { openRazorpayCheckout } from "@/lib/razorpay";
 import { InvoiceModal } from "@/components/invoice/InvoiceModal";
+import { ClinicalLoader } from "@/components/ui/ClinicalLoader";
 import type { InvoiceOrderData } from "@/components/invoice/TallyGstInvoice";
 import { openDoctorSupportWhatsApp } from "@/lib/whatsapp";
 import {
@@ -115,7 +116,7 @@ function DoctorDashboard() {
   if (authLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <ClinicalLoader size="lg" text="Loading Doctor Portal..." subtext="Syncing practice inventory & orders" />
       </div>
     );
   }

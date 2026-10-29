@@ -23,6 +23,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth-context";
 import { adminApi, shopApi, type User, type ShopOrder } from "@/lib/api";
+import { ClinicalLoader } from "@/components/ui/ClinicalLoader";
 import { notificationService, type AppNotification } from "@/lib/notifications";
 import { InvoiceModal } from "@/components/invoice/InvoiceModal";
 import type { InvoiceOrderData } from "@/components/invoice/TallyGstInvoice";
@@ -123,7 +124,7 @@ function AdminDashboard() {
   if (authLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <ClinicalLoader size="lg" text="Loading Administrator Portal..." subtext="Syncing platform analytics & access controls" />
       </div>
     );
   }

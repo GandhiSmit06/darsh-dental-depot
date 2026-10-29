@@ -33,6 +33,7 @@ import {
   StaggerContainer,
   StaggerItem,
 } from "@/components/animations/ScrollReveal";
+import { ClinicalLoader } from "@/components/ui/ClinicalLoader";
 
 export const Route = createFileRoute("/products/$id")({
   component: ProductDetail,
@@ -79,7 +80,7 @@ function ProductDetail() {
     return (
       <PublicLayout>
         <div className="flex min-h-[60vh] items-center justify-center">
-          <Loader2 className="h-10 w-10 animate-spin text-primary" />
+          <ClinicalLoader size="md" text="Verifying Doctor Credentials..." />
         </div>
       </PublicLayout>
     );
@@ -92,9 +93,12 @@ function ProductDetail() {
   if (productLoading) {
     return (
       <PublicLayout>
-        <div className="flex flex-col min-h-[60vh] items-center justify-center space-y-3">
-          <Loader2 className="h-10 w-10 animate-spin text-primary" />
-          <span className="text-sm text-muted-foreground font-medium">Loading clinical specifications...</span>
+        <div className="flex flex-col min-h-[60vh] items-center justify-center">
+          <ClinicalLoader
+            size="lg"
+            text="Loading Clinical Specifications..."
+            subtext="Retrieving batch certifications & parameters"
+          />
         </div>
       </PublicLayout>
     );

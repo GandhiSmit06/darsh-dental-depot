@@ -35,6 +35,7 @@ import {
   StaggerContainer,
   StaggerItem,
 } from "@/components/animations/ScrollReveal";
+import { ClinicalLoader } from "@/components/ui/ClinicalLoader";
 
 export const Route = createFileRoute("/products")({
   head: () => ({
@@ -227,7 +228,7 @@ function ProductsPage() {
     return (
       <PublicLayout>
         <div className="flex min-h-[60vh] items-center justify-center">
-          <Loader2 className="h-10 w-10 animate-spin text-primary" />
+          <ClinicalLoader size="md" text="Authenticating Doctor Profile..." />
         </div>
       </PublicLayout>
     );
@@ -338,11 +339,12 @@ function ProductsPage() {
 
             {/* Products Grid */}
             {productsLoading ? (
-              <div className="flex flex-col items-center justify-center p-16 space-y-3">
-                <Loader2 className="animate-spin h-10 w-10 text-primary dark:text-[#3FD1B3]" />
-                <span className="text-sm text-muted-foreground font-medium">
-                  Loading verified dental products...
-                </span>
+              <div className="flex flex-col items-center justify-center p-16">
+                <ClinicalLoader
+                  size="lg"
+                  text="Curating Verified Dental Supplies..."
+                  subtext="Synchronizing pricing & stock availability"
+                />
               </div>
             ) : paged.length === 0 ? (
               <Card className="p-16 text-center glass-card border border-dashed dark:border-white/10 dark:bg-gradient-to-br dark:from-[#10201C] dark:to-[#0A100F] rounded-3xl">

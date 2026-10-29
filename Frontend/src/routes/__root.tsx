@@ -15,6 +15,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { AuthProvider } from "@/lib/auth-context";
 import { PageLoader } from "@/components/ui/PageLoader";
 import { DentalAiChatbot } from "@/components/chatbot/DentalAiChatbot";
+import { InternetReconnectModal } from "@/components/ui/InternetReconnectModal";
 
 function NotFoundComponent() {
   return (
@@ -43,14 +44,23 @@ function ErrorComponent({ error, reset }: ErrorComponentProps) {
   const router = useRouter();
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <div className="max-w-md text-center">
-        <h1 className="text-xl font-semibold">Something went wrong</h1>
-        <p className="mt-2 text-sm text-muted-foreground">Please try again.</p>
+      <div className="max-w-md w-full text-center p-8 rounded-3xl border border-border/40 bg-card/60 backdrop-blur-xl shadow-2xl">
+        <div className="relative mx-auto w-44 h-28 mb-3 flex items-center justify-center">
+          <img
+            src="/internet-reconnect-plugs.svg"
+            alt="Connection disrupted"
+            className="w-full h-full object-contain drop-shadow-[0_4px_16px_rgba(18,164,136,0.3)]"
+          />
+        </div>
+        <h1 className="text-xl font-bold font-heading text-foreground">Connection or Server Disrupted</h1>
+        <p className="mt-2 text-sm text-muted-foreground">
+          We encountered an issue communicating with the depot servers. Please check your internet connection and try again.
+        </p>
         <button
           onClick={() => { router.invalidate(); reset(); }}
-          className="mt-6 inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90"
+          className="mt-6 inline-flex items-center justify-center rounded-full bg-gradient-to-r from-[#12A488] to-[#3FD1B3] px-6 py-2.5 text-xs font-bold text-black tracking-wide shadow-lg shadow-[#12A488]/20 hover:opacity-95 transition-all"
         >
-          Try again
+          Retry Connection
         </button>
       </div>
     </div>
@@ -102,6 +112,7 @@ function RootComponent() {
       <ThemeProvider>
         <AuthProvider>
           <PageLoader />
+          <InternetReconnectModal />
           <Outlet />
           <DentalAiChatbot />
           <Toaster richColors position="top-right" />

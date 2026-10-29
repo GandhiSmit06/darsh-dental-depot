@@ -43,6 +43,7 @@ import {
 import { CustomerHistoryModal } from "@/components/dashboard/CustomerHistoryModal";
 import { InvoiceModal } from "@/components/invoice/InvoiceModal";
 import type { InvoiceOrderData } from "@/components/invoice/TallyGstInvoice";
+import { ClinicalLoader } from "@/components/ui/ClinicalLoader";
 import { buildDispatchWhatsAppMessage, openWhatsApp } from "@/lib/whatsapp";
 import {
   Bar,
@@ -222,7 +223,7 @@ function ShopDashboard() {
   if (authLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <ClinicalLoader size="lg" text="Loading Depot Management..." subtext="Syncing catalog & analytics" />
       </div>
     );
   }

@@ -563,9 +563,15 @@ export function LiquidToggle({
   const endDrag = (e: React.PointerEvent<HTMLButtonElement>) => {
     const s = st.current
     if (s.drag.id !== e.pointerId) return
+    const wasMoved = s.drag.moved
     s.drag.id = -1
     s.qT = 0
     s.moving = true
+    try { e.currentTarget.releasePointerCapture(e.pointerId) } catch { /* optional */ }
+    if (!wasMoved && !s.suppressClick) {
+      commit(!s.on)
+      s.suppressClick = true
+    }
     loop()
     bump() // re-sync with a controlled value that may have refused the change
   }

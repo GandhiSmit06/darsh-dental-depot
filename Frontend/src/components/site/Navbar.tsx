@@ -56,7 +56,7 @@ export function Logo({ className }: { className?: string }) {
 export function Navbar() {
   const path = useRouterState({ select: (s) => s.location.pathname });
   const navigate = useNavigate();
-  const { theme, toggle } = useTheme();
+  const { theme, setTheme } = useTheme();
   const { user, isAuthenticated, logout } = useAuth();
   const [navSearch, setNavSearch] = useState("");
   const [cartCount, setCartCount] = useState(0);
@@ -177,7 +177,7 @@ export function Navbar() {
               size={26}
               tone={theme === "dark" ? "dark" : "light"}
               checked={theme === "dark"}
-              onCheckedChange={() => toggle()}
+              onCheckedChange={(isDark) => setTheme(isDark ? "dark" : "light")}
               icons={{ off: NimbusToggleIcons.sun, on: NimbusToggleIcons.moon }}
               label="Toggle light / dark mode"
               className="hover:scale-105 active:scale-95 transition-transform"

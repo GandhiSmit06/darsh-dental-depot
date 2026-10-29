@@ -71,7 +71,7 @@ export function DashboardLayout({
   onSearchChange?: (val: string) => void;
   children: ReactNode;
 }) {
-  const { theme, toggle } = useTheme();
+  const { theme, setTheme } = useTheme();
   const { user, logout } = useAuth();
   const nav = useNavigate();
   const current = items.find((i) => i.key === active);
@@ -246,7 +246,7 @@ export function DashboardLayout({
                   size={26}
                   tone={theme === "dark" ? "dark" : "light"}
                   checked={theme === "dark"}
-                  onCheckedChange={() => toggle()}
+                  onCheckedChange={(isDark) => setTheme(isDark ? "dark" : "light")}
                   icons={{ off: NimbusToggleIcons.sun, on: NimbusToggleIcons.moon }}
                   label="Toggle light / dark mode"
                   className="hover:scale-105 active:scale-95 transition-transform"

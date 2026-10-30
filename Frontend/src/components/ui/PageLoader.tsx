@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useRouterState } from "@tanstack/react-router";
-import { useIsFetching } from "@tanstack/react-query";
+import { useAuth } from "@/lib/auth-context";
 
 /* ── Easing: slow-start, smooth middle, gentle ease-out ── */
 function easeInOutCubic(t: number): number {
@@ -9,180 +9,247 @@ function easeInOutCubic(t: number): number {
 
 export function PageLoader() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const isFetching = useIsFetching();
+  const auth = useAuth();
+  const authLoading = auth?.isLoading ?? false;
 
-  // Initial cold-start loader: ONLY shown ONCE per session!
-  const [showInitial, setShowInitial] = useState(() => {
-    if (typeof window === "undefined") return false;
-    try {
-      return !sessionStorage.getItem("ddd_initial_seen");
-    } catch {
-      return false;
-    }
-  });
-
+  // Initial cold-start loader: Default true for deterministic SSR rendering!
+  // Client pre-hydration head script hides it on Frame 0 via .ddd-seen CSS if already seen.
+  const [showInitial, setShowInitial] = useState(true);
   const [fadeOut, setFadeOut] = useState(false);
   const [progress, setProgress] = useState(0);
+
   const animFrameRef = useRef<number>(0);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const startTimeRef = useRef<number | null>(null);
   const prevTimeRef = useRef<number>(0);
   const wavePhaseRef = useRef(0);
   const dprRef = useRef(1);
+  const isFinishedRef = useRef(false);
+  const authReadyRef = useRef(!authLoading);
 
-  const LOAD_DURATION = 1400; // Snappy cold-start duration
+  const LOAD_DURATION = 1350; // Optimized duration for wave animation
 
-  const drawFrame = useCallback((timestamp: number) => {
-    /* ── Timing ── */
-    if (!startTimeRef.current) {
-      startTimeRef.current = timestamp;
+  // Keep track of auth loading state in ref to avoid re-creating callbacks
+  useEffect(() => {
+    if (!authLoading) {
+      authReadyRef.current = true;
+    }
+  }, [authLoading]);
+
+  // Synchronous mount verification: If this session already completed initial loading,
+  // skip the canvas loop immediately so client state matches .ddd-seen CSS class.
+  useEffect(() => {
+    try {
+      const alreadySeen =
+        sessionStorage.getItem("ddd_initial_seen") === "true" ||
+        document.documentElement.classList.contains("ddd-seen");
+      if (alreadySeen) {
+        setShowInitial(false);
+        return;
+      }
+    } catch {
+      setShowInitial(false);
+      return;
+    }
+
+    // Safety timeout: Ensure page NEVER gets locked regardless of slow network or auth hang
+    const safetyTimer = setTimeout(() => {
+      finishInitialLoader();
+    }, 2800);
+
+    return () => clearTimeout(safetyTimer);
+  }, []);
+
+  const finishInitialLoader = useCallback(() => {
+    if (isFinishedRef.current) return;
+    isFinishedRef.current = true;
+
+    setFadeOut(true);
+    try {
+      sessionStorage.setItem("ddd_initial_seen", "true");
+      document.documentElement.classList.add("ddd-seen");
+    } catch {}
+
+    // Wait for CSS fade-out transition to complete before unmounting canvas
+    setTimeout(() => {
+      setShowInitial(false);
+    }, 650);
+  }, []);
+
+  const drawFrame = useCallback(
+    (timestamp: number) => {
+      if (isFinishedRef.current) return;
+
+      /* ── Timing ── */
+      if (!startTimeRef.current) {
+        startTimeRef.current = timestamp;
+        prevTimeRef.current = timestamp;
+      }
+      const dt = (timestamp - prevTimeRef.current) / 1000;
       prevTimeRef.current = timestamp;
-    }
-    const dt = (timestamp - prevTimeRef.current) / 1000;
-    prevTimeRef.current = timestamp;
 
-    const elapsed = timestamp - startTimeRef.current;
-    const linearT = Math.min(elapsed / LOAD_DURATION, 1);
-    const easedT = easeInOutCubic(linearT);
-    const rawProgress = easedT * 100;
-    setProgress(Math.floor(rawProgress));
+      const elapsed = timestamp - startTimeRef.current;
+      const linearT = Math.min(elapsed / LOAD_DURATION, 1);
+      const easedT = easeInOutCubic(linearT);
+      const rawProgress = Math.floor(easedT * 100);
+      setProgress(rawProgress);
 
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d", { alpha: true });
-    if (!ctx) return;
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+      const ctx = canvas.getContext("2d", { alpha: true });
+      if (!ctx) return;
 
-    const W = window.innerWidth;
-    const H = window.innerHeight;
+      const W = window.innerWidth;
+      const H = window.innerHeight;
 
-    ctx.clearRect(0, 0, W, H);
+      ctx.clearRect(0, 0, W, H);
 
-    ctx.imageSmoothingEnabled = true;
-    ctx.imageSmoothingQuality = "high";
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = "high";
 
-    /* ── Text layout ── */
-    const fontSize = Math.min(W * 0.13, 150);
-    const fontStr = `900 ${fontSize}px 'Outfit', 'Plus Jakarta Sans', system-ui, sans-serif`;
-    ctx.font = fontStr;
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
+      const isDarkMode = document.documentElement.classList.contains("dark");
 
-    const line1 = "Darsh Dental";
-    const line2 = "Depot";
-    const lineGap = fontSize * 0.18;
-    const blockH = fontSize * 2 + lineGap;
-    const y1 = H / 2 - blockH / 2 + fontSize / 2;
-    const y2 = y1 + fontSize + lineGap;
-    const cx = W / 2;
-
-    /* ── 1. Ghost text ── */
-    ctx.save();
-    ctx.fillStyle = "rgba(255, 255, 255, 0.07)";
-    ctx.fillText(line1, cx, y1);
-    ctx.fillText(line2, cx, y2);
-    ctx.restore();
-
-    /* ── 2. Text mask + wave fill ── */
-    ctx.save();
-    ctx.fillStyle = "#000";
-    ctx.fillText(line1, cx, y1);
-    ctx.fillText(line2, cx, y2);
-    ctx.globalCompositeOperation = "source-atop";
-
-    const textTop = y1 - fontSize * 0.6;
-    const textBot = y2 + fontSize * 0.6;
-    const range = textBot - textTop;
-    const fillLevel = textBot - easedT * range;
-
-    wavePhaseRef.current += dt * 1.8;
-
-    const ampDecay = 1 - easedT * 0.85;
-    const amp1 = 10 * ampDecay;
-    const amp2 = 5 * ampDecay;
-    const freq1 = 0.018;
-    const freq2 = 0.032;
-    const phase = wavePhaseRef.current;
-
-    ctx.beginPath();
-    ctx.moveTo(-2, H + 2);
-    ctx.lineTo(-2, fillLevel);
-    for (let x = 0; x <= W + 2; x += 1) {
-      const wave =
-        Math.sin(x * freq1 + phase) * amp1 +
-        Math.sin(x * freq2 - phase * 0.7) * amp2;
-      ctx.lineTo(x, fillLevel + wave);
-    }
-    ctx.lineTo(W + 2, H + 2);
-    ctx.closePath();
-
-    const grad = ctx.createLinearGradient(0, textBot, 0, textTop);
-    grad.addColorStop(0, "#0284c7");
-    grad.addColorStop(0.3, "#0ea5e9");
-    grad.addColorStop(0.6, "#38bdf8");
-    grad.addColorStop(0.85, "#bae6fd");
-    grad.addColorStop(1, "#ffffff");
-    ctx.fillStyle = grad;
-    ctx.fill();
-
-    ctx.beginPath();
-    ctx.moveTo(-2, H + 2);
-    ctx.lineTo(-2, fillLevel + 4);
-    for (let x = 0; x <= W + 2; x += 1) {
-      const wave2 =
-        Math.sin(x * freq1 * 1.3 + phase * 1.4 + 1.5) * (amp1 * 0.6) +
-        Math.sin(x * freq2 * 0.8 - phase * 0.5 + 3.0) * (amp2 * 0.8);
-      ctx.lineTo(x, fillLevel + 4 + wave2);
-    }
-    ctx.lineTo(W + 2, H + 2);
-    ctx.closePath();
-
-    const grad2 = ctx.createLinearGradient(0, textBot, 0, textTop);
-    grad2.addColorStop(0, "rgba(14, 165, 233, 0.4)");
-    grad2.addColorStop(0.5, "rgba(56, 189, 248, 0.3)");
-    grad2.addColorStop(1, "rgba(255, 255, 255, 0.2)");
-    ctx.fillStyle = grad2;
-    ctx.fill();
-
-    ctx.restore();
-
-    /* ── 3. Glow ── */
-    ctx.save();
-    ctx.globalAlpha = 0.12 * ampDecay;
-    ctx.shadowColor = "#38bdf8";
-    ctx.shadowBlur = 30;
-    ctx.font = fontStr;
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillStyle = "transparent";
-    ctx.fillText(line1, cx, y1);
-    ctx.fillText(line2, cx, y2);
-    ctx.restore();
-
-    if (linearT < 1) {
-      animFrameRef.current = requestAnimationFrame(drawFrame);
-    } else {
-      ctx.save();
+      /* ── Text layout ── */
+      const fontSize = Math.min(W * 0.13, 150);
+      const fontStr = `900 ${fontSize}px 'Outfit', 'Plus Jakarta Sans', system-ui, sans-serif`;
       ctx.font = fontStr;
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
+
+      const line1 = "Darsh Dental";
+      const line2 = "Depot";
+      const lineGap = fontSize * 0.18;
+      const blockH = fontSize * 2 + lineGap;
+      const y1 = H / 2 - blockH / 2 + fontSize / 2;
+      const y2 = y1 + fontSize + lineGap;
+      const cx = W / 2;
+
+      /* ── 1. Ghost text ── */
+      ctx.save();
+      ctx.fillStyle = isDarkMode
+        ? "rgba(255, 255, 255, 0.08)"
+        : "rgba(15, 23, 42, 0.08)";
+      ctx.fillText(line1, cx, y1);
+      ctx.fillText(line2, cx, y2);
+      ctx.restore();
+
+      /* ── 2. Text mask + wave fill ── */
+      ctx.save();
       ctx.fillStyle = "#000";
       ctx.fillText(line1, cx, y1);
       ctx.fillText(line2, cx, y2);
       ctx.globalCompositeOperation = "source-atop";
-      ctx.fillStyle = "#ffffff";
-      ctx.fillRect(0, 0, W, H);
+
+      const textTop = y1 - fontSize * 0.6;
+      const textBot = y2 + fontSize * 0.6;
+      const range = textBot - textTop;
+      const fillLevel = textBot - easedT * range;
+
+      wavePhaseRef.current += dt * 1.8;
+
+      const ampDecay = 1 - easedT * 0.85;
+      const amp1 = 10 * ampDecay;
+      const amp2 = 5 * ampDecay;
+      const freq1 = 0.018;
+      const freq2 = 0.032;
+      const phase = wavePhaseRef.current;
+
+      ctx.beginPath();
+      ctx.moveTo(-2, H + 2);
+      ctx.lineTo(-2, fillLevel);
+      for (let x = 0; x <= W + 2; x += 1) {
+        const wave =
+          Math.sin(x * freq1 + phase) * amp1 +
+          Math.sin(x * freq2 - phase * 0.7) * amp2;
+        ctx.lineTo(x, fillLevel + wave);
+      }
+      ctx.lineTo(W + 2, H + 2);
+      ctx.closePath();
+
+      const grad = ctx.createLinearGradient(0, textBot, 0, textTop);
+      if (isDarkMode) {
+        grad.addColorStop(0, "#0284c7");
+        grad.addColorStop(0.3, "#0ea5e9");
+        grad.addColorStop(0.6, "#38bdf8");
+        grad.addColorStop(0.85, "#bae6fd");
+        grad.addColorStop(1, "#ffffff");
+      } else {
+        grad.addColorStop(0, "#0369a1");
+        grad.addColorStop(0.3, "#0284c7");
+        grad.addColorStop(0.6, "#0ea5e9");
+        grad.addColorStop(0.85, "#38bdf8");
+        grad.addColorStop(1, "#0f172a");
+      }
+      ctx.fillStyle = grad;
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.moveTo(-2, H + 2);
+      ctx.lineTo(-2, fillLevel + 4);
+      for (let x = 0; x <= W + 2; x += 1) {
+        const wave2 =
+          Math.sin(x * freq1 * 1.3 + phase * 1.4 + 1.5) * (amp1 * 0.6) +
+          Math.sin(x * freq2 * 0.8 - phase * 0.5 + 3.0) * (amp2 * 0.8);
+        ctx.lineTo(x, fillLevel + 4 + wave2);
+      }
+      ctx.lineTo(W + 2, H + 2);
+      ctx.closePath();
+
+      const grad2 = ctx.createLinearGradient(0, textBot, 0, textTop);
+      grad2.addColorStop(0, "rgba(14, 165, 233, 0.4)");
+      grad2.addColorStop(0.5, "rgba(56, 189, 248, 0.3)");
+      grad2.addColorStop(1, isDarkMode ? "rgba(255, 255, 255, 0.2)" : "rgba(15, 23, 42, 0.2)");
+      ctx.fillStyle = grad2;
+      ctx.fill();
+
       ctx.restore();
 
-      // Remember that the initial loader was seen in this session!
-      setTimeout(() => {
-        setFadeOut(true);
-        try {
-          sessionStorage.setItem("ddd_initial_seen", "true");
-        } catch {}
-      }, 250);
-      setTimeout(() => setShowInitial(false), 800);
-    }
-  }, []);
+      /* ── 3. Glow ── */
+      ctx.save();
+      ctx.globalAlpha = 0.12 * ampDecay;
+      ctx.shadowColor = "#38bdf8";
+      ctx.shadowBlur = 30;
+      ctx.font = fontStr;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillStyle = "transparent";
+      ctx.fillText(line1, cx, y1);
+      ctx.fillText(line2, cx, y2);
+      ctx.restore();
+
+      if (linearT < 1) {
+        animFrameRef.current = requestAnimationFrame(drawFrame);
+      } else {
+        // Animation finished!
+        ctx.save();
+        ctx.font = fontStr;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillStyle = isDarkMode ? "#ffffff" : "#0f172a";
+        ctx.fillText(line1, cx, y1);
+        ctx.fillText(line2, cx, y2);
+        ctx.restore();
+
+        // Check if auth is ready or wait briefly
+        if (authReadyRef.current) {
+          finishInitialLoader();
+        } else {
+          // Poll briefly for auth state
+          const checkAuthInterval = setInterval(() => {
+            if (authReadyRef.current) {
+              clearInterval(checkAuthInterval);
+              finishInitialLoader();
+            }
+          }, 80);
+          setTimeout(() => {
+            clearInterval(checkAuthInterval);
+            finishInitialLoader();
+          }, 800);
+        }
+      }
+    },
+    [finishInitialLoader]
+  );
 
   /* ── Canvas resize handler ── */
   useEffect(() => {
@@ -206,58 +273,89 @@ export function PageLoader() {
     return () => window.removeEventListener("resize", resize);
   }, [showInitial]);
 
-  /* ── Start animation loop ── */
+  /* ── Start animation loop or respect reduced motion ── */
   useEffect(() => {
     if (!showInitial) return;
+
+    // Check for prefers-reduced-motion
+    if (
+      typeof window !== "undefined" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    ) {
+      setProgress(100);
+      const timer = setTimeout(() => {
+        finishInitialLoader();
+      }, 350);
+      return () => clearTimeout(timer);
+    }
+
     animFrameRef.current = requestAnimationFrame(drawFrame);
     return () => {
       if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
     };
-  }, [showInitial, drawFrame]);
+  }, [showInitial, drawFrame, finishInitialLoader]);
 
-  /* ── Route Navigation & Page Loading with loading.svg ── */
+  /* ── Route Navigation Overlay with loading.svg ── */
   const [routeProgress, setRouteProgress] = useState(false);
   const [routeFadeOut, setRouteFadeOut] = useState(false);
   const [imgError, setImgError] = useState(false);
-  const [isNavigating, setIsNavigating] = useState(false);
   const prevPathRef = useRef(pathname);
 
-  // Trigger loading state on route change so loading.svg is clearly visible
-  useEffect(() => {
-    if (prevPathRef.current !== pathname) {
-      prevPathRef.current = pathname;
-      setIsNavigating(true);
-      const timer = setTimeout(() => {
-        setIsNavigating(false);
-      }, 450);
-      return () => clearTimeout(timer);
-    }
-  }, [pathname]);
-
-  const isPageLoading = isNavigating || isFetching > 0;
-
+  // Trigger loading state on route change ONLY (decoupled from background React Query fetches)
   useEffect(() => {
     if (showInitial) return;
 
-    if (isPageLoading) {
+    if (prevPathRef.current !== pathname) {
+      prevPathRef.current = pathname;
       setRouteFadeOut(false);
       setRouteProgress(true);
-    } else if (routeProgress) {
-      setRouteFadeOut(true);
-      const t = setTimeout(() => {
-        setRouteProgress(false);
-        setRouteFadeOut(false);
-      }, 260);
-      return () => clearTimeout(t);
+
+      const navTimer = setTimeout(() => {
+        setRouteFadeOut(true);
+        const hideTimer = setTimeout(() => {
+          setRouteProgress(false);
+          setRouteFadeOut(false);
+        }, 250);
+        return () => clearTimeout(hideTimer);
+      }, 400);
+
+      return () => clearTimeout(navTimer);
     }
-  }, [isPageLoading, showInitial, routeProgress]);
+  }, [pathname, showInitial]);
 
-  // If not in initial load and not navigating/loading, render nothing
-  if (!showInitial && !routeProgress) return null;
+  // Initial cold-start wave text loader (SSR deterministic shell + hydration)
+  const initialOverlay = showInitial ? (
+    <div
+      id="ddd-initial-loader"
+      className={`neoleaf-loader-overlay ${fadeOut ? "neoleaf-fade-out" : ""}`}
+      role="status"
+      aria-live="polite"
+    >
+      <div className="neoleaf-ssr-fallback select-none" aria-hidden="true">
+        <div className="neoleaf-ssr-title">Darsh Dental</div>
+        <div className="neoleaf-ssr-subtitle">Depot</div>
+      </div>
+      <canvas
+        ref={canvasRef}
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          width: "100%",
+          height: "100%",
+          zIndex: 2,
+        }}
+      />
+      <div className="neoleaf-progress" style={{ zIndex: 3 }}>
+        loading...{" "}
+        <span className="neoleaf-progress-num">{progress}</span> %
+      </div>
+    </div>
+  ) : null;
 
-  // Active page load / navigation: Render loading.svg overlay
-  if (!showInitial && routeProgress) {
-    return (
+  // Active page navigation overlay (loading.svg)
+  const routeOverlay =
+    !showInitial && routeProgress ? (
       <div
         className={`route-transition-overlay ${routeFadeOut ? "route-transition-fade-out" : ""}`}
         role="status"
@@ -293,28 +391,12 @@ export function PageLoader() {
           </p>
         </div>
       </div>
-    );
-  }
+    ) : null;
 
-  // Initial cold-start wave text loader (only once per session)
   return (
-    <div
-      className={`neoleaf-loader-overlay ${fadeOut ? "neoleaf-fade-out" : ""}`}
-    >
-      <canvas
-        ref={canvasRef}
-        style={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          width: "100%",
-          height: "100%",
-        }}
-      />
-      <div className="neoleaf-progress">
-        loading...{" "}
-        <span className="neoleaf-progress-num">{progress}</span> %
-      </div>
-    </div>
+    <>
+      {initialOverlay}
+      {routeOverlay}
+    </>
   );
 }

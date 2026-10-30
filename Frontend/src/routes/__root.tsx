@@ -110,6 +110,11 @@ function RootShell({ children }: { children: React.ReactNode }) {
     <html lang="en">
       <head>
         <HeadContent />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: "(function(){try{if(sessionStorage.getItem('ddd_initial_seen')==='true'){document.documentElement.classList.add('ddd-seen');}}catch(e){}})();",
+          }}
+        />
         <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
       </head>
       <body>
@@ -128,7 +133,9 @@ function RootComponent() {
         <AuthProvider>
           <PageLoader />
           <InternetReconnectModal />
-          <Outlet />
+          <div id="app-root-content" className="min-h-screen flex flex-col w-full">
+            <Outlet />
+          </div>
           <DentalAiChatbot />
           <Toaster richColors position="top-right" />
         </AuthProvider>

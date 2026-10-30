@@ -381,22 +381,90 @@ h1, h2, h3, h4, h5, h6 {
   left: 140%;
 }
 
+/* Critical Pre-Hydration & Frame-0 Loading Gate */
+html:not(.ddd-seen) #app-root-content {
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+html.ddd-seen #app-root-content {
+  visibility: visible;
+}
+
+/* Force initial loader visible immediately before React hydrates */
+html:not(.ddd-seen) .neoleaf-loader-overlay {
+  display: flex !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+}
+
+/* If already seen in this session, hide initial loader completely */
+html.ddd-seen .neoleaf-loader-overlay {
+  display: none !important;
+  pointer-events: none !important;
+}
+
 /* NeoLeaf-Style Wave Text Loader */
 .neoleaf-loader-overlay {
   position: fixed;
   inset: 0;
-  z-index: 9999;
-  background-color: #0a0a0f;
+  z-index: 99999;
+  background-color: #080d0c;
   display: flex;
   justify-content: center;
   align-items: center;
-  transition: opacity 1s cubic-bezier(0.25, 0, 0.15, 1),
-              visibility 1s cubic-bezier(0.25, 0, 0.15, 1);
+  transition: opacity 0.8s cubic-bezier(0.25, 0, 0.15, 1),
+              visibility 0.8s cubic-bezier(0.25, 0, 0.15, 1);
+  will-change: opacity, visibility;
+}
+
+:root:not(.dark) .neoleaf-loader-overlay {
+  background-color: #f8fafc;
 }
 
 .neoleaf-loader-overlay.neoleaf-fade-out {
-  opacity: 0;
-  visibility: hidden;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+.neoleaf-ssr-fallback {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  pointer-events: none;
+  user-select: none;
+  z-index: 1;
+}
+
+.neoleaf-ssr-title {
+  font-family: 'Outfit', 'Plus Jakarta Sans', system-ui, sans-serif;
+  font-size: clamp(38px, 9vw, 120px);
+  font-weight: 900;
+  line-height: 1.05;
+  color: rgba(255, 255, 255, 0.08);
+  letter-spacing: -0.02em;
+}
+
+.neoleaf-ssr-subtitle {
+  font-family: 'Outfit', 'Plus Jakarta Sans', system-ui, sans-serif;
+  font-size: clamp(38px, 9vw, 120px);
+  font-weight: 900;
+  line-height: 1.05;
+  color: rgba(255, 255, 255, 0.08);
+  letter-spacing: -0.02em;
+}
+
+:root:not(.dark) .neoleaf-ssr-title,
+:root:not(.dark) .neoleaf-ssr-subtitle {
+  color: rgba(15, 23, 42, 0.08);
 }
 
 .neoleaf-progress {
@@ -409,18 +477,25 @@ h1, h2, h3, h4, h5, h6 {
   color: rgba(255, 255, 255, 0.5);
   letter-spacing: 1.5px;
   text-transform: lowercase;
-  z-index: 10000;
+  z-index: 100000;
+}
+
+:root:not(.dark) .neoleaf-progress {
+  color: rgba(15, 23, 42, 0.5);
 }
 
 .neoleaf-progress-num {
   font-variant-numeric: tabular-nums;
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.8);
+  color: rgba(255, 255, 255, 0.85);
   min-width: 2ch;
   display: inline-block;
   text-align: right;
 }
 
+:root:not(.dark) .neoleaf-progress-num {
+  color: rgba(15, 23, 42, 0.85);
+}
 
 /* Route Transition Overlay with loading.svg */
 .route-transition-overlay {

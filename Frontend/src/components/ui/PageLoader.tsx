@@ -183,21 +183,12 @@ export function PageLoader() {
       const y2 = y1 + fontSize + lineGap;
       const cx = W / 2;
 
-      /* 1. Ghost text */
+      /* Text mask + wave fill (Single crisp animated layer, no duplicate/ghost background) */
       ctx.save();
-      ctx.fillStyle = isDarkMode
-        ? "rgba(255, 255, 255, 0.08)"
-        : "rgba(15, 23, 42, 0.08)";
+      ctx.fillStyle = "#ffffff";
       ctx.fillText(line1, cx, y1);
       ctx.fillText(line2, cx, y2);
-      ctx.restore();
-
-      /* 2. Text mask + wave fill */
-      ctx.save();
-      ctx.fillStyle = "#000";
-      ctx.fillText(line1, cx, y1);
-      ctx.fillText(line2, cx, y2);
-      ctx.globalCompositeOperation = "source-atop";
+      ctx.globalCompositeOperation = "source-in";
 
       const textTop = y1 - fontSize * 0.6;
       const textBot = y2 + fontSize * 0.6;
@@ -213,6 +204,7 @@ export function PageLoader() {
       const freq2 = 0.032;
       const phase = wavePhaseRef.current;
 
+      // Primary wave
       ctx.beginPath();
       ctx.moveTo(-2, H + 2);
       ctx.lineTo(-2, fillLevel);
@@ -242,6 +234,8 @@ export function PageLoader() {
       ctx.fillStyle = grad;
       ctx.fill();
 
+      // Secondary highlight wave (composite atop primary wave strictly inside the text)
+      ctx.globalCompositeOperation = "source-atop";
       ctx.beginPath();
       ctx.moveTo(-2, H + 2);
       ctx.lineTo(-2, fillLevel + 4);
@@ -261,19 +255,6 @@ export function PageLoader() {
       ctx.fillStyle = grad2;
       ctx.fill();
 
-      ctx.restore();
-
-      /* 3. Glow */
-      ctx.save();
-      ctx.globalAlpha = 0.12 * ampDecay;
-      ctx.shadowColor = "#38bdf8";
-      ctx.shadowBlur = 30;
-      ctx.font = fontStr;
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      ctx.fillStyle = "transparent";
-      ctx.fillText(line1, cx, y1);
-      ctx.fillText(line2, cx, y2);
       ctx.restore();
 
       if (linearT < 1) {
@@ -425,11 +406,6 @@ export function PageLoader() {
       <div
         className={`neoleaf-loader-foreground ${fgFadeOut ? "neoleaf-fg-fade-out" : ""}`}
       >
-        <div className="neoleaf-ssr-fallback select-none" aria-hidden="true">
-          <div className="neoleaf-ssr-title">Darsh Dental</div>
-          <div className="neoleaf-ssr-subtitle">Depot</div>
-        </div>
-
         <canvas
           ref={canvasRef}
           style={{

@@ -456,44 +456,6 @@ html.ddd-seen .neoleaf-loader-overlay {
   transform: scale(0.97);
 }
 
-.neoleaf-ssr-fallback {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  pointer-events: none;
-  user-select: none;
-  z-index: 1;
-}
-
-.neoleaf-ssr-title {
-  font-family: 'Outfit', 'Plus Jakarta Sans', system-ui, sans-serif;
-  font-size: clamp(38px, 9vw, 120px);
-  font-weight: 900;
-  line-height: 1.05;
-  color: rgba(255, 255, 255, 0.08);
-  letter-spacing: -0.02em;
-}
-
-.neoleaf-ssr-subtitle {
-  font-family: 'Outfit', 'Plus Jakarta Sans', system-ui, sans-serif;
-  font-size: clamp(38px, 9vw, 120px);
-  font-weight: 900;
-  line-height: 1.05;
-  color: rgba(255, 255, 255, 0.08);
-  letter-spacing: -0.02em;
-}
-
-:root:not(.dark) .neoleaf-ssr-title,
-:root:not(.dark) .neoleaf-ssr-subtitle {
-  color: rgba(15, 23, 42, 0.08);
-}
-
 .neoleaf-progress {
   position: fixed;
   bottom: clamp(28px, 5vh, 60px);

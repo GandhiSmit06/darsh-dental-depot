@@ -21,11 +21,10 @@ interface SidebarContextProps {
   animate: boolean;
   openMobile: boolean;
   setOpenMobile: React.Dispatch<React.SetStateAction<boolean>>;
+  toggleSidebar: () => void;
 }
 
-const SidebarContext = createContext<SidebarContextProps | undefined>(
-  undefined
-);
+const SidebarContext = createContext<SidebarContextProps | undefined>(undefined);
 
 export const useSidebar = () => {
   const context = useContext(SidebarContext);
@@ -39,18 +38,24 @@ export const SidebarProvider = ({
   children,
   open: openProp,
   setOpen: setOpenProp,
+  defaultOpen = true,
   animate = true,
 }: {
   children: React.ReactNode;
   open?: boolean;
   setOpen?: React.Dispatch<React.SetStateAction<boolean>>;
+  defaultOpen?: boolean;
   animate?: boolean;
 }) => {
-  const [openState, setOpenState] = useState(false);
+  const [openState, setOpenState] = useState(defaultOpen);
   const [openMobile, setOpenMobile] = useState(false);
 
   const open = openProp !== undefined ? openProp : openState;
   const setOpen = setOpenProp !== undefined ? setOpenProp : setOpenState;
+
+  const toggleSidebar = () => {
+    setOpen((prev) => !prev);
+  };
 
   return (
     <SidebarContext.Provider
@@ -60,6 +65,7 @@ export const SidebarProvider = ({
         animate,
         openMobile,
         setOpenMobile,
+        toggleSidebar,
       }}
     >
       {children}
@@ -71,15 +77,17 @@ export const Sidebar = ({
   children,
   open,
   setOpen,
+  defaultOpen = true,
   animate = true,
 }: {
   children: React.ReactNode;
   open?: boolean;
   setOpen?: React.Dispatch<React.SetStateAction<boolean>>;
+  defaultOpen?: boolean;
   animate?: boolean;
 }) => {
   return (
-    <SidebarProvider open={open} setOpen={setOpen} animate={animate}>
+    <SidebarProvider open={open} setOpen={setOpen} defaultOpen={defaultOpen} animate={animate}>
       {children}
     </SidebarProvider>
   );
@@ -99,26 +107,26 @@ export const DesktopSidebar = ({
   children,
   ...props
 }: React.ComponentProps<typeof motion.div>) => {
-  const { open, setOpen, animate } = useSidebar();
+  const { open, animate } = useSidebar();
+
   return (
-    <motion.div
+    <motion.aside
       className={cn(
-        "h-screen sticky top-0 px-3 py-4 hidden md:flex md:flex-col bg-card/80 dark:bg-[#070B0A] border-r border-border/50 dark:border-white/10 backdrop-blur-xl w-[280px] flex-shrink-0 z-40 transition-colors duration-200",
+        "h-screen sticky top-0 py-4 hidden md:flex md:flex-col bg-card/90 dark:bg-[#070B0A] border-r border-border/50 dark:border-white/10 backdrop-blur-xl flex-shrink-0 z-40 transition-colors duration-200 overflow-hidden",
+        open ? "px-3 w-[260px]" : "px-2 w-[72px]",
         className
       )}
       animate={{
-        width: animate ? (open ? "280px" : "68px") : "280px",
+        width: animate ? (open ? "260px" : "72px") : "260px",
       }}
       transition={{
-        duration: 0.28,
+        duration: 0.24,
         ease: [0.25, 0.1, 0.25, 1],
       }}
-      onMouseEnter={() => setOpen(true)}
-      onMouseLeave={() => setOpen(false)}
       {...props}
     >
       {children}
-    </motion.div>
+    </motion.aside>
   );
 };
 
@@ -132,27 +140,27 @@ export const MobileSidebar = ({
     <>
       <div
         className={cn(
-          "h-14 px-4 flex flex-row md:hidden items-center justify-between bg-card/90 dark:bg-[#070B0A] border-b border-border/50 dark:border-white/10 w-full sticky top-0 z-40"
+          "h-14 px-4 flex flex-row md:hidden items-center justify-between bg-card/95 dark:bg-[#070B0A] border-b border-border/50 dark:border-white/10 w-full sticky top-0 z-40"
         )}
         {...props}
       >
-        <div className="flex items-center gap-2 select-none">
-          <div className="h-8 w-8 rounded-lg overflow-hidden bg-white/95 dark:bg-[#10201C] border border-white/60 dark:border-white/10 shadow-xs flex items-center justify-center p-0.5">
+        <Link to="/" className="flex items-center gap-2.5 select-none">
+          <div className="h-8 w-8 rounded-xl overflow-hidden bg-white/95 dark:bg-[#10201C] border border-white/60 dark:border-white/10 shadow-xs flex items-center justify-center p-0.5">
             <img
               src="/logo.jpg"
               alt="Darsh Dental"
               className="w-full h-full object-cover rounded-[inherit]"
             />
           </div>
-          <span className="font-extrabold text-xs font-heading tracking-tight text-foreground">
+          <span className="font-extrabold text-sm font-heading tracking-tight text-foreground">
             Darsh Dental
           </span>
-        </div>
+        </Link>
         <div className="flex justify-end z-20">
           <button
             type="button"
             aria-label="Toggle navigation drawer"
-            className="p-1.5 rounded-lg border border-border/50 dark:border-white/10 hover:bg-secondary/80 dark:hover:bg-[#10201C] text-muted-foreground hover:text-foreground cursor-pointer transition-colors"
+            className="p-2 rounded-xl border border-border/50 dark:border-white/10 hover:bg-secondary/80 dark:hover:bg-[#10201C] text-foreground cursor-pointer transition-colors"
             onClick={() => setOpenMobile(!openMobile)}
           >
             <Menu className="h-5 w-5" />
@@ -179,7 +187,7 @@ export const MobileSidebar = ({
               >
                 <X className="h-5 w-5" />
               </div>
-              <div className="flex-1 flex flex-col pt-4">
+              <div className="flex-1 flex flex-col pt-2">
                 {children}
               </div>
             </motion.div>
@@ -202,12 +210,12 @@ export const SidebarLink = ({
 
   const content = (
     <>
-      <div className={cn(
-        "flex items-center justify-center shrink-0 w-8 h-8 rounded-lg transition-colors",
-        isActive
-          ? "text-primary dark:text-[#3FD1B3]"
-          : "text-muted-foreground dark:text-[#9DB0A9] group-hover/sidebar:text-foreground dark:group-hover/sidebar:text-[#F2F6F4]"
-      )}>
+      <div
+        className={cn(
+          "flex items-center justify-center shrink-0 transition-colors",
+          open ? "w-5 h-5" : "w-5 h-5 mx-auto"
+        )}
+      >
         {link.icon}
       </div>
 
@@ -218,13 +226,8 @@ export const SidebarLink = ({
           opacity: animate ? (open ? 1 : 0) : 1,
           width: animate ? (open ? "auto" : 0) : "auto",
         }}
-        transition={{ duration: 0.18, ease: "easeInOut" }}
-        className={cn(
-          "text-xs truncate whitespace-nowrap overflow-hidden transition-transform duration-150 group-hover/sidebar:translate-x-0.5",
-          isActive
-            ? "font-bold text-primary dark:text-[#3FD1B3]"
-            : "font-medium text-muted-foreground dark:text-[#9DB0A9] group-hover/sidebar:text-foreground dark:group-hover/sidebar:text-[#F2F6F4]"
-        )}
+        transition={{ duration: 0.15, ease: "easeInOut" }}
+        className="text-xs truncate whitespace-nowrap overflow-hidden transition-transform duration-150"
       >
         {link.label}
       </motion.span>
@@ -237,7 +240,7 @@ export const SidebarLink = ({
             opacity: animate ? (open ? 1 : 0) : 1,
             scale: animate ? (open ? 1 : 0) : 1,
           }}
-          transition={{ duration: 0.18 }}
+          transition={{ duration: 0.15 }}
           className="ml-auto shrink-0"
         >
           {link.badge}
@@ -247,10 +250,13 @@ export const SidebarLink = ({
   );
 
   const baseClasses = cn(
-    "flex items-center gap-3 group/sidebar px-2.5 py-2 rounded-xl transition-all duration-150 select-none cursor-pointer w-full text-left",
+    "transition-all duration-150 select-none cursor-pointer flex items-center group/sidebar relative",
+    open
+      ? "gap-3 px-3 py-2.5 rounded-xl w-full text-left"
+      : "w-10 h-10 mx-auto justify-center rounded-xl",
     isActive
-      ? "bg-primary/10 dark:bg-[#12A488]/15 text-primary dark:text-[#3FD1B3] shadow-xs"
-      : "hover:bg-secondary/80 dark:hover:bg-[#10201C] text-muted-foreground dark:text-[#9DB0A9] hover:text-foreground dark:hover:text-[#F2F6F4]",
+      ? "bg-primary text-primary-foreground dark:bg-[#12A488] dark:text-[#04110E] font-bold shadow-sm"
+      : "text-muted-foreground dark:text-[#9DB0A9] hover:text-foreground dark:hover:text-[#F2F6F4] hover:bg-secondary/70 dark:hover:bg-[#10201C]",
     className,
     link.className
   );
@@ -260,6 +266,7 @@ export const SidebarLink = ({
     return (
       <Link
         to={target}
+        title={!open ? link.label : undefined}
         onClick={() => setOpenMobile(false)}
         className={baseClasses}
       >
@@ -271,6 +278,7 @@ export const SidebarLink = ({
   return (
     <button
       type="button"
+      title={!open ? link.label : undefined}
       onClick={() => {
         link.onClick?.();
         setOpenMobile(false);
@@ -293,11 +301,9 @@ export const SidebarTrigger = ({
       type="button"
       aria-label="Toggle sidebar"
       onClick={() => {
-        // Desktop
         if (typeof window !== "undefined" && window.innerWidth >= 768) {
           setOpen(!open);
         } else {
-          // Mobile
           setOpenMobile(!openMobile);
         }
       }}

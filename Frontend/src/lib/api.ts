@@ -614,10 +614,11 @@ export const authApi = {
     }
     if (!emailToUse.includes("@")) {
       const cleanPhone = emailToUse.replace(/\D/g, "");
+      const phoneDigits = cleanPhone.slice(-10);
       const { data: phoneProfile } = await supabase
         .from("profiles")
         .select("email")
-        .eq("phone", cleanPhone)
+        .or(`phone.eq.${phoneDigits},phone.eq.+91${phoneDigits},phone.eq.91${phoneDigits}`)
         .limit(1)
         .maybeSingle();
 
@@ -871,7 +872,7 @@ export const authApi = {
         throw new ApiError(400, "Doctor profile record not found.");
       }
       const user = mapProfileToUser(prof, targetEmail);
-      const token = "ddd_token_" + prof.id;
+      const token = prof.id;
       setTokens(token, token);
 
       return {
@@ -913,10 +914,32 @@ export const authApi = {
   },
 
   getMe: async () => {
-    const { data: userData, error } = await supabase.auth.getUser();
+    const { data: userData } = await supabase.auth.getUser();
     if (userData?.user) {
-      const { data: profile } = await supabase.from("profiles").select("*").eq("id", userData.user.id).maybeSingle();
-      const user = mapProfileToUser(profile || {}, userData.user.email);
+      let { data: profile } = await supabase.from("profiles").select("*").eq("id", userData.user.id).maybeSingle();
+      if (!profile) {
+        // Auto-provision profile record if newly authenticated via OAuth
+        const meta = userData.user.user_metadata || {};
+        const newProf = {
+          id: userData.user.id,
+          email: userData.user.email || "",
+          full_name: meta.fullName || meta.full_name || meta.name || "Doctor",
+          role: (meta.role as any) || "doctor",
+          phone: meta.phone || "",
+          clinic_name: meta.clinicName || "",
+          address: meta.address || "",
+          medical_registration_number: meta.medicalRegistrationNumber || "",
+          is_verified: true,
+          is_active: true,
+        };
+        try {
+          await supabase.from("profiles").insert([newProf]);
+          profile = newProf as any;
+        } catch {
+          profile = { ...newProf, id: userData.user.id } as any;
+        }
+      }
+      const user = mapProfileToUser(profile || { id: userData.user.id }, userData.user.email);
       return {
         success: true,
         message: "Profile loaded",
@@ -926,14 +949,18 @@ export const authApi = {
 
     const token = getAccessToken();
     if (token) {
-      const { data: profile } = await supabase.from("profiles").select("*").eq("id", token).maybeSingle();
-      if (profile) {
-        const user = mapProfileToUser(profile, profile.email);
-        return {
-          success: true,
-          message: "Profile loaded",
-          data: user,
-        };
+      const cleanToken = token.startsWith("ddd_token_") ? token.replace("ddd_token_", "") : token;
+      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      if (uuidRegex.test(cleanToken)) {
+        const { data: profile } = await supabase.from("profiles").select("*").eq("id", cleanToken).maybeSingle();
+        if (profile) {
+          const user = mapProfileToUser(profile, profile.email);
+          return {
+            success: true,
+            message: "Profile loaded",
+            data: user,
+          };
+        }
       }
     }
 

@@ -41,6 +41,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             }
           }
         } else {
+          // Check if valid token exists in storage (e.g. OTP session or persisted token)
+          try {
+            const me = await authApi.getMe();
+            if (isMounted) {
+              setUser(me.data);
+              if (typeof window !== "undefined") {
+                localStorage.setItem("ddd_current_user_id", me.data._id || me.data.id || me.data.email);
+              }
+              return;
+            }
+          } catch {
+            if (isMounted) {
+              clearTokens();
+              setUser(null);
+            }
+          }
           if (isMounted) setUser(null);
         }
       } catch {

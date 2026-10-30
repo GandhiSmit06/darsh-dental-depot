@@ -1,6 +1,7 @@
 import { type ReactNode, useState, useEffect, useCallback } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { motion, AnimatePresence } from "framer-motion";
+import { cn } from "@/lib/utils";
 import {
   Sidebar,
   SidebarBody,

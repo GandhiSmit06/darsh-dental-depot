@@ -166,6 +166,7 @@ export function ProductCard({ product, onAdd, onWishlist }: ProductCardProps) {
             {!isManager && (
               <motion.button
                 data-magnetic
+                data-magnetic-shape="circle"
                 whileTap={{ scale: 0.8 }}
                 onClick={handleWishlist}
                 className={`absolute top-3 right-3 h-8 w-8 rounded-full grid place-items-center backdrop-blur-md transition-all z-10 pointer-events-auto ${
@@ -252,7 +253,7 @@ export function ProductCard({ product, onAdd, onWishlist }: ProductCardProps) {
                 </Link>
               </Button>
             ) : (
-              <div data-magnetic className="inline-block"><AddToCartAnimation
+              <div data-magnetic data-magnetic-shape="rounded" className="inline-block rounded-xl"><AddToCartAnimation
                 onClick={handleAddToCart}
                 disabled={!inStock}
                 isAdding={isAdding}

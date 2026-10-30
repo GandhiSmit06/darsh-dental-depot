@@ -125,6 +125,10 @@ function DoctorDashboard() {
     return <Navigate to="/login" search={{ redirect: "/doctor" }} />;
   }
 
+  if (user && user.role !== "doctor") {
+    return <AccessDenied requiredRole="Doctor" currentRole={user.role} />;
+  }
+
   return (
     <DashboardLayout title="Doctor" role="Doctor" items={items} active={active} onChange={setActive}>
       {active === "dashboard" && <Overview />}

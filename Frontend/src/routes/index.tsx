@@ -394,7 +394,6 @@ function HomePage() {
   const { data: featuredResponse } = useQuery({
     queryKey: ["featured-products"],
     queryFn: () => productsApi.getProducts(true),
-    enabled: isAuthenticated,
   });
 
   const apiProducts = featuredResponse?.data || [];
@@ -921,9 +920,9 @@ function HomePage() {
           </div>
         </ScrollReveal>
 
-        {/* Product Grid or Unauthenticated Verification State */}
-        {isAuthenticated ? (
-          filteredProducts.length > 0 ? (
+        {/* Product Grid */}
+        {filteredProducts.length > 0 ? (
+          <div className="space-y-8">
             <StaggerContainer
               staggerDelay={0.1}
               className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4"
@@ -936,75 +935,40 @@ function HomePage() {
                   </StaggerItem>
                 ))}
             </StaggerContainer>
-          ) : (
-            <Card className="p-12 text-center border border-border/60 dark:border-white/10 glass-card rounded-xl">
-              <Package className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
-              <h3 className="font-heading font-semibold text-lg text-foreground">
-                No Materials in This Category
-              </h3>
-              <p className="text-sm text-muted-foreground mt-1 max-w-md mx-auto">
-                No items are currently categorized under "{selectedCategory}". Explore our full
-                catalog for all available supplies.
-              </p>
-              <Button asChild className="rounded-md mt-6" variant="outline">
-                <Link to="/products">Browse All Supplies</Link>
-              </Button>
-            </Card>
-          )
+
+            {/* If not logged in, subtle doctor callout beneath products */}
+            {!isAuthenticated && (
+              <div className="p-4 sm:p-5 rounded-2xl border border-primary/20 dark:border-white/10 bg-primary/5 dark:bg-[#10201C] flex flex-col sm:flex-row items-center justify-between gap-4 mt-6">
+                <div className="flex items-center gap-3 text-center sm:text-left">
+                  <ShieldCheck className="h-5 w-5 text-primary dark:text-[#3FD1B3] shrink-0" />
+                  <p className="text-xs text-muted-foreground">
+                    <span className="font-semibold text-foreground">Practicing Dentist in Vadodara?</span> Sign in with your clinic credentials to place wholesale orders with 2-hour local dispatch.
+                  </p>
+                </div>
+                <div className="flex items-center gap-2.5 shrink-0">
+                  <Button size="sm" variant="outline" asChild className="rounded-full text-xs font-semibold dark:border-white/15 dark:bg-[#0B1210]">
+                    <Link to="/register">Register Clinic</Link>
+                  </Button>
+                  <Button size="sm" asChild className="rounded-full text-xs font-bold bg-[#0284c7] hover:bg-[#0369a1] text-white dark:bg-[#12A488] dark:hover:bg-[#3FD1B3] dark:text-[#04110E]">
+                    <Link to="/login" search={{ redirect: "/products" } as any}>Doctor Sign In</Link>
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
         ) : (
-          /* Unauthenticated State: Clear, professional verification & sign-in card */
-          <Card className="p-8 sm:p-12 border border-border/80 dark:border-white/10 glass-card dark:bg-gradient-to-br dark:from-[#10201C] dark:to-[#0A100F] rounded-2xl max-w-3xl mx-auto shadow-sm">
-            <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 text-center sm:text-left">
-              <div className="h-14 w-14 rounded-xl bg-primary/10 dark:bg-[#12A488]/15 text-primary dark:text-[#3FD1B3] grid place-items-center shrink-0">
-                <ShieldCheck className="h-7 w-7" />
-              </div>
-              <div className="space-y-3 flex-1">
-                <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-xs font-semibold bg-sky-50 dark:bg-[#12A488]/10 text-primary dark:text-[#3FD1B3] border border-sky-100 dark:border-[#12A488]/20">
-                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                  Practicing Doctor Verification
-                </div>
-                <h3 className="font-heading font-bold text-xl sm:text-2xl text-foreground">
-                  Wholesale Clinical Catalog & Live Inventory
-                </h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  To safeguard regulated dental materials and ensure transparent wholesale rates for
-                  registered practitioners in Vadodara, live inventory and direct ordering require
-                  clinic authentication.
-                </p>
-                <div className="pt-2 flex flex-wrap items-center justify-center sm:justify-start gap-3">
-                  <Button
-                    size="default"
-                    asChild
-                    className="rounded-md font-semibold bg-[#0284c7] hover:bg-[#0369a1] text-white dark:bg-[#12A488] dark:hover:bg-[#3FD1B3] dark:text-[#04110E] dark:font-bold btn-shine shadow-xs"
-                  >
-                    <Link to="/login" className="flex items-center gap-2">
-                      <span>Doctor Sign In</span>
-                      <ArrowRight className="h-4 w-4" />
-                    </Link>
-                  </Button>
-                  <Button
-                    size="default"
-                    variant="outline"
-                    asChild
-                    className="rounded-md font-semibold border-slate-200 dark:border-white/10 dark:bg-[#0B1210] dark:text-[#F2F6F4] dark:hover:bg-[#10201C] dark:hover:text-[#3FD1B3]"
-                  >
-                    <Link to="/register" className="flex items-center gap-2">
-                      <UserPlus className="h-4 w-4 text-slate-500 dark:text-slate-400" />
-                      <span>Register Clinic</span>
-                    </Link>
-                  </Button>
-                  <a
-                    href={WHATSAPP_URL}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="text-xs font-semibold text-emerald-600 dark:text-[#3FD1B3] hover:underline flex items-center gap-1.5 ml-1 py-2"
-                  >
-                    <Phone className="h-3.5 w-3.5" />
-                    <span>Emergency Call: +91 97270 76119</span>
-                  </a>
-                </div>
-              </div>
-            </div>
+          <Card className="p-12 text-center border border-border/60 dark:border-white/10 glass-card rounded-xl">
+            <Package className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
+            <h3 className="font-heading font-semibold text-lg text-foreground">
+              No Materials in This Category
+            </h3>
+            <p className="text-sm text-muted-foreground mt-1 max-w-md mx-auto">
+              No items are currently categorized under "{selectedCategory}". Explore our full
+              catalog for all available supplies.
+            </p>
+            <Button asChild className="rounded-md mt-6" variant="outline">
+              <Link to="/products">Browse All Supplies</Link>
+            </Button>
           </Card>
         )}
 

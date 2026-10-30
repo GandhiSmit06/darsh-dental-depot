@@ -87,10 +87,20 @@ function LoginPage() {
     resolver: zodResolver(passwordLoginSchema),
   });
 
+  const searchParams = new URLSearchParams(typeof window !== "undefined" ? window.location.search : "");
+  const redirectTarget = searchParams.get("redirect");
+
+  const getDestination = (role: string) => {
+    if (redirectTarget && redirectTarget.startsWith("/")) {
+      return redirectTarget;
+    }
+    return getDashboardRoute(role);
+  };
+
   // Auto-redirect if already authenticated
   useEffect(() => {
     if (isAuthenticated && user) {
-      nav({ to: getDashboardRoute(user.role) });
+      nav({ to: getDestination(user.role) });
     }
   }, [isAuthenticated, user, nav]);
 
@@ -112,7 +122,7 @@ function LoginPage() {
 
       const user = await login(payload as any);
       toast.success(`Welcome back, ${user.fullName}!`);
-      nav({ to: getDashboardRoute(user.role) });
+      nav({ to: getDestination(user.role) });
     } catch (err) {
       if (err instanceof ApiError) {
         toast.error(err.message);
@@ -170,7 +180,7 @@ function LoginPage() {
       setSession(res.data.user, res.data.accessToken, res.data.refreshToken);
       toast.success(`Welcome back, ${res.data.user.fullName}!`);
       setTimeout(() => {
-        nav({ to: getDashboardRoute(res.data.user.role) });
+        nav({ to: getDestination(res.data.user.role) });
       }, 700);
     } catch (err: any) {
       setOtpStatus("error");

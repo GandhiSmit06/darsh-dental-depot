@@ -1,4 +1,4 @@
-import { createFileRoute, Navigate } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { PublicLayout } from "@/components/site/PublicLayout";
@@ -25,6 +25,9 @@ import {
   RotateCcw,
   CheckCircle,
   Package,
+  ShieldCheck,
+  LogIn,
+  UserPlus,
 } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { productsApi } from "@/lib/api";
@@ -99,54 +102,76 @@ function Filters({
 
       {/* Price Slider in INR */}
       <div>
-        <div className="flex items-center justify-between mb-2">
+        <div className="flex justify-between items-center mb-2.5">
           <Label className="font-bold text-xs uppercase tracking-wider text-muted-foreground dark:text-[#9DB0A9]">
-            Price Range
+            Max Price (INR)
           </Label>
-          <span className="text-xs font-bold text-primary dark:text-[#3FD1B3] font-heading">
-            ₹{price[0].toLocaleString("en-IN")} – ₹{price[1].toLocaleString("en-IN")}
+          <span className="text-xs font-mono font-bold text-primary dark:text-[#3FD1B3]">
+            ₹{price[1].toLocaleString("en-IN")}
           </span>
         </div>
         <Slider
-          value={price}
-          onValueChange={setPrice}
+          value={[price[1]]}
           min={0}
           max={15000}
-          step={200}
-          className="py-2"
+          step={100}
+          onValueChange={([val]) => setPrice([price[0], val])}
+          className="my-3"
         />
+        <div className="flex justify-between text-[11px] font-mono text-muted-foreground">
+          <span>₹0</span>
+          <span>₹15,000</span>
+        </div>
       </div>
 
       {/* In Stock Toggle */}
-      <div className="pt-2 border-t border-border/40 dark:border-white/10">
-        <label className="flex items-center gap-2.5 text-sm font-semibold cursor-pointer select-none">
-          <Checkbox checked={inStock} onCheckedChange={(v) => setInStock(!!v)} />
-          <span className="text-foreground">In-Stock Items Only</span>
+      <div className="flex items-center space-x-2.5 pt-2">
+        <Checkbox
+          id="instock"
+          checked={inStock}
+          onCheckedChange={(checked) => setInStock(checked === true)}
+          className="rounded-md border-border/80 dark:border-white/20 data-[state=checked]:bg-primary data-[state=checked]:dark:bg-[#12A488]"
+        />
+        <label
+          htmlFor="instock"
+          className="text-xs font-semibold cursor-pointer text-foreground/90 select-none"
+        >
+          In Stock Only (Ready for Vadodara dispatch)
         </label>
       </div>
 
-      {/* Brand Checkboxes */}
-      <div className="pt-2 border-t border-border/40 dark:border-white/10">
-        <Label className="font-bold text-xs uppercase tracking-wider text-muted-foreground dark:text-[#9DB0A9] mb-3 block">
-          Dental Manufacturer / Brand
-        </Label>
-        <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
-          {brands.map((b: string) => (
-            <label
-              key={b}
-              className="flex items-center gap-2 text-xs font-medium text-foreground hover:text-primary dark:hover:text-[#3FD1B3] cursor-pointer select-none"
-            >
-              <Checkbox
-                checked={brand.includes(b)}
-                onCheckedChange={(v) =>
-                  setBrand(v ? [...brand, b] : brand.filter((x: string) => x !== b))
-                }
-              />
-              <span>{b}</span>
-            </label>
-          ))}
+      {/* Brands Filter */}
+      {brands.length > 0 && (
+        <div className="pt-2">
+          <Label className="font-bold text-xs uppercase tracking-wider text-muted-foreground dark:text-[#9DB0A9] mb-3 block">
+            Leading Brands
+          </Label>
+          <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+            {brands.map((b: string) => {
+              const checked = brand.includes(b);
+              return (
+                <div key={b} className="flex items-center space-x-2.5">
+                  <Checkbox
+                    id={`brand-${b}`}
+                    checked={checked}
+                    onCheckedChange={(c) => {
+                      if (c) setBrand([...brand, b]);
+                      else setBrand(brand.filter((x: string) => x !== b));
+                    }}
+                    className="rounded-md border-border/80 dark:border-white/20 data-[state=checked]:bg-primary data-[state=checked]:dark:bg-[#12A488]"
+                  />
+                  <label
+                    htmlFor={`brand-${b}`}
+                    className="text-xs font-medium cursor-pointer text-foreground/80 hover:text-foreground transition-colors select-none"
+                  >
+                    {b}
+                  </label>
+                </div>
+              );
+            })}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
@@ -174,10 +199,10 @@ function ProductsPage() {
   const [sort, setSort] = useState("featured");
   const [page, setPage] = useState(1);
 
+  // Open product catalog: anyone can browse
   const { data: response, isLoading: productsLoading } = useQuery({
     queryKey: ["products"],
     queryFn: () => productsApi.getProducts(),
-    enabled: isAuthenticated,
   });
 
   const apiProducts = response?.data || [];
@@ -224,20 +249,6 @@ function ProductsPage() {
     return list;
   }, [products, q, cat, brand, price, inStock, sort]);
 
-  if (authLoading) {
-    return (
-      <PublicLayout>
-        <div className="flex min-h-[60vh] items-center justify-center">
-          <ClinicalLoader size="md" text="Authenticating Doctor Profile..." />
-        </div>
-      </PublicLayout>
-    );
-  }
-
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
-  }
-
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const paged = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
   const filterProps = {
@@ -283,6 +294,45 @@ function ProductsPage() {
           </div>
         </motion.div>
 
+        {/* Guest Doctor Notice Banner: Browse freely, log in before purchasing */}
+        {!isAuthenticated && !authLoading && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4 }}
+            className="mb-8 p-4 sm:p-5 rounded-2xl border border-primary/25 dark:border-[#12A488]/30 bg-primary/5 dark:bg-gradient-to-r dark:from-[#12A488]/15 dark:to-[#0A1B17] backdrop-blur-md flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm"
+          >
+            <div className="flex items-center gap-3.5 text-center sm:text-left">
+              <div className="h-11 w-11 rounded-xl bg-primary/10 dark:bg-[#12A488]/20 text-primary dark:text-[#3FD1B3] flex items-center justify-center shrink-0">
+                <ShieldCheck className="h-6 w-6" />
+              </div>
+              <div>
+                <div className="font-heading font-bold text-sm text-foreground flex items-center gap-2 justify-center sm:justify-start">
+                  <span>Browsing Darsh Dental Depot Catalog</span>
+                  <Badge variant="outline" className="text-[10px] py-0 px-1.5 font-bold uppercase tracking-wider text-primary dark:text-[#3FD1B3] border-primary/30">
+                    Open Access
+                  </Badge>
+                </div>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Browse all dental materials and clinical specifications. Practicing doctors and clinic owners sign in to add items to cart and place wholesale orders.
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2.5 shrink-0">
+              <Button asChild size="sm" variant="outline" className="rounded-full text-xs font-semibold dark:border-white/20 dark:bg-[#0B1210]">
+                <Link to="/register">
+                  <UserPlus className="h-3.5 w-3.5 mr-1" /> Register Clinic
+                </Link>
+              </Button>
+              <Button asChild size="sm" className="rounded-full text-xs font-bold bg-[#0284c7] hover:bg-[#0369a1] text-white dark:bg-[#12A488] dark:hover:bg-[#3FD1B3] dark:text-[#04110E] shadow-sm">
+                <Link to="/login" search={{ redirect: "/products" } as any}>
+                  <LogIn className="h-3.5 w-3.5 mr-1" /> Doctor Sign In
+                </Link>
+              </Button>
+            </div>
+          </motion.div>
+        )}
+
         {/* Main Grid: Filters + Catalog */}
         <div className="grid md:grid-cols-[280px_1fr] gap-8 items-start">
           {/* Desktop Filters Sidebar */}
@@ -310,23 +360,26 @@ function ProductsPage() {
               </div>
 
               {/* Mobile Filter Sheet */}
-              <Sheet>
-                <SheetTrigger asChild>
-                  <Button variant="outline" className="md:hidden rounded-2xl h-11 px-4 border-border/60 dark:border-white/10 dark:bg-[#0B1210]">
-                    <SlidersHorizontal className="h-4 w-4 mr-2" /> Filters
-                  </Button>
-                </SheetTrigger>
-                <SheetContent className="glass-card dark:bg-[#070B0A] dark:border-white/10 w-[320px] overflow-y-auto">
-                  <div className="mt-6">
-                    <Filters {...filterProps} />
-                  </div>
-                </SheetContent>
-              </Sheet>
+              <div className="md:hidden">
+                <Sheet>
+                  <SheetTrigger asChild>
+                    <Button variant="outline" className="rounded-2xl gap-2 h-11 dark:border-white/10 dark:bg-[#0B1210]">
+                      <SlidersHorizontal className="h-4 w-4" />
+                      <span>Filters</span>
+                    </Button>
+                  </SheetTrigger>
+                  <SheetContent side="left" className="w-[300px] sm:w-[360px] dark:bg-[#0B1210] dark:border-white/10 overflow-y-auto">
+                    <div className="pt-6">
+                      <Filters {...filterProps} />
+                    </div>
+                  </SheetContent>
+                </Sheet>
+              </div>
 
-              {/* Sort Dropdown */}
+              {/* Sort By */}
               <Select value={sort} onValueChange={setSort}>
-                <SelectTrigger className="w-[190px] rounded-2xl bg-background/80 dark:bg-[#0B1210] border-border/60 dark:border-white/10 text-sm h-11 font-medium">
-                  <SelectValue />
+                <SelectTrigger className="w-[180px] rounded-2xl bg-background/80 dark:bg-[#0B1210] border-border/60 dark:border-white/10 text-sm h-11">
+                  <SelectValue placeholder="Sort by" />
                 </SelectTrigger>
                 <SelectContent className="glass-card dark:bg-[#0B1210] dark:border-white/10">
                   <SelectItem value="featured">Sort: Featured</SelectItem>

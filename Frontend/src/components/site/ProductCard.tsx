@@ -1,4 +1,4 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { Heart, ShoppingCart, Star, CheckCircle, Zap, Package, Settings, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -18,6 +18,7 @@ export interface ProductCardProps {
 }
 
 export function ProductCard({ product, onAdd, onWishlist }: ProductCardProps) {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const isShopOwner = user?.role === "shop_owner";
   const isAdmin = user?.role === "admin";
@@ -49,7 +50,8 @@ export function ProductCard({ product, onAdd, onWishlist }: ProductCardProps) {
     }
 
     if (!user) {
-      toast.error("Please sign in as a doctor to save items to wishlist");
+      toast.info("Please sign in as a doctor to save items to your clinic wishlist");
+      navigate({ to: "/login", search: { redirect: `/products/${productId}` } as any });
       return;
     }
 
@@ -66,6 +68,7 @@ export function ProductCard({ product, onAdd, onWishlist }: ProductCardProps) {
       }
     } catch (err: any) {
       toast.error(err.message || "Failed to update wishlist");
+      setIsLiked(!nextState);
     }
   };
 
@@ -79,7 +82,8 @@ export function ProductCard({ product, onAdd, onWishlist }: ProductCardProps) {
     }
 
     if (!user) {
-      toast.error("Please sign in as a doctor to add items to your clinic cart");
+      toast.info("Please sign in as a doctor to purchase supplies for your clinic");
+      navigate({ to: "/login", search: { redirect: `/products/${productId}` } as any });
       return;
     }
 
@@ -102,7 +106,6 @@ export function ProductCard({ product, onAdd, onWishlist }: ProductCardProps) {
     } catch (err: any) {
       toast.error(err.message || "Failed to add item to cart");
     } finally {
-      // Allow animation cycle to conclude smoothly
       setTimeout(() => setIsAdding(false), 1400);
     }
   };
@@ -139,27 +142,24 @@ export function ProductCard({ product, onAdd, onWishlist }: ProductCardProps) {
               alt={product.name}
               loading="lazy"
               className="h-full w-full object-cover object-center group-hover:scale-108 transition-transform duration-700 ease-out"
+              onError={(e) => {
+                (e.target as HTMLImageElement).src = "/products/filtek-z350.jpg";
+              }}
             />
           </Link>
 
           {/* 3D Floating Badges & Wishlist Layer */}
           <TiltedCardLayer depth={25}>
             <div className="absolute top-3 left-3 flex flex-col gap-1.5 z-10 pointer-events-none">
-              {discountPercent > 0 && inStock && (
+              {!inStock ? (
+                <Badge variant="destructive" className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 shadow-sm pointer-events-auto">
+                  Out of Stock
+                </Badge>
+              ) : discountPercent > 0 ? (
                 <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold text-[10px] px-2 py-0.5 shadow-sm border-0 pointer-events-auto">
                   <Zap className="h-3 w-3 mr-0.5 inline fill-current" /> {discountPercent}% OFF
                 </Badge>
-              )}
-              <Badge
-                variant={inStock ? "secondary" : "destructive"}
-                className={`text-[10px] font-semibold px-2 py-0.5 backdrop-blur-md pointer-events-auto ${
-                  inStock
-                    ? "bg-background/85 text-foreground border border-border/40"
-                    : "bg-destructive/90 text-white"
-                }`}
-              >
-                {inStock ? "In Stock" : "Out of Stock"}
-              </Badge>
+              ) : null}
             </div>
 
             {/* Wishlist Button (Only for doctors / guest clinic buyers) */}

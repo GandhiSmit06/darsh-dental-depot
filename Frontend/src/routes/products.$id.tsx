@@ -1,4 +1,4 @@
-import { createFileRoute, Link, Navigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { PublicLayout } from "@/components/site/PublicLayout";
@@ -44,9 +44,9 @@ export const Route = createFileRoute("/products/$id")({
         <p className="text-sm text-muted-foreground mt-2">
           The requested dental material does not exist or has been discontinued.
         </p>
-        <Button asChild className="mt-6 rounded-full">
+        <Button asChild className="mt-4 rounded-full">
           <Link to="/products">
-            <ArrowLeft className="mr-2 h-4 w-4" /> Back to Catalog
+            <ArrowLeft className="mr-2 h-4 w-4" /> Back to Products
           </Link>
         </Button>
       </div>
@@ -56,7 +56,8 @@ export const Route = createFileRoute("/products/$id")({
 
 function ProductDetail() {
   const { id } = Route.useParams();
-  const { user, isAuthenticated, isLoading: authLoading } = useAuth();
+  const navigate = useNavigate();
+  const { user, isAuthenticated } = useAuth();
 
   const [qty, setQty] = useState(1);
   const [activeImg, setActiveImg] = useState(0);
@@ -64,31 +65,16 @@ function ProductDetail() {
   const [addingToCart, setAddingToCart] = useState(false);
   const [addedToCart, setAddedToCart] = useState(false);
 
+  // Open product view: anyone can see product specifications & details
   const { data: productResponse, isLoading: productLoading } = useQuery({
     queryKey: ["product", id],
     queryFn: () => productsApi.getProductById(id),
-    enabled: isAuthenticated,
   });
 
   const { data: relatedResponse } = useQuery({
     queryKey: ["products-related"],
     queryFn: () => productsApi.getProducts(),
-    enabled: isAuthenticated,
   });
-
-  if (authLoading) {
-    return (
-      <PublicLayout>
-        <div className="flex min-h-[60vh] items-center justify-center">
-          <ClinicalLoader size="md" text="Verifying Doctor Credentials..." />
-        </div>
-      </PublicLayout>
-    );
-  }
-
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
-  }
 
   if (productLoading) {
     return (
@@ -133,6 +119,18 @@ function ProductDetail() {
   const inStock = (product.stock ?? 1) > 0;
 
   const handleAddToCart = async () => {
+    // Require authentication before adding to cart / purchasing
+    if (!isAuthenticated || !user) {
+      toast.info("Please sign in with your doctor account to add items to cart and place orders");
+      navigate({ to: "/login", search: { redirect: `/products/${id}` } as any });
+      return;
+    }
+
+    if (user.role !== "doctor") {
+      toast.error("Ordering is reserved for registered doctor accounts");
+      return;
+    }
+
     setAddingToCart(true);
     try {
       await doctorApi.addToCart(product._id, qty);
@@ -147,6 +145,12 @@ function ProductDetail() {
   };
 
   const handleWishlistToggle = async () => {
+    if (!isAuthenticated || !user) {
+      toast.info("Please sign in with your doctor account to save items to wishlist");
+      navigate({ to: "/login", search: { redirect: `/products/${id}` } as any });
+      return;
+    }
+
     const nextState = !isWishlisted;
     setIsWishlisted(nextState);
     try {
@@ -163,27 +167,39 @@ function ProductDetail() {
     }
   };
 
+  const handleShare = () => {
+    if (typeof navigator !== "undefined" && navigator.share) {
+      navigator.share({
+        title: product.name,
+        text: `Check out ${product.name} on Darsh Dental Depot`,
+        url: window.location.href,
+      }).catch(() => {});
+    } else if (typeof navigator !== "undefined" && navigator.clipboard) {
+      navigator.clipboard.writeText(window.location.href);
+      toast.success("Product link copied to clipboard!");
+    }
+  };
+
   return (
     <PublicLayout>
-      <div className="container mx-auto px-4 py-10 max-w-6xl">
+      <div className="container mx-auto px-4 py-8 md:py-12">
         {/* Breadcrumb Navigation */}
-        <nav className="flex items-center gap-2 text-xs font-semibold text-muted-foreground dark:text-[#9DB0A9] mb-8">
-          <Link to="/" className="hover:text-primary dark:hover:text-[#3FD1B3] transition-colors">
-            Home
-          </Link>
-          <span>/</span>
-          <Link to="/products" className="hover:text-primary dark:hover:text-[#3FD1B3] transition-colors">
-            Dental Products
-          </Link>
-          <span>/</span>
-          <span className="text-foreground truncate max-w-xs">{product.name}</span>
-        </nav>
+        <div className="flex items-center justify-between mb-6">
+          <Button variant="ghost" size="sm" asChild className="rounded-full text-xs font-semibold gap-1.5 -ml-2 text-muted-foreground hover:text-foreground">
+            <Link to="/products">
+              <ArrowLeft className="h-4 w-4" /> All Products
+            </Link>
+          </Button>
+          <Button variant="outline" size="sm" onClick={handleShare} className="rounded-full text-xs gap-1.5 dark:border-white/10 dark:bg-[#0B1210]">
+            <Share2 className="h-3.5 w-3.5" /> Share Material
+          </Button>
+        </div>
 
-        {/* Product Hero Details Grid */}
-        <div className="grid lg:grid-cols-12 gap-10 items-start">
-          {/* Left Column: Gallery */}
+        {/* Main Product Layout */}
+        <div className="grid lg:grid-cols-12 gap-8 lg:gap-12 items-start">
+          {/* Left Column: Visual Gallery */}
           <ScrollReveal direction="left" className="lg:col-span-6 space-y-4">
-            <Card className="overflow-hidden aspect-[4/3] glass-card border border-border/70 dark:border-white/10 dark:bg-[#0A100F] rounded-3xl relative shadow-lg">
+            <Card className="p-4 rounded-3xl border border-border/60 dark:border-white/10 glass-card dark:bg-gradient-to-br dark:from-[#10201C] dark:to-[#0A100F] overflow-hidden aspect-square flex items-center justify-center relative shadow-sm">
               <img
                 src={gallery[activeImg]}
                 alt={product.name}
@@ -299,48 +315,59 @@ function ProductDetail() {
                   </Button>
                 </div>
               ) : (
-                <div className="flex flex-wrap items-center gap-3">
-                  <div className="flex items-center border border-border/70 dark:border-white/10 rounded-2xl bg-background dark:bg-[#0B1210] p-1 shadow-sm">
-                    <button
-                      className="p-2 text-muted-foreground dark:text-[#9DB0A9] hover:text-foreground dark:hover:text-[#F2F6F4] hover:bg-secondary dark:hover:bg-[#10201C] rounded-xl transition-colors disabled:opacity-40"
-                      onClick={() => setQty((q) => Math.max(1, q - 1))}
-                      disabled={qty <= 1}
+                <div className="flex flex-col gap-3">
+                  <div className="flex flex-wrap items-center gap-3">
+                    <div className="flex items-center border border-border/70 dark:border-white/10 rounded-2xl bg-background dark:bg-[#0B1210] p-1 shadow-sm">
+                      <button
+                        className="p-2 text-muted-foreground dark:text-[#9DB0A9] hover:text-foreground dark:hover:text-[#F2F6F4] hover:bg-secondary dark:hover:bg-[#10201C] rounded-xl transition-colors disabled:opacity-40"
+                        onClick={() => setQty((q) => Math.max(1, q - 1))}
+                        disabled={qty <= 1}
+                      >
+                        <Minus className="h-4 w-4" />
+                      </button>
+                      <span className="w-12 text-center font-bold font-heading text-sm text-foreground">{qty}</span>
+                      <button
+                        className="p-2 text-muted-foreground dark:text-[#9DB0A9] hover:text-foreground dark:hover:text-[#F2F6F4] hover:bg-secondary dark:hover:bg-[#10201C] rounded-xl transition-colors disabled:opacity-40"
+                        onClick={() => setQty((q) => Math.min(product.stock ?? 1, q + 1))}
+                        disabled={qty >= (product.stock ?? 1)}
+                        title={qty >= (product.stock ?? 1) ? `Maximum stock available (${product.stock})` : undefined}
+                      >
+                        <Plus className="h-4 w-4" />
+                      </button>
+                    </div>
+
+                    <AddToCartAnimation
+                      onClick={handleAddToCart}
+                      disabled={!inStock}
+                      isAdding={addingToCart}
+                      isAdded={addedToCart}
+                      mode="onAction"
+                      text={!user ? "SIGN IN TO ORDER" : "ADD TO CLINIC CART"}
+                      pillColor="#0A1B17"
+                      textColor="#3FD1B3"
+                      className="flex-1 h-12 rounded-2xl overflow-hidden"
+                    />
+
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={handleWishlistToggle}
+                      className={`h-12 w-12 rounded-2xl border-border/70 dark:border-white/10 dark:bg-[#0B1210] ${
+                        isWishlisted ? "text-red-500 border-red-500/40 bg-red-500/10" : "text-muted-foreground dark:text-[#9DB0A9]"
+                      }`}
                     >
-                      <Minus className="h-4 w-4" />
-                    </button>
-                    <span className="w-12 text-center font-bold font-heading text-sm text-foreground">{qty}</span>
-                    <button
-                      className="p-2 text-muted-foreground dark:text-[#9DB0A9] hover:text-foreground dark:hover:text-[#F2F6F4] hover:bg-secondary dark:hover:bg-[#10201C] rounded-xl transition-colors disabled:opacity-40"
-                      onClick={() => setQty((q) => Math.min(product.stock ?? 1, q + 1))}
-                      disabled={qty >= (product.stock ?? 1)}
-                      title={qty >= (product.stock ?? 1) ? `Maximum stock available (${product.stock})` : undefined}
-                    >
-                      <Plus className="h-4 w-4" />
-                    </button>
+                      <Heart className={`h-5 w-5 ${isWishlisted ? "fill-current" : ""}`} />
+                    </Button>
                   </div>
 
-                  <AddToCartAnimation
-                    onClick={handleAddToCart}
-                    disabled={!inStock}
-                    isAdding={addingToCart}
-                    isAdded={addedToCart}
-                    mode="onAction"
-                    text="ADD TO CLINIC CART"
-                    pillColor="#0A1B17"
-                    textColor="#3FD1B3"
-                    className="flex-1 h-12 rounded-2xl overflow-hidden"
-                  />
-
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={handleWishlistToggle}
-                    className={`h-12 w-12 rounded-2xl border-border/70 dark:border-white/10 dark:bg-[#0B1210] ${
-                      isWishlisted ? "text-red-500 border-red-500/40 bg-red-500/10" : "text-muted-foreground dark:text-[#9DB0A9]"
-                    }`}
-                  >
-                    <Heart className={`h-5 w-5 ${isWishlisted ? "fill-current" : ""}`} />
-                  </Button>
+                  {!user && (
+                    <div className="rounded-xl p-3 bg-primary/5 dark:bg-[#12A488]/10 border border-primary/20 dark:border-[#12A488]/20 flex items-center gap-2.5">
+                      <ShieldCheck className="h-4 w-4 text-primary dark:text-[#3FD1B3] shrink-0" />
+                      <span className="text-xs text-muted-foreground dark:text-[#9DB0A9]">
+                        Practicing dentists & clinic owners sign in to order with wholesale pricing & 2-hour local dispatch.
+                      </span>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -374,13 +401,13 @@ function ProductDetail() {
                 <h2 className="text-2xl sm:text-3xl font-bold font-heading">Frequently Paired Supplies</h2>
                 <p className="text-xs text-muted-foreground mt-1">Recommended for this clinical procedure.</p>
               </div>
-              <Button variant="ghost" asChild className="rounded-full text-xs font-semibold">
-                <Link to="/products">View All</Link>
+              <Button variant="outline" size="sm" asChild className="rounded-full">
+                <Link to="/products">View All Catalog</Link>
               </Button>
             </div>
-            <StaggerContainer staggerDelay={0.08} className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+            <StaggerContainer className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {related.map((p: any) => (
-                <StaggerItem key={p._id} scale>
+                <StaggerItem key={p._id || p.id} scale>
                   <ProductCard product={p} />
                 </StaggerItem>
               ))}

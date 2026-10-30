@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useRouterState } from "@tanstack/react-router";
+import { useIsFetching } from "@tanstack/react-query";
 
 /* ── Easing: slow-start, smooth middle, gentle ease-out ── */
 function easeInOutCubic(t: number): number {
@@ -7,8 +8,19 @@ function easeInOutCubic(t: number): number {
 }
 
 export function PageLoader() {
-  const isRouteLoading = useRouterState({ select: (s) => s.isLoading });
-  const [showInitial, setShowInitial] = useState(true);
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const isFetching = useIsFetching();
+
+  // Initial cold-start loader: ONLY shown ONCE per session!
+  const [showInitial, setShowInitial] = useState(() => {
+    if (typeof window === "undefined") return false;
+    try {
+      return !sessionStorage.getItem("ddd_initial_seen");
+    } catch {
+      return false;
+    }
+  });
+
   const [fadeOut, setFadeOut] = useState(false);
   const [progress, setProgress] = useState(0);
   const animFrameRef = useRef<number>(0);
@@ -18,7 +30,7 @@ export function PageLoader() {
   const wavePhaseRef = useRef(0);
   const dprRef = useRef(1);
 
-  const LOAD_DURATION = 2800; // slightly longer for smoother feel
+  const LOAD_DURATION = 1400; // Snappy cold-start duration
 
   const drawFrame = useCallback((timestamp: number) => {
     /* ── Timing ── */
@@ -26,12 +38,12 @@ export function PageLoader() {
       startTimeRef.current = timestamp;
       prevTimeRef.current = timestamp;
     }
-    const dt = (timestamp - prevTimeRef.current) / 1000; // delta in seconds
+    const dt = (timestamp - prevTimeRef.current) / 1000;
     prevTimeRef.current = timestamp;
 
     const elapsed = timestamp - startTimeRef.current;
     const linearT = Math.min(elapsed / LOAD_DURATION, 1);
-    const easedT = easeInOutCubic(linearT);          // smooth eased 0→1
+    const easedT = easeInOutCubic(linearT);
     const rawProgress = easedT * 100;
     setProgress(Math.floor(rawProgress));
 
@@ -40,13 +52,11 @@ export function PageLoader() {
     const ctx = canvas.getContext("2d", { alpha: true });
     if (!ctx) return;
 
-    // Use CSS pixel dimensions (canvas is already scaled by DPR in resize handler)
     const W = window.innerWidth;
     const H = window.innerHeight;
 
     ctx.clearRect(0, 0, W, H);
 
-    /* ── Enable sub-pixel anti-aliasing ── */
     ctx.imageSmoothingEnabled = true;
     ctx.imageSmoothingQuality = "high";
 
@@ -65,7 +75,7 @@ export function PageLoader() {
     const y2 = y1 + fontSize + lineGap;
     const cx = W / 2;
 
-    /* ── 1. Ghost text (subtle dark silhouette) ── */
+    /* ── 1. Ghost text ── */
     ctx.save();
     ctx.fillStyle = "rgba(255, 255, 255, 0.07)";
     ctx.fillText(line1, cx, y1);
@@ -74,22 +84,18 @@ export function PageLoader() {
 
     /* ── 2. Text mask + wave fill ── */
     ctx.save();
-    // Draw text as mask
     ctx.fillStyle = "#000";
     ctx.fillText(line1, cx, y1);
     ctx.fillText(line2, cx, y2);
     ctx.globalCompositeOperation = "source-atop";
 
-    // Wave geometry
     const textTop = y1 - fontSize * 0.6;
     const textBot = y2 + fontSize * 0.6;
     const range = textBot - textTop;
     const fillLevel = textBot - easedT * range;
 
-    // Smooth wave phase advancement (time-based, not frame-based)
-    wavePhaseRef.current += dt * 1.8; // radians per second
+    wavePhaseRef.current += dt * 1.8;
 
-    // Wave amplitude decays smoothly as fill rises
     const ampDecay = 1 - easedT * 0.85;
     const amp1 = 10 * ampDecay;
     const amp2 = 5 * ampDecay;
@@ -97,7 +103,6 @@ export function PageLoader() {
     const freq2 = 0.032;
     const phase = wavePhaseRef.current;
 
-    // Primary wave path
     ctx.beginPath();
     ctx.moveTo(-2, H + 2);
     ctx.lineTo(-2, fillLevel);
@@ -110,17 +115,15 @@ export function PageLoader() {
     ctx.lineTo(W + 2, H + 2);
     ctx.closePath();
 
-    // Gradient: brand-coloured liquid
     const grad = ctx.createLinearGradient(0, textBot, 0, textTop);
-    grad.addColorStop(0, "#0284c7");   // sky-600 (deep)
-    grad.addColorStop(0.3, "#0ea5e9"); // sky-500
-    grad.addColorStop(0.6, "#38bdf8"); // sky-400
-    grad.addColorStop(0.85, "#bae6fd"); // sky-200
+    grad.addColorStop(0, "#0284c7");
+    grad.addColorStop(0.3, "#0ea5e9");
+    grad.addColorStop(0.6, "#38bdf8");
+    grad.addColorStop(0.85, "#bae6fd");
     grad.addColorStop(1, "#ffffff");
     ctx.fillStyle = grad;
     ctx.fill();
 
-    // ── Secondary wave layer for depth (offset + transparent) ──
     ctx.beginPath();
     ctx.moveTo(-2, H + 2);
     ctx.lineTo(-2, fillLevel + 4);
@@ -142,7 +145,7 @@ export function PageLoader() {
 
     ctx.restore();
 
-    /* ── 3. Subtle glow around wave edge ── */
+    /* ── 3. Glow ── */
     ctx.save();
     ctx.globalAlpha = 0.12 * ampDecay;
     ctx.shadowColor = "#38bdf8";
@@ -151,16 +154,13 @@ export function PageLoader() {
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.fillStyle = "transparent";
-    // draw invisible text just for the shadow
     ctx.fillText(line1, cx, y1);
     ctx.fillText(line2, cx, y2);
     ctx.restore();
 
-    /* ── Continue or finish ── */
     if (linearT < 1) {
       animFrameRef.current = requestAnimationFrame(drawFrame);
     } else {
-      // Final frame: fully white text
       ctx.save();
       ctx.font = fontStr;
       ctx.textAlign = "center";
@@ -173,14 +173,20 @@ export function PageLoader() {
       ctx.fillRect(0, 0, W, H);
       ctx.restore();
 
-      // Gentle fade-out
-      setTimeout(() => setFadeOut(true), 400);
-      setTimeout(() => setShowInitial(false), 1200);
+      // Remember that the initial loader was seen in this session!
+      setTimeout(() => {
+        setFadeOut(true);
+        try {
+          sessionStorage.setItem("ddd_initial_seen", "true");
+        } catch {}
+      }, 250);
+      setTimeout(() => setShowInitial(false), 800);
     }
   }, []);
 
-  /* ── Canvas resize handler (DPR-aware) ── */
+  /* ── Canvas resize handler ── */
   useEffect(() => {
+    if (!showInitial) return;
     const canvas = canvasRef.current;
     if (!canvas) return;
     const resize = () => {
@@ -198,7 +204,7 @@ export function PageLoader() {
     resize();
     window.addEventListener("resize", resize);
     return () => window.removeEventListener("resize", resize);
-  }, []);
+  }, [showInitial]);
 
   /* ── Start animation loop ── */
   useEffect(() => {
@@ -209,42 +215,47 @@ export function PageLoader() {
     };
   }, [showInitial, drawFrame]);
 
-  /* ── Route-change transition loader with loading.svg ── */
+  /* ── Route Navigation & Page Loading with loading.svg ── */
   const [routeProgress, setRouteProgress] = useState(false);
   const [routeFadeOut, setRouteFadeOut] = useState(false);
   const [imgError, setImgError] = useState(false);
-  const routeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [isNavigating, setIsNavigating] = useState(false);
+  const prevPathRef = useRef(pathname);
+
+  // Trigger loading state on route change so loading.svg is clearly visible
+  useEffect(() => {
+    if (prevPathRef.current !== pathname) {
+      prevPathRef.current = pathname;
+      setIsNavigating(true);
+      const timer = setTimeout(() => {
+        setIsNavigating(false);
+      }, 450);
+      return () => clearTimeout(timer);
+    }
+  }, [pathname]);
+
+  const isPageLoading = isNavigating || isFetching > 0;
 
   useEffect(() => {
-    if (isRouteLoading && !showInitial) {
-      // Debounce: only activate if navigation takes more than 200ms
-      routeTimerRef.current = setTimeout(() => {
-        setRouteFadeOut(false);
-        setRouteProgress(true);
-      }, 200);
-    } else {
-      if (routeTimerRef.current) {
-        clearTimeout(routeTimerRef.current);
-        routeTimerRef.current = null;
-      }
-      if (routeProgress) {
-        setRouteFadeOut(true);
-        const t = setTimeout(() => {
-          setRouteProgress(false);
-          setRouteFadeOut(false);
-        }, 320);
-        return () => clearTimeout(t);
-      }
-    }
-    return () => {
-      if (routeTimerRef.current) {
-        clearTimeout(routeTimerRef.current);
-      }
-    };
-  }, [isRouteLoading, showInitial, routeProgress]);
+    if (showInitial) return;
 
+    if (isPageLoading) {
+      setRouteFadeOut(false);
+      setRouteProgress(true);
+    } else if (routeProgress) {
+      setRouteFadeOut(true);
+      const t = setTimeout(() => {
+        setRouteProgress(false);
+        setRouteFadeOut(false);
+      }, 260);
+      return () => clearTimeout(t);
+    }
+  }, [isPageLoading, showInitial, routeProgress]);
+
+  // If not in initial load and not navigating/loading, render nothing
   if (!showInitial && !routeProgress) return null;
 
+  // Active page load / navigation: Render loading.svg overlay
   if (!showInitial && routeProgress) {
     return (
       <div
@@ -255,16 +266,16 @@ export function PageLoader() {
         <div className="route-transition-content">
           <div className="relative flex items-center justify-center">
             {/* Ambient clinical glow behind loader */}
-            <div className="absolute w-32 h-32 rounded-full blur-2xl pointer-events-none opacity-60 bg-gradient-to-tr from-[#12A488]/30 via-[#3FD1B3]/25 to-sky-500/20" />
+            <div className="absolute w-36 h-36 rounded-full blur-2xl pointer-events-none opacity-60 bg-gradient-to-tr from-[#12A488]/30 via-[#3FD1B3]/25 to-sky-500/20" />
 
             {!imgError ? (
               <img
                 src="/loading.svg"
                 alt="Loading animation"
-                width={112}
-                height={112}
+                width={128}
+                height={128}
                 onError={() => setImgError(true)}
-                className="relative z-10 w-28 h-28 object-contain drop-shadow-[0_4px_24px_rgba(18,164,136,0.3)]"
+                className="relative z-10 w-32 h-32 object-contain drop-shadow-[0_4px_24px_rgba(18,164,136,0.3)]"
                 loading="eager"
               />
             ) : (
@@ -285,6 +296,7 @@ export function PageLoader() {
     );
   }
 
+  // Initial cold-start wave text loader (only once per session)
   return (
     <div
       className={`neoleaf-loader-overlay ${fadeOut ? "neoleaf-fade-out" : ""}`}

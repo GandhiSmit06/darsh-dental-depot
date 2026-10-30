@@ -446,10 +446,10 @@ function HomePage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
-                className="text-4xl sm:text-5xl lg:text-[56px] font-black tracking-tight font-heading leading-[1.08] text-slate-900 dark:text-white"
+                className="text-4xl sm:text-5xl lg:text-[56px] font-black tracking-tight font-heading leading-[1.08] text-slate-900 dark:text-white max-w-2xl"
               >
                 Vadodara's Most Trusted{" "}
-                <span className="text-[#0284c7] dark:text-[#3FD1B3] block sm:inline">
+                <span className="text-[#0284c7] dark:text-[#3FD1B3] block sm:inline-block whitespace-nowrap">
                   Dental Depot
                 </span>
               </motion.h1>

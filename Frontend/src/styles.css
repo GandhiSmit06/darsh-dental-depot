@@ -605,3 +605,11 @@ html.ddd-seen .neoleaf-loader-overlay {
     transform: scale(1);
   }
 }
+
+/* Standardized responsive container system (consistent max-width & horizontal alignment across browsers) */
+.container {
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  max-width: 1280px;
+}

@@ -112,7 +112,7 @@ function RootShell({ children }: { children: React.ReactNode }) {
         <HeadContent />
         <script
           dangerouslySetInnerHTML={{
-            __html: "(function(){try{if(sessionStorage.getItem('ddd_initial_seen')==='true'){document.documentElement.classList.add('ddd-seen');}}catch(e){}})();",
+            __html: "(function(){try{if(sessionStorage.getItem('ddd_initial_seen')==='true'){document.documentElement.classList.add('ddd-app-ready','ddd-seen');}}catch(e){}})();",
           }}
         />
         <script src="https://checkout.razorpay.com/v1/checkout.js"></script>

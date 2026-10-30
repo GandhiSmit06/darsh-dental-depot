@@ -1,6 +1,37 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useRouterState } from "@tanstack/react-router";
+import { ShieldAlert, RefreshCw, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 import { useAuth } from "@/lib/auth-context";
+
+/* ── Safe In-Memory Session Fallback (Protects against disabled or throwing sessionStorage) ── */
+let memorySessionSeen = false;
+
+function isSessionSeenSafe(): boolean {
+  if (memorySessionSeen) return true;
+  try {
+    if (typeof window !== "undefined") {
+      return (
+        window.sessionStorage?.getItem("ddd_initial_seen") === "true" ||
+        document.documentElement.classList.contains("ddd-seen")
+      );
+    }
+  } catch {
+    return memorySessionSeen;
+  }
+  return false;
+}
+
+function markSessionSeenSafe(): void {
+  memorySessionSeen = true;
+  try {
+    if (typeof window !== "undefined") {
+      window.sessionStorage?.setItem("ddd_initial_seen", "true");
+    }
+  } catch {
+    // sessionStorage is unavailable; memorySessionSeen ensures current tab/session is remembered
+  }
+}
 
 /* ── Easing: slow-start, smooth middle, gentle ease-out ── */
 function easeInOutCubic(t: number): number {
@@ -12,11 +43,14 @@ export function PageLoader() {
   const auth = useAuth();
   const authLoading = auth?.isLoading ?? false;
 
-  // Initial cold-start loader: Default true for deterministic SSR rendering!
-  // Client pre-hydration head script hides it on Frame 0 via .ddd-seen CSS if already seen.
+  // Initial cold-start loader: Default true for deterministic SSR rendering
   const [showInitial, setShowInitial] = useState(true);
   const [fadeOut, setFadeOut] = useState(false);
   const [progress, setProgress] = useState(0);
+
+  // Authentication readiness state
+  const [waveComplete, setWaveComplete] = useState(false);
+  const [authTimedOut, setAuthTimedOut] = useState(false);
 
   const animFrameRef = useRef<number>(0);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -25,62 +59,84 @@ export function PageLoader() {
   const wavePhaseRef = useRef(0);
   const dprRef = useRef(1);
   const isFinishedRef = useRef(false);
-  const authReadyRef = useRef(!authLoading);
 
-  const LOAD_DURATION = 1350; // Optimized duration for wave animation
+  // Robust timer tracking: ensure zero leaks across unmounts and nested callbacks
+  const timersRef = useRef<Set<ReturnType<typeof setTimeout>>>(new Set());
 
-  // Keep track of auth loading state in ref to avoid re-creating callbacks
-  useEffect(() => {
-    if (!authLoading) {
-      authReadyRef.current = true;
-    }
-  }, [authLoading]);
-
-  // Synchronous mount verification: If this session already completed initial loading,
-  // skip the canvas loop immediately so client state matches .ddd-seen CSS class.
-  useEffect(() => {
-    try {
-      const alreadySeen =
-        sessionStorage.getItem("ddd_initial_seen") === "true" ||
-        document.documentElement.classList.contains("ddd-seen");
-      if (alreadySeen) {
-        setShowInitial(false);
-        return;
-      }
-    } catch {
-      setShowInitial(false);
-      return;
-    }
-
-    // Safety timeout: Ensure page NEVER gets locked regardless of slow network or auth hang
-    const safetyTimer = setTimeout(() => {
-      finishInitialLoader();
-    }, 2800);
-
-    return () => clearTimeout(safetyTimer);
+  const registerTimer = useCallback((fn: () => void, ms: number) => {
+    const timer = setTimeout(() => {
+      timersRef.current.delete(timer);
+      fn();
+    }, ms);
+    timersRef.current.add(timer);
+    return timer;
   }, []);
 
+  const clearTimer = useCallback((timer: ReturnType<typeof setTimeout> | undefined) => {
+    if (timer) {
+      clearTimeout(timer);
+      timersRef.current.delete(timer);
+    }
+  }, []);
+
+  const clearAllTimers = useCallback(() => {
+    timersRef.current.forEach(clearTimeout);
+    timersRef.current.clear();
+  }, []);
+
+  const LOAD_DURATION = 1350; // Visual duration of wave progression
+
+  /* ── Required Finalization Sequence ──
+   * 1. Mark initialization as complete & reveal application content (ddd-app-ready)
+   * 2. Start smooth loader fade-out transition (neoleaf-fade-out)
+   * 3. Allow transition to finish smoothly without display:none interference
+   * 4. Unmount loader and mark session as seen only after transition finishes
+   */
   const finishInitialLoader = useCallback(() => {
     if (isFinishedRef.current) return;
     isFinishedRef.current = true;
 
+    // Step 1: Reveal application content behind the loader
+    document.documentElement.classList.add("ddd-app-ready");
+
+    // Step 2: Trigger smooth opacity fade-out on the overlay
     setFadeOut(true);
-    try {
-      sessionStorage.setItem("ddd_initial_seen", "true");
+
+    // Step 3: Wait for 750ms CSS transition to fully complete before unmounting
+    registerTimer(() => {
+      markSessionSeenSafe();
       document.documentElement.classList.add("ddd-seen");
-    } catch {}
-
-    // Wait for CSS fade-out transition to complete before unmounting canvas
-    setTimeout(() => {
       setShowInitial(false);
-    }, 650);
-  }, []);
+    }, 780);
+  }, [registerTimer]);
 
+  /* ── Session Verification on Client Mount ── */
+  useEffect(() => {
+    if (isSessionSeenSafe()) {
+      // Returning session: ensure app content is visible immediately and unmount loader
+      document.documentElement.classList.add("ddd-app-ready", "ddd-seen");
+      setShowInitial(false);
+      return;
+    }
+
+    // Fresh session (even if sessionStorage is disabled):
+    // Start auth verification watch timer
+    const authTimeoutTimer = registerTimer(() => {
+      if (!isFinishedRef.current && authLoading) {
+        setAuthTimedOut(true);
+      }
+    }, 6000);
+
+    return () => {
+      clearTimer(authTimeoutTimer);
+    };
+  }, [authLoading, clearTimer, registerTimer]);
+
+  /* ── Canvas wave frame drawer ── */
   const drawFrame = useCallback(
     (timestamp: number) => {
       if (isFinishedRef.current) return;
 
-      /* ── Timing ── */
       if (!startTimeRef.current) {
         startTimeRef.current = timestamp;
         prevTimeRef.current = timestamp;
@@ -103,13 +159,12 @@ export function PageLoader() {
       const H = window.innerHeight;
 
       ctx.clearRect(0, 0, W, H);
-
       ctx.imageSmoothingEnabled = true;
       ctx.imageSmoothingQuality = "high";
 
       const isDarkMode = document.documentElement.classList.contains("dark");
 
-      /* ── Text layout ── */
+      /* Text layout */
       const fontSize = Math.min(W * 0.13, 150);
       const fontStr = `900 ${fontSize}px 'Outfit', 'Plus Jakarta Sans', system-ui, sans-serif`;
       ctx.font = fontStr;
@@ -124,7 +179,7 @@ export function PageLoader() {
       const y2 = y1 + fontSize + lineGap;
       const cx = W / 2;
 
-      /* ── 1. Ghost text ── */
+      /* 1. Ghost text */
       ctx.save();
       ctx.fillStyle = isDarkMode
         ? "rgba(255, 255, 255, 0.08)"
@@ -133,7 +188,7 @@ export function PageLoader() {
       ctx.fillText(line2, cx, y2);
       ctx.restore();
 
-      /* ── 2. Text mask + wave fill ── */
+      /* 2. Text mask + wave fill */
       ctx.save();
       ctx.fillStyle = "#000";
       ctx.fillText(line1, cx, y1);
@@ -204,7 +259,7 @@ export function PageLoader() {
 
       ctx.restore();
 
-      /* ── 3. Glow ── */
+      /* 3. Glow */
       ctx.save();
       ctx.globalAlpha = 0.12 * ampDecay;
       ctx.shadowColor = "#38bdf8";
@@ -220,7 +275,7 @@ export function PageLoader() {
       if (linearT < 1) {
         animFrameRef.current = requestAnimationFrame(drawFrame);
       } else {
-        // Animation finished!
+        // Wave filled to 100%!
         ctx.save();
         ctx.font = fontStr;
         ctx.textAlign = "center";
@@ -230,25 +285,10 @@ export function PageLoader() {
         ctx.fillText(line2, cx, y2);
         ctx.restore();
 
-        // Check if auth is ready or wait briefly
-        if (authReadyRef.current) {
-          finishInitialLoader();
-        } else {
-          // Poll briefly for auth state
-          const checkAuthInterval = setInterval(() => {
-            if (authReadyRef.current) {
-              clearInterval(checkAuthInterval);
-              finishInitialLoader();
-            }
-          }, 80);
-          setTimeout(() => {
-            clearInterval(checkAuthInterval);
-            finishInitialLoader();
-          }, 800);
-        }
+        setWaveComplete(true);
       }
     },
-    [finishInitialLoader]
+    [LOAD_DURATION]
   );
 
   /* ── Canvas resize handler ── */
@@ -277,23 +317,45 @@ export function PageLoader() {
   useEffect(() => {
     if (!showInitial) return;
 
-    // Check for prefers-reduced-motion
     if (
       typeof window !== "undefined" &&
       window.matchMedia("(prefers-reduced-motion: reduce)").matches
     ) {
       setProgress(100);
-      const timer = setTimeout(() => {
-        finishInitialLoader();
-      }, 350);
-      return () => clearTimeout(timer);
+      setWaveComplete(true);
+      return;
     }
 
     animFrameRef.current = requestAnimationFrame(drawFrame);
     return () => {
       if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
     };
-  }, [showInitial, drawFrame, finishInitialLoader]);
+  }, [showInitial, drawFrame]);
+
+  /* ── Synchronize Wave Completion with Authentication Readiness ── */
+  useEffect(() => {
+    if (!showInitial || isFinishedRef.current) return;
+
+    // Both wave animation must be 100% AND auth must have completed initialization
+    if (waveComplete && !authLoading) {
+      finishInitialLoader();
+    }
+  }, [showInitial, waveComplete, authLoading, finishInitialLoader]);
+
+  /* ── Safe Recovery Action when Auth Verification Hangs ── */
+  const handleContinueAsGuest = useCallback(() => {
+    console.warn("[Auth] User opted to continue in guest mode after verification timeout.");
+    toast.info("Continuing in guest mode. Please sign in if you wish to access your doctor account.");
+    finishInitialLoader();
+  }, [finishInitialLoader]);
+
+  /* ── Master Cleanup on Unmount ── */
+  useEffect(() => {
+    return () => {
+      clearAllTimers();
+      if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
+    };
+  }, [clearAllTimers]);
 
   /* ── Route Navigation Overlay with loading.svg ── */
   const [routeProgress, setRouteProgress] = useState(false);
@@ -310,20 +372,17 @@ export function PageLoader() {
       setRouteFadeOut(false);
       setRouteProgress(true);
 
-      const navTimer = setTimeout(() => {
+      registerTimer(() => {
         setRouteFadeOut(true);
-        const hideTimer = setTimeout(() => {
+        registerTimer(() => {
           setRouteProgress(false);
           setRouteFadeOut(false);
         }, 250);
-        return () => clearTimeout(hideTimer);
       }, 400);
-
-      return () => clearTimeout(navTimer);
     }
-  }, [pathname, showInitial]);
+  }, [pathname, showInitial, registerTimer]);
 
-  // Initial cold-start wave text loader (SSR deterministic shell + hydration)
+  /* ── Initial Cold-Start Wave Text Loader (SSR Deterministic Shell + Hydration) ── */
   const initialOverlay = showInitial ? (
     <div
       id="ddd-initial-loader"
@@ -335,6 +394,7 @@ export function PageLoader() {
         <div className="neoleaf-ssr-title">Darsh Dental</div>
         <div className="neoleaf-ssr-subtitle">Depot</div>
       </div>
+
       <canvas
         ref={canvasRef}
         style={{
@@ -346,14 +406,53 @@ export function PageLoader() {
           zIndex: 2,
         }}
       />
+
+      {/* Numerical Progress Indicator */}
       <div className="neoleaf-progress" style={{ zIndex: 3 }}>
         loading...{" "}
         <span className="neoleaf-progress-num">{progress}</span> %
       </div>
+
+      {/* Gentle Status when wave is 100% but authentication check is still resolving */}
+      {waveComplete && authLoading && !authTimedOut && (
+        <div className="neoleaf-auth-waiting">
+          <Loader2 className="w-3.5 h-3.5 animate-spin text-[#12A488]" />
+          <span>Verifying clinic session...</span>
+        </div>
+      )}
+
+      {/* Explicit Safe Recovery Card when authentication check exceeds safety limit */}
+      {authTimedOut && authLoading && (
+        <div className="neoleaf-auth-timeout-card">
+          <div className="w-12 h-12 rounded-full bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-500 dark:text-amber-400 mb-3 mx-auto">
+            <ShieldAlert className="w-6 h-6" />
+          </div>
+          <h3 className="text-base font-bold text-foreground mb-1">
+            Authentication Taking Longer
+          </h3>
+          <p className="text-xs text-muted-foreground max-w-sm mb-4 leading-relaxed">
+            We are having trouble establishing a secure session with depot servers. You can retry verification or continue in guest mode.
+          </p>
+          <div className="flex items-center justify-center gap-3">
+            <button
+              onClick={() => window.location.reload()}
+              className="px-4 py-2 rounded-xl text-xs font-semibold bg-neutral-800 text-white hover:bg-neutral-700 transition-colors flex items-center gap-1.5 cursor-pointer"
+            >
+              <RefreshCw className="w-3.5 h-3.5" /> Retry
+            </button>
+            <button
+              onClick={handleContinueAsGuest}
+              className="px-4 py-2 rounded-xl text-xs font-bold bg-[#12A488] text-white hover:bg-[#0fa083] transition-colors cursor-pointer"
+            >
+              Continue as Guest &rarr;
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   ) : null;
 
-  // Active page navigation overlay (loading.svg)
+  /* ── Active Page Navigation Overlay (loading.svg) ── */
   const routeOverlay =
     !showInitial && routeProgress ? (
       <div

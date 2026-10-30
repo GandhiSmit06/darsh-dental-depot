@@ -385,12 +385,15 @@ h1, h2, h3, h4, h5, h6 {
 /* By default, hide app content until initial loading completes and auth confirms readiness */
 html:not(.ddd-app-ready) #app-root-content {
   visibility: hidden !important;
+  opacity: 0 !important;
   pointer-events: none !important;
 }
 
 html.ddd-app-ready #app-root-content {
   visibility: visible !important;
+  opacity: 1 !important;
   pointer-events: auto !important;
+  transition: opacity 0.35s cubic-bezier(0.25, 0.1, 0.25, 1);
 }
 
 /* Force initial loader visible immediately before React hydrates */
@@ -413,8 +416,8 @@ html.ddd-seen .neoleaf-loader-overlay {
   display: flex;
   justify-content: center;
   align-items: center;
-  transition: opacity 0.75s cubic-bezier(0.25, 0.1, 0.25, 1),
-              visibility 0.75s cubic-bezier(0.25, 0.1, 0.25, 1);
+  transition: opacity 0.38s cubic-bezier(0.25, 0.1, 0.25, 1),
+              visibility 0.38s cubic-bezier(0.25, 0.1, 0.25, 1);
   will-change: opacity, visibility;
   pointer-events: auto;
 }
@@ -423,10 +426,34 @@ html.ddd-seen .neoleaf-loader-overlay {
   background-color: #f8fafc;
 }
 
-.neoleaf-loader-overlay.neoleaf-fade-out {
+/* Staged Exit: Background fade out */
+.neoleaf-loader-overlay.neoleaf-bg-fade-out {
   opacity: 0 !important;
   visibility: hidden !important;
   pointer-events: none !important;
+}
+
+/* Staged Exit: Foreground container (logo, text, canvas, progress) */
+.neoleaf-loader-foreground {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.28s cubic-bezier(0.25, 0.1, 0.25, 1),
+              transform 0.28s cubic-bezier(0.25, 0.1, 0.25, 1),
+              visibility 0.28s cubic-bezier(0.25, 0.1, 0.25, 1);
+  will-change: opacity, transform, visibility;
+  pointer-events: auto;
+}
+
+.neoleaf-loader-foreground.neoleaf-fg-fade-out {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  transform: scale(0.97);
 }
 
 .neoleaf-ssr-fallback {

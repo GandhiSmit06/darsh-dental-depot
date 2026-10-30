@@ -45,7 +45,8 @@ export function PageLoader() {
 
   // Initial cold-start loader: Default true for deterministic SSR rendering
   const [showInitial, setShowInitial] = useState(true);
-  const [fadeOut, setFadeOut] = useState(false);
+  const [fgFadeOut, setFgFadeOut] = useState(false);
+  const [bgFadeOut, setBgFadeOut] = useState(false);
   const [progress, setProgress] = useState(0);
 
   // Authentication readiness state
@@ -86,28 +87,31 @@ export function PageLoader() {
 
   const LOAD_DURATION = 1350; // Visual duration of wave progression
 
-  /* ── Required Finalization Sequence ──
-   * 1. Mark initialization as complete & reveal application content (ddd-app-ready)
-   * 2. Start smooth loader fade-out transition (neoleaf-fade-out)
-   * 3. Allow transition to finish smoothly without display:none interference
-   * 4. Unmount loader and mark session as seen only after transition finishes
+  /* ── Staged Finalization Sequence ──
+   * Phase 1: Fade out foreground completely (canvas, logo text, progress indicator).
+   * Phase 2: Reveal app content (ddd-app-ready) and smoothly dissolve solid background.
+   * Phase 3: Unmount loader overlay and record session as seen after background finishes.
+   * Result: Absolutely zero oversized logo or text ever overlaps the homepage.
    */
   const finishInitialLoader = useCallback(() => {
     if (isFinishedRef.current) return;
     isFinishedRef.current = true;
 
-    // Step 1: Reveal application content behind the loader
-    document.documentElement.classList.add("ddd-app-ready");
+    // Phase 1: Dissolve foreground (canvas text, fallback, progress indicator) completely
+    setFgFadeOut(true);
 
-    // Step 2: Trigger smooth opacity fade-out on the overlay
-    setFadeOut(true);
-
-    // Step 3: Wait for 750ms CSS transition to fully complete before unmounting
+    // Phase 2: Once foreground is completely faded out (300ms), reveal app & dissolve background
     registerTimer(() => {
-      markSessionSeenSafe();
-      document.documentElement.classList.add("ddd-seen");
-      setShowInitial(false);
-    }, 780);
+      document.documentElement.classList.add("ddd-app-ready");
+      setBgFadeOut(true);
+
+      // Phase 3: Once background has fully dissolved (380ms), mark seen & unmount
+      registerTimer(() => {
+        markSessionSeenSafe();
+        document.documentElement.classList.add("ddd-seen");
+        setShowInitial(false);
+      }, 400);
+    }, 300);
   }, [registerTimer]);
 
   /* ── Session Verification on Client Mount ── */
@@ -414,69 +418,73 @@ export function PageLoader() {
   const initialOverlay = showInitial ? (
     <div
       id="ddd-initial-loader"
-      className={`neoleaf-loader-overlay ${fadeOut ? "neoleaf-fade-out" : ""}`}
+      className={`neoleaf-loader-overlay ${bgFadeOut ? "neoleaf-bg-fade-out" : ""}`}
       role="status"
       aria-live="polite"
     >
-      <div className="neoleaf-ssr-fallback select-none" aria-hidden="true">
-        <div className="neoleaf-ssr-title">Darsh Dental</div>
-        <div className="neoleaf-ssr-subtitle">Depot</div>
-      </div>
-
-      <canvas
-        ref={canvasRef}
-        style={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          width: "100%",
-          height: "100%",
-          zIndex: 2,
-        }}
-      />
-
-      {/* Numerical Progress Indicator */}
-      <div className="neoleaf-progress" style={{ zIndex: 3 }}>
-        loading...{" "}
-        <span className="neoleaf-progress-num">{progress}</span> %
-      </div>
-
-      {/* Gentle Status when wave is 100% but authentication check is still resolving */}
-      {waveComplete && authLoading && !authTimedOut && (
-        <div className="neoleaf-auth-waiting">
-          <Loader2 className="w-3.5 h-3.5 animate-spin text-[#12A488]" />
-          <span>Verifying clinic session...</span>
+      <div
+        className={`neoleaf-loader-foreground ${fgFadeOut ? "neoleaf-fg-fade-out" : ""}`}
+      >
+        <div className="neoleaf-ssr-fallback select-none" aria-hidden="true">
+          <div className="neoleaf-ssr-title">Darsh Dental</div>
+          <div className="neoleaf-ssr-subtitle">Depot</div>
         </div>
-      )}
 
-      {/* Explicit Safe Recovery Card when authentication check exceeds safety limit */}
-      {authTimedOut && authLoading && (
-        <div className="neoleaf-auth-timeout-card">
-          <div className="w-12 h-12 rounded-full bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-500 dark:text-amber-400 mb-3 mx-auto">
-            <ShieldAlert className="w-6 h-6" />
-          </div>
-          <h3 className="text-base font-bold text-foreground mb-1">
-            Authentication Taking Longer
-          </h3>
-          <p className="text-xs text-muted-foreground max-w-sm mb-4 leading-relaxed">
-            We are having trouble establishing a secure session with depot servers. You can retry verification or continue in guest mode.
-          </p>
-          <div className="flex items-center justify-center gap-3">
-            <button
-              onClick={() => window.location.reload()}
-              className="px-4 py-2 rounded-xl text-xs font-semibold bg-neutral-800 text-white hover:bg-neutral-700 transition-colors flex items-center gap-1.5 cursor-pointer"
-            >
-              <RefreshCw className="w-3.5 h-3.5" /> Retry
-            </button>
-            <button
-              onClick={handleContinueAsGuest}
-              className="px-4 py-2 rounded-xl text-xs font-bold bg-[#12A488] text-white hover:bg-[#0fa083] transition-colors cursor-pointer"
-            >
-              Continue as Guest &rarr;
-            </button>
-          </div>
+        <canvas
+          ref={canvasRef}
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            zIndex: 2,
+          }}
+        />
+
+        {/* Numerical Progress Indicator */}
+        <div className="neoleaf-progress" style={{ zIndex: 3 }}>
+          loading...{" "}
+          <span className="neoleaf-progress-num">{progress}</span> %
         </div>
-      )}
+
+        {/* Gentle Status when wave is 100% but authentication check is still resolving */}
+        {waveComplete && authLoading && !authTimedOut && (
+          <div className="neoleaf-auth-waiting">
+            <Loader2 className="w-3.5 h-3.5 animate-spin text-[#12A488]" />
+            <span>Verifying clinic session...</span>
+          </div>
+        )}
+
+        {/* Explicit Safe Recovery Card when authentication check exceeds safety limit */}
+        {authTimedOut && authLoading && (
+          <div className="neoleaf-auth-timeout-card">
+            <div className="w-12 h-12 rounded-full bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-500 dark:text-amber-400 mb-3 mx-auto">
+              <ShieldAlert className="w-6 h-6" />
+            </div>
+            <h3 className="text-base font-bold text-foreground mb-1">
+              Authentication Taking Longer
+            </h3>
+            <p className="text-xs text-muted-foreground max-w-sm mb-4 leading-relaxed">
+              We are having trouble establishing a secure session with depot servers. You can retry verification or continue in guest mode.
+            </p>
+            <div className="flex items-center justify-center gap-3">
+              <button
+                onClick={() => window.location.reload()}
+                className="px-4 py-2 rounded-xl text-xs font-semibold bg-neutral-800 text-white hover:bg-neutral-700 transition-colors flex items-center gap-1.5 cursor-pointer"
+              >
+                <RefreshCw className="w-3.5 h-3.5" /> Retry
+              </button>
+              <button
+                onClick={handleContinueAsGuest}
+                className="px-4 py-2 rounded-xl text-xs font-bold bg-[#12A488] text-white hover:bg-[#0fa083] transition-colors cursor-pointer"
+              >
+                Continue as Guest &rarr;
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   ) : null;
 

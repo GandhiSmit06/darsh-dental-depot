@@ -420,3 +420,64 @@ h1, h2, h3, h4, h5, h6 {
   display: inline-block;
   text-align: right;
 }
+
+
+/* Route Transition Overlay with loading.svg */
+.route-transition-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9998;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(7, 11, 10, 0.78);
+  backdrop-filter: blur(12px) saturate(1.2);
+  -webkit-backdrop-filter: blur(12px) saturate(1.2);
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+              visibility 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: auto;
+}
+
+:root:not(.dark) .route-transition-overlay {
+  background-color: rgba(255, 255, 255, 0.82);
+}
+
+.route-transition-overlay.route-transition-fade-out {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.route-transition-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 2.25rem 2.5rem;
+  border-radius: 1.5rem;
+  border: 1px solid rgba(18, 164, 136, 0.25);
+  background: radial-gradient(circle at center, rgba(18, 164, 136, 0.12) 0%, rgba(7, 11, 10, 0.85) 100%);
+  box-shadow: 0 24px 48px -12px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  animation: routePopIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  user-select: none;
+}
+
+:root:not(.dark) .route-transition-content {
+  background: radial-gradient(circle at center, rgba(2, 132, 199, 0.08) 0%, rgba(255, 255, 255, 0.95) 100%);
+  border-color: rgba(2, 132, 199, 0.25);
+  box-shadow: 0 24px 48px -12px rgba(2, 132, 199, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+@keyframes routePopIn {
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}

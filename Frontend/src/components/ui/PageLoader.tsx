@@ -209,29 +209,78 @@ export function PageLoader() {
     };
   }, [showInitial, drawFrame]);
 
-  /* ── Route-change mini-loader ── */
+  /* ── Route-change transition loader with loading.svg ── */
   const [routeProgress, setRouteProgress] = useState(false);
+  const [routeFadeOut, setRouteFadeOut] = useState(false);
+  const [imgError, setImgError] = useState(false);
+  const routeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   useEffect(() => {
     if (isRouteLoading && !showInitial) {
-      setRouteProgress(true);
+      // Debounce: only activate if navigation takes more than 200ms
+      routeTimerRef.current = setTimeout(() => {
+        setRouteFadeOut(false);
+        setRouteProgress(true);
+      }, 200);
     } else {
-      const t = setTimeout(() => setRouteProgress(false), 400);
-      return () => clearTimeout(t);
+      if (routeTimerRef.current) {
+        clearTimeout(routeTimerRef.current);
+        routeTimerRef.current = null;
+      }
+      if (routeProgress) {
+        setRouteFadeOut(true);
+        const t = setTimeout(() => {
+          setRouteProgress(false);
+          setRouteFadeOut(false);
+        }, 320);
+        return () => clearTimeout(t);
+      }
     }
-  }, [isRouteLoading, showInitial]);
+    return () => {
+      if (routeTimerRef.current) {
+        clearTimeout(routeTimerRef.current);
+      }
+    };
+  }, [isRouteLoading, showInitial, routeProgress]);
 
   if (!showInitial && !routeProgress) return null;
 
   if (!showInitial && routeProgress) {
     return (
-      <div className="fixed top-0 left-0 right-0 z-[9999] h-0.5">
-        <div
-          className="h-full bg-gradient-to-r from-sky-400 via-primary to-cyan-400"
-          style={{
-            animation: "routeBar 1.8s ease-in-out infinite",
-            transformOrigin: "left",
-          }}
-        />
+      <div
+        className={`route-transition-overlay ${routeFadeOut ? "route-transition-fade-out" : ""}`}
+        role="status"
+        aria-live="polite"
+      >
+        <div className="route-transition-content">
+          <div className="relative flex items-center justify-center">
+            {/* Ambient clinical glow behind loader */}
+            <div className="absolute w-32 h-32 rounded-full blur-2xl pointer-events-none opacity-60 bg-gradient-to-tr from-[#12A488]/30 via-[#3FD1B3]/25 to-sky-500/20" />
+
+            {!imgError ? (
+              <img
+                src="/loading.svg"
+                alt="Loading animation"
+                width={112}
+                height={112}
+                onError={() => setImgError(true)}
+                className="relative z-10 w-28 h-28 object-contain drop-shadow-[0_4px_24px_rgba(18,164,136,0.3)]"
+                loading="eager"
+              />
+            ) : (
+              <div className="relative z-10 flex items-center justify-center rounded-full border border-[#12A488]/30 bg-[#12A488]/10 text-[#3FD1B3] w-24 h-24">
+                <div className="w-10 h-10 rounded-full border-2 border-[#12A488] border-t-[#3FD1B3] animate-spin" />
+              </div>
+            )}
+          </div>
+
+          <p className="mt-4 text-sm font-semibold tracking-wide text-foreground/90 font-heading">
+            Loading...
+          </p>
+          <p className="mt-1 text-xs text-muted-foreground/80 tracking-wider uppercase font-medium">
+            Darsh Dental Depot
+          </p>
+        </div>
       </div>
     );
   }

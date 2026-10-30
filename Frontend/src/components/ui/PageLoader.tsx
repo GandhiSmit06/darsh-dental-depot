@@ -72,7 +72,7 @@ export function PageLoader() {
     return timer;
   }, []);
 
-  const clearTimer = useCallback((timer: ReturnType<typeof setTimeout> | undefined) => {
+  const clearTimer = useCallback((timer: ReturnType<typeof setTimeout> | null | undefined) => {
     if (timer) {
       clearTimeout(timer);
       timersRef.current.delete(timer);
@@ -349,13 +349,29 @@ export function PageLoader() {
     finishInitialLoader();
   }, [finishInitialLoader]);
 
+  /* ── Route Navigation Timer Tracking & Cleanup ── */
+  const routeFadeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const routeHideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const clearRouteTimers = useCallback(() => {
+    if (routeFadeTimerRef.current) {
+      clearTimer(routeFadeTimerRef.current);
+      routeFadeTimerRef.current = null;
+    }
+    if (routeHideTimerRef.current) {
+      clearTimer(routeHideTimerRef.current);
+      routeHideTimerRef.current = null;
+    }
+  }, [clearTimer]);
+
   /* ── Master Cleanup on Unmount ── */
   useEffect(() => {
     return () => {
+      clearRouteTimers();
       clearAllTimers();
       if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
     };
-  }, [clearAllTimers]);
+  }, [clearAllTimers, clearRouteTimers]);
 
   /* ── Route Navigation Overlay with loading.svg ── */
   const [routeProgress, setRouteProgress] = useState(false);
@@ -369,18 +385,30 @@ export function PageLoader() {
 
     if (prevPathRef.current !== pathname) {
       prevPathRef.current = pathname;
+
+      // Cancel any pending timers from previous navigations to prevent older timers
+      // from prematurely hiding the loader during rapid navigation
+      clearRouteTimers();
+
       setRouteFadeOut(false);
       setRouteProgress(true);
 
-      registerTimer(() => {
+      routeFadeTimerRef.current = registerTimer(() => {
+        routeFadeTimerRef.current = null;
         setRouteFadeOut(true);
-        registerTimer(() => {
+
+        routeHideTimerRef.current = registerTimer(() => {
+          routeHideTimerRef.current = null;
           setRouteProgress(false);
           setRouteFadeOut(false);
         }, 250);
       }, 400);
+
+      return () => {
+        clearRouteTimers();
+      };
     }
-  }, [pathname, showInitial, registerTimer]);
+  }, [pathname, showInitial, clearRouteTimers, registerTimer]);
 
   /* ── Initial Cold-Start Wave Text Loader (SSR Deterministic Shell + Hydration) ── */
   const initialOverlay = showInitial ? (

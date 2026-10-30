@@ -33,7 +33,7 @@ const navLinks = [
 
 export function Logo({ className }: { className?: string }) {
   return (
-    <Link to="/" className={`flex items-center gap-2.5 group select-none shrink-0 ${className || ""}`}>
+    <Link to="/" data-magnetic className={`flex items-center gap-2.5 group select-none shrink-0 ${className || ""}`}>
       <div className="relative shrink-0">
         <div className="h-9 w-9 rounded-xl overflow-hidden bg-white dark:bg-slate-900 border border-sky-200/80 dark:border-slate-700 shadow-xs flex items-center justify-center p-1 group-hover:border-sky-400 transition-colors">
           <svg className="w-6 h-6 text-[#0284c7]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -119,6 +119,7 @@ export function Navbar() {
               <Link
                 key={`${l.label}-${index}`}
                 to={l.to}
+                data-magnetic
                 className={`px-3 py-1.5 text-xs font-semibold rounded-full transition-all duration-200 ${
                   active
                     ? "bg-sky-100 dark:bg-sky-950/60 text-[#0284c7] dark:text-sky-300 font-bold"
@@ -161,6 +162,7 @@ export function Navbar() {
           {/* Cart Icon with Dynamic Count Badge */}
           <Link
             to={isAuthenticated && user?.role === "doctor" ? "/doctor" : "/products"}
+            data-magnetic
             className="relative p-2 rounded-full text-slate-700 dark:text-slate-300 hover:text-[#0284c7] hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
             title={cartCount > 0 ? `Clinic Cart (${cartCount} item${cartCount > 1 ? "s" : ""})` : "Clinic Cart (Empty)"}
           >
@@ -173,7 +175,7 @@ export function Navbar() {
           </Link>
 
           {/* Liquid Glass Theme Toggle */}
-          <div className="flex items-center">
+          <div className="flex items-center" data-magnetic>
             <LiquidToggle
               size={26}
               tone={theme === "dark" ? "dark" : "light"}
@@ -212,12 +214,13 @@ export function Navbar() {
             <div className="flex items-center gap-2">
               <Link
                 to="/login"
+                data-magnetic
                 className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:text-[#0284c7] transition-colors"
               >
                 <User className="h-3.5 w-3.5" />
                 <span>Sign In</span>
               </Link>
-              <Link to="/register" className="inline-block">
+              <Link to="/register" data-magnetic className="inline-block">
                 <InteractiveHoverButton
                   text="Doctor Register"
                   className="h-8.5 min-w-[136px] px-3.5 text-xs font-semibold"

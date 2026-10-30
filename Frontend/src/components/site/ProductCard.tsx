@@ -165,6 +165,7 @@ export function ProductCard({ product, onAdd, onWishlist }: ProductCardProps) {
             {/* Wishlist Button (Only for doctors / guest clinic buyers) */}
             {!isManager && (
               <motion.button
+                data-magnetic
                 whileTap={{ scale: 0.8 }}
                 onClick={handleWishlist}
                 className={`absolute top-3 right-3 h-8 w-8 rounded-full grid place-items-center backdrop-blur-md transition-all z-10 pointer-events-auto ${
@@ -251,7 +252,7 @@ export function ProductCard({ product, onAdd, onWishlist }: ProductCardProps) {
                 </Link>
               </Button>
             ) : (
-              <AddToCartAnimation
+              <div data-magnetic className="inline-block"><AddToCartAnimation
                 onClick={handleAddToCart}
                 disabled={!inStock}
                 isAdding={isAdding}
@@ -260,7 +261,7 @@ export function ProductCard({ product, onAdd, onWishlist }: ProductCardProps) {
                 pillColor="#0A1B17"
                 textColor="#3FD1B3"
                 className="h-8 w-28 shrink-0 rounded-xl"
-              />
+              /></div>
             )}
           </div>
         </div>

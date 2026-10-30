@@ -252,6 +252,7 @@ export function DentalAiChatbot() {
         {!isOpen && (
           <button
             type="button"
+            data-magnetic
             onClick={() => setIsOpen(true)}
             className="group relative flex items-center gap-2.5 px-4 py-3 rounded-full bg-gradient-to-r from-primary via-sky-600 to-primary dark:bg-[#12A488] dark:hover:bg-[#3FD1B3] bg-[length:200%_auto] hover:bg-[position:right_center] text-white dark:text-[#04110E] dark:font-bold shadow-xl shadow-primary/30 dark:shadow-[#12A488]/30 hover:shadow-2xl hover:scale-105 active:scale-95 transition-all duration-300 border border-white/20 cursor-pointer"
           >

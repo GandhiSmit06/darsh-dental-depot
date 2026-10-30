@@ -16,6 +16,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@/components/theme-provider";
 import { AuthProvider } from "@/lib/auth-context";
 import { PageLoader } from "@/components/ui/PageLoader";
+import { MagneticCursor } from "@/components/ui/magnetic-cursor";
 import { DentalAiChatbot } from "@/components/chatbot/DentalAiChatbot";
 import { InternetReconnectModal } from "@/components/ui/InternetReconnectModal";
 
@@ -131,13 +132,21 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
         <AuthProvider>
-          <PageLoader />
-          <InternetReconnectModal />
-          <div id="app-root-content" className="min-h-screen flex flex-col w-full">
-            <Outlet />
-          </div>
-          <DentalAiChatbot />
-          <Toaster richColors position="top-right" />
+          <MagneticCursor
+            cursorSize={26}
+            blendMode="exclusion"
+            magneticFactor={0.2}
+            hoverPadding={8}
+            contrastBoost={1.5}
+          >
+            <PageLoader />
+            <InternetReconnectModal />
+            <div id="app-root-content" className="min-h-screen flex flex-col w-full">
+              <Outlet />
+            </div>
+            <DentalAiChatbot />
+            <Toaster richColors position="top-right" />
+          </MagneticCursor>
         </AuthProvider>
       </ThemeProvider>
     </QueryClientProvider>

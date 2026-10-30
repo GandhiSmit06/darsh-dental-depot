@@ -468,6 +468,7 @@ function HomePage() {
 
               {/* Integrated Hero Search Pill */}
               <motion.form
+                data-magnetic
                 onSubmit={handleHeroSearch}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -514,6 +515,7 @@ function HomePage() {
                 <Button
                   size="lg"
                   asChild
+                  data-magnetic
                   className="rounded-md h-11 px-6 text-xs sm:text-sm font-semibold bg-[#0284c7] hover:bg-[#0369a1] text-white shadow-xs btn-shine transition-colors dark:bg-[#12A488] dark:hover:bg-[#3FD1B3] dark:text-[#04110E] dark:font-bold"
                 >
                   <Link to="/products" className="flex items-center gap-2">
@@ -523,7 +525,7 @@ function HomePage() {
                   </Link>
                 </Button>
 
-                <Link to="/register" className="inline-block">
+                <Link to="/register" data-magnetic className="inline-block">
                   <InteractiveHoverButton
                     text="Register Vadodara Clinic"
                     className="h-11 px-6 text-xs sm:text-sm font-semibold border-slate-300/80 dark:border-white/10"

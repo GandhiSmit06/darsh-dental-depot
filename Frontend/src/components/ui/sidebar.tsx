@@ -24,14 +24,20 @@ interface SidebarContextProps {
   toggleSidebar: () => void;
 }
 
-const SidebarContext = createContext<SidebarContextProps | undefined>(undefined);
+const defaultSidebarContext: SidebarContextProps = {
+  open: true,
+  setOpen: () => {},
+  animate: false,
+  openMobile: false,
+  setOpenMobile: () => {},
+  toggleSidebar: () => {},
+};
+
+const SidebarContext = createContext<SidebarContextProps>(defaultSidebarContext);
 
 export const useSidebar = () => {
   const context = useContext(SidebarContext);
-  if (!context) {
-    throw new Error("useSidebar must be used within a SidebarProvider");
-  }
-  return context;
+  return context || defaultSidebarContext;
 };
 
 export const SidebarProvider = ({
@@ -110,7 +116,7 @@ export const DesktopSidebar = ({
   const { open, animate } = useSidebar();
 
   return (
-    <motion.aside
+    <motion.div
       className={cn(
         "h-screen sticky top-0 py-4 hidden md:flex md:flex-col bg-card/90 dark:bg-[#070B0A] border-r border-border/50 dark:border-white/10 backdrop-blur-xl flex-shrink-0 z-40 transition-colors duration-200 overflow-hidden",
         open ? "px-3 w-[260px]" : "px-2 w-[72px]",
@@ -126,7 +132,7 @@ export const DesktopSidebar = ({
       {...props}
     >
       {children}
-    </motion.aside>
+    </motion.div>
   );
 };
 

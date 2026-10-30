@@ -151,7 +151,7 @@ function mapToProductCardProps(p: ProductResponse | DoctorWishlistItem) {
     rating: p.rating,
     reviewCount: p.reviewCount,
     description: '',
-    image: 'images' in p ? p.images[0] || '' : p.imageUrl || '',
+    image: 'images' in p ? (Array.isArray(p.images) ? p.images[0] || '' : '') : p.imageUrl || '',
   };
 }
 
@@ -174,10 +174,10 @@ function Overview() {
 
       {stats.loading ? <LoadingSpinner /> : stats.error ? <ErrorBanner onRetry={stats.retry} /> : stats.data && (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <StatCard label="Active Orders" value={String(stats.data.activeOrders)} icon={Package} />
-          <StatCard label="Wishlist Items" value={String(stats.data.wishlistCount)} icon={Heart} />
-          <StatCard label="Total Spent" value={stats.data.totalSpent.toLocaleString()} prefix="₹" icon={ShoppingBag} />
-          <StatCard label="Cart Items" value={String(stats.data.cartItems)} icon={ShoppingCart} />
+          <StatCard label="Active Orders" value={String(stats.data?.activeOrders ?? 0)} icon={Package} />
+          <StatCard label="Wishlist Items" value={String(stats.data?.wishlistCount ?? 0)} icon={Heart} />
+          <StatCard label="Total Spent" value={(stats.data?.totalSpent ?? 0).toLocaleString()} prefix="₹" icon={ShoppingBag} />
+          <StatCard label="Cart Items" value={String(stats.data?.cartItems ?? 0)} icon={ShoppingCart} />
         </div>
       )}
 

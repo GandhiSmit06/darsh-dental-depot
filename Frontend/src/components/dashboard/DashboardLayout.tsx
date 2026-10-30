@@ -122,17 +122,15 @@ export function DashboardLayout({
   return (
     <SidebarProvider>
       <div className="min-h-screen flex flex-col md:flex-row w-full bg-background text-foreground relative">
-        <Sidebar>
-          <DashboardSidebarContent
-            role={role}
-            items={items}
-            active={active}
-            onChange={onChange}
-            unreadCount={unreadCount}
-            user={user}
-            handleSignOut={handleSignOut}
-          />
-        </Sidebar>
+        <DashboardSidebarContent
+          role={role}
+          items={items}
+          active={active}
+          onChange={onChange}
+          unreadCount={unreadCount}
+          user={user}
+          handleSignOut={handleSignOut}
+        />
 
         <div className="flex-1 flex flex-col min-w-0">
           <header className="h-16 border-b border-border/50 dark:border-white/10 bg-card/60 dark:bg-[#070B0A]/80 backdrop-blur-xl sticky top-0 z-30 flex items-center gap-3 px-4 sm:px-6 justify-between">

@@ -3,17 +3,11 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarHeader,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
+  SidebarBody,
+  SidebarLink,
   SidebarProvider,
   SidebarTrigger,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -127,100 +121,23 @@ export function DashboardLayout({
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen flex w-full bg-background text-foreground relative">
-        <Sidebar collapsible="icon" className="border-r border-border/50 dark:border-white/10 bg-card/60 dark:bg-[#070B0A] backdrop-blur-xl">
-          <SidebarHeader className="p-3 border-b border-border/40 dark:border-white/10">
-            <Link to="/" className="flex items-center gap-3 px-2 py-1.5 group select-none">
-              <div className="relative shrink-0">
-                <div className="h-9 w-9 rounded-xl overflow-hidden bg-white/95 dark:bg-[#10201C] border border-white/60 dark:border-white/10 shadow-md transform group-hover:scale-105 transition-all duration-300 flex items-center justify-center p-0.5">
-                  <img
-                    src="/logo.jpg"
-                    alt="Darsh Dental"
-                    className="w-full h-full object-cover rounded-[inherit]"
-                  />
-                </div>
-              </div>
-              <div className="flex flex-col leading-tight group-data-[collapsible=icon]:hidden">
-                <span className="font-extrabold text-sm font-heading tracking-tight text-foreground group-hover:text-primary dark:group-hover:text-[#3FD1B3] transition-colors">
-                  Darsh Dental
-                </span>
-                <span className="text-[10px] font-bold uppercase tracking-widest text-primary dark:text-[#3FD1B3]">
-                  {role}
-                </span>
-              </div>
-            </Link>
-          </SidebarHeader>
-
-          <SidebarContent className="px-2 py-3">
-            <SidebarGroup>
-              <SidebarGroupLabel className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground dark:text-[#9DB0A9] px-3 mb-1">
-                Management
-              </SidebarGroupLabel>
-              <SidebarGroupContent>
-                <SidebarMenu className="space-y-1">
-                  {items.map((item) => {
-                    const isActive = item.key === active;
-                    const isNotificationTab = item.key === "notifications";
-                    return (
-                      <SidebarMenuItem key={item.key}>
-                        <SidebarMenuButton
-                          isActive={isActive}
-                          onClick={() => onChange(item.key)}
-                          tooltip={item.label}
-                          className={`rounded-xl h-10 px-3 transition-all relative ${
-                            isActive
-                              ? "bg-primary dark:bg-[#12A488] text-primary-foreground dark:text-[#04110E] font-bold shadow-sm"
-                              : "text-muted-foreground dark:text-[#9DB0A9] hover:text-foreground dark:hover:text-[#F2F6F4] hover:bg-secondary/70 dark:hover:bg-[#10201C]"
-                          }`}
-                        >
-                          <item.icon className="h-4 w-4" />
-                          <span className="text-xs font-medium">{item.label}</span>
-                          {isNotificationTab && unreadCount > 0 && (
-                            <Badge className="ml-auto h-4 min-w-4 px-1 text-[9px] font-bold bg-destructive text-white border-0">
-                              {unreadCount}
-                            </Badge>
-                          )}
-                        </SidebarMenuButton>
-                      </SidebarMenuItem>
-                    );
-                  })}
-                </SidebarMenu>
-              </SidebarGroupContent>
-            </SidebarGroup>
-          </SidebarContent>
-
-          <SidebarFooter className="p-3 border-t border-border/40 dark:border-white/10 space-y-1">
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild tooltip="Storefront">
-                  <Link
-                    to="/"
-                    className="rounded-xl h-9 px-3 text-xs text-muted-foreground dark:text-[#9DB0A9] hover:text-foreground dark:hover:text-[#F2F6F4] hover:bg-secondary dark:hover:bg-[#10201C]"
-                  >
-                    <Home className="h-4 w-4" />
-                    <span>Back to Store</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  onClick={handleSignOut}
-                  tooltip="Sign Out"
-                  className="rounded-xl h-9 px-3 text-xs text-destructive hover:bg-destructive/10"
-                >
-                  <LogOut className="h-4 w-4" />
-                  <span>Sign Out</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarFooter>
+      <div className="min-h-screen flex flex-col md:flex-row w-full bg-background text-foreground relative">
+        <Sidebar>
+          <DashboardSidebarContent
+            role={role}
+            items={items}
+            active={active}
+            onChange={onChange}
+            unreadCount={unreadCount}
+            user={user}
+            handleSignOut={handleSignOut}
+          />
         </Sidebar>
 
         <div className="flex-1 flex flex-col min-w-0">
           <header className="h-16 border-b border-border/50 dark:border-white/10 bg-card/60 dark:bg-[#070B0A]/80 backdrop-blur-xl sticky top-0 z-30 flex items-center gap-3 px-4 sm:px-6 justify-between">
             <div className="flex items-center gap-3 min-w-0">
-              <SidebarTrigger className="rounded-xl h-9 w-9 border border-border/60 dark:border-white/10 hover:bg-secondary dark:hover:bg-[#10201C]" />
+              <SidebarTrigger />
               <nav className="flex items-center text-xs font-semibold text-muted-foreground gap-1.5 min-w-0">
                 <span className="text-muted-foreground dark:text-[#9DB0A9] truncate">{title}</span>
                 <ChevronRight className="h-3.5 w-3.5 shrink-0 opacity-50" />
@@ -286,6 +203,166 @@ export function DashboardLayout({
         </div>
       </div>
     </SidebarProvider>
+  );
+}
+
+function DashboardSidebarContent({
+  role,
+  items,
+  active,
+  onChange,
+  unreadCount,
+  user,
+  handleSignOut,
+}: {
+  role: string;
+  items: NavItem[];
+  active: string;
+  onChange: (key: string) => void;
+  unreadCount: number;
+  user: any;
+  handleSignOut: () => void;
+}) {
+  const { open } = useSidebar();
+
+  const initials = user?.fullName
+    ? user.fullName
+        .split(" ")
+        .map((n: string) => n[0])
+        .slice(0, 2)
+        .join("")
+        .toUpperCase()
+    : "DD";
+
+  return (
+    <SidebarBody className="justify-between gap-4 h-full">
+      <div className="flex flex-col flex-1 overflow-y-auto overflow-x-hidden pr-0.5">
+        {/* Brand / Logo */}
+        <Link
+          to="/"
+          className="flex items-center gap-3 px-2 py-2 group select-none rounded-xl hover:bg-secondary/50 dark:hover:bg-[#10201C]/60 transition-colors"
+        >
+          <div className="relative shrink-0">
+            <div className="h-9 w-9 rounded-xl overflow-hidden bg-white/95 dark:bg-[#10201C] border border-white/60 dark:border-white/10 shadow-sm transform group-hover:scale-105 transition-all duration-300 flex items-center justify-center p-0.5">
+              <img
+                src="/logo.jpg"
+                alt="Darsh Dental"
+                className="w-full h-full object-cover rounded-[inherit]"
+              />
+            </div>
+          </div>
+          <motion.div
+            initial={false}
+            animate={{
+              opacity: open ? 1 : 0,
+              display: open ? "flex" : "none",
+              width: open ? "auto" : 0,
+            }}
+            transition={{ duration: 0.18 }}
+            className="flex flex-col leading-tight overflow-hidden whitespace-nowrap"
+          >
+            <span className="font-extrabold text-sm font-heading tracking-tight text-foreground group-hover:text-primary dark:group-hover:text-[#3FD1B3] transition-colors truncate">
+              Darsh Dental
+            </span>
+            <span className="text-[10px] font-bold uppercase tracking-widest text-primary dark:text-[#3FD1B3]">
+              {role}
+            </span>
+          </motion.div>
+        </Link>
+
+        {/* Section Label */}
+        <div className="mt-5 mb-2 px-3">
+          <motion.span
+            initial={false}
+            animate={{
+              opacity: open ? 1 : 0,
+              display: open ? "block" : "none",
+            }}
+            transition={{ duration: 0.15 }}
+            className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground/80 dark:text-[#9DB0A9]/80 truncate whitespace-nowrap"
+          >
+            Management
+          </motion.span>
+          {!open && (
+            <div className="h-[1px] w-6 mx-auto bg-border/40 dark:bg-white/10 my-1 hidden md:block" />
+          )}
+        </div>
+
+        {/* Menu Items */}
+        <div className="flex flex-col gap-1">
+          {items.map((item) => {
+            const isActive = item.key === active;
+            const isNotificationTab = item.key === "notifications";
+            return (
+              <SidebarLink
+                key={item.key}
+                link={{
+                  label: item.label,
+                  active: isActive,
+                  onClick: () => onChange(item.key),
+                  icon: <item.icon className="h-4 w-4 shrink-0" />,
+                  badge:
+                    isNotificationTab && unreadCount > 0 ? (
+                      <Badge className="h-4 min-w-4 px-1 text-[9px] font-bold bg-destructive text-white border-0">
+                        {unreadCount}
+                      </Badge>
+                    ) : undefined,
+                }}
+              />
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Footer Area */}
+      <div className="pt-3 border-t border-border/40 dark:border-white/10 flex flex-col gap-1 shrink-0">
+        <SidebarLink
+          link={{
+            label: "Back to Store",
+            to: "/",
+            icon: (
+              <Home className="h-4 w-4 shrink-0 text-muted-foreground group-hover/sidebar:text-foreground" />
+            ),
+          }}
+        />
+
+        {/* User Mini Profile */}
+        <div className="flex items-center gap-2.5 px-2 py-2 rounded-xl bg-secondary/40 dark:bg-[#10201C]/60 border border-border/40 dark:border-white/5 my-1">
+          <Avatar className="h-7 w-7 rounded-lg bg-gradient-to-br from-primary to-indigo-600 dark:from-[#12A488] dark:to-[#3FD1B3] text-white dark:text-[#04110E] font-bold text-xs shrink-0">
+            <AvatarFallback className="bg-transparent text-white dark:text-[#04110E] text-[10px] font-bold">
+              {initials}
+            </AvatarFallback>
+          </Avatar>
+          <motion.div
+            initial={false}
+            animate={{
+              opacity: open ? 1 : 0,
+              display: open ? "flex" : "none",
+              width: open ? "auto" : 0,
+            }}
+            transition={{ duration: 0.18 }}
+            className="flex flex-col leading-none overflow-hidden whitespace-nowrap min-w-0"
+          >
+            <span className="text-xs font-bold text-foreground dark:text-[#F2F6F4] truncate">
+              {user?.fullName || "Practice Doctor"}
+            </span>
+            <span className="text-[10px] text-muted-foreground dark:text-[#9DB0A9] truncate mt-0.5">
+              {user?.email || role}
+            </span>
+          </motion.div>
+        </div>
+
+        <SidebarLink
+          link={{
+            label: "Sign Out",
+            onClick: handleSignOut,
+            icon: <LogOut className="h-4 w-4 shrink-0 text-destructive" />,
+            className:
+              "text-destructive hover:bg-destructive/10 dark:hover:bg-destructive/15",
+          }}
+        />
+      </div>
+    </SidebarBody>
   );
 }
 

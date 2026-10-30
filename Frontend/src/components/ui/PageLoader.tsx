@@ -9,7 +9,6 @@ function easeInOutCubic(t: number): number {
 
 export function PageLoader() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const isFetching = useIsFetching();
 
   // Initial cold-start loader: ONLY shown ONCE per session!
   const [showInitial, setShowInitial] = useState(() => {
@@ -216,41 +215,108 @@ export function PageLoader() {
   }, [showInitial, drawFrame]);
 
   /* ── Route Navigation & Page Loading with loading.svg ── */
+  const isRouterLoading = useRouterState({ select: (s) => s.isLoading });
+  const isFetching = useIsFetching();
+
+  // Exactly 1 complete animation loop of loading.svg (SMIL dur="5s")
+  const ANIM_CYCLE_MS = 5000;
+
   const [routeProgress, setRouteProgress] = useState(false);
   const [routeFadeOut, setRouteFadeOut] = useState(false);
+  const [animKey, setAnimKey] = useState(1);
   const [imgError, setImgError] = useState(false);
-  const [isNavigating, setIsNavigating] = useState(false);
-  const prevPathRef = useRef(pathname);
 
-  // Trigger loading state on route change so loading.svg is clearly visible
+  const prevPathRef = useRef(pathname);
+  const showInitialRef = useRef(showInitial);
+  showInitialRef.current = showInitial;
+
+  const activeLoadingRef = useRef(false);
+  const loadStartTimeRef = useRef(0);
+  const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const fadeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const isWorkInProgress = isRouterLoading || isFetching > 0;
+  const isWorkInProgressRef = useRef(isWorkInProgress);
+  isWorkInProgressRef.current = isWorkInProgress;
+
+  const triggerLoad = useCallback(() => {
+    if (showInitialRef.current) return;
+
+    if (closeTimerRef.current) {
+      clearTimeout(closeTimerRef.current);
+      closeTimerRef.current = null;
+    }
+    if (fadeTimerRef.current) {
+      clearTimeout(fadeTimerRef.current);
+      fadeTimerRef.current = null;
+    }
+
+    setRouteFadeOut(false);
+
+    if (!activeLoadingRef.current) {
+      activeLoadingRef.current = true;
+      loadStartTimeRef.current = Date.now();
+      setAnimKey((k) => k + 1);
+      setRouteProgress(true);
+    }
+  }, []);
+
+  const finishLoad = useCallback(() => {
+    if (!activeLoadingRef.current || showInitialRef.current) return;
+
+    if (closeTimerRef.current) {
+      clearTimeout(closeTimerRef.current);
+      closeTimerRef.current = null;
+    }
+
+    const elapsed = Date.now() - loadStartTimeRef.current;
+    // Hold for at least 1 full animation cycle if loading was fast
+    const remaining = Math.max(0, ANIM_CYCLE_MS - elapsed);
+
+    closeTimerRef.current = setTimeout(() => {
+      // If work is still active, wait until work actually completes
+      if (isWorkInProgressRef.current) return;
+
+      setRouteFadeOut(true);
+      fadeTimerRef.current = setTimeout(() => {
+        setRouteProgress(false);
+        setRouteFadeOut(false);
+        activeLoadingRef.current = false;
+        closeTimerRef.current = null;
+        fadeTimerRef.current = null;
+      }, 300);
+    }, remaining);
+  }, []);
+
+  // Detect route changes
   useEffect(() => {
     if (prevPathRef.current !== pathname) {
       prevPathRef.current = pathname;
-      setIsNavigating(true);
-      const timer = setTimeout(() => {
-        setIsNavigating(false);
-      }, 450);
-      return () => clearTimeout(timer);
+      if (!showInitial) {
+        triggerLoad();
+        finishLoad();
+      }
     }
-  }, [pathname]);
+  }, [pathname, showInitial, triggerLoad, finishLoad]);
 
-  const isPageLoading = isNavigating || isFetching > 0;
-
+  // Detect query / background work state changes
   useEffect(() => {
     if (showInitial) return;
 
-    if (isPageLoading) {
-      setRouteFadeOut(false);
-      setRouteProgress(true);
-    } else if (routeProgress) {
-      setRouteFadeOut(true);
-      const t = setTimeout(() => {
-        setRouteProgress(false);
-        setRouteFadeOut(false);
-      }, 260);
-      return () => clearTimeout(t);
+    if (isWorkInProgress) {
+      triggerLoad();
+    } else if (activeLoadingRef.current) {
+      finishLoad();
     }
-  }, [isPageLoading, showInitial, routeProgress]);
+  }, [isWorkInProgress, showInitial, triggerLoad, finishLoad]);
+
+  // Cleanup timers on unmount
+  useEffect(() => {
+    return () => {
+      if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
+      if (fadeTimerRef.current) clearTimeout(fadeTimerRef.current);
+    };
+  }, []);
 
   // If not in initial load and not navigating/loading, render nothing
   if (!showInitial && !routeProgress) return null;
@@ -270,12 +336,13 @@ export function PageLoader() {
 
             {!imgError ? (
               <img
-                src="/loading.svg"
+                key={animKey}
+                src={`/loading.svg?k=${animKey}`}
                 alt="Loading animation"
-                width={128}
-                height={128}
+                width={132}
+                height={132}
                 onError={() => setImgError(true)}
-                className="relative z-10 w-32 h-32 object-contain drop-shadow-[0_4px_24px_rgba(18,164,136,0.3)]"
+                className="relative z-10 w-32 h-32 md:w-36 md:h-36 object-contain drop-shadow-[0_4px_24px_rgba(18,164,136,0.3)] select-none pointer-events-none"
                 loading="eager"
               />
             ) : (

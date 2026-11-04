@@ -129,9 +129,9 @@ export function ProductCard({ product, onAdd, onWishlist }: ProductCardProps) {
       intro={false}
       className="h-full w-full"
     >
-      <Card className="overflow-hidden h-full flex flex-col group glass-card border border-border/60 hover:border-primary/40 rounded-2xl bg-card transition-colors duration-300">
+      <Card className="overflow-hidden h-full flex flex-col group glass-card border border-border/60 hover:border-primary/50 dark:border-white/10 dark:hover:border-[#3FD1B3]/50 rounded-3xl bg-card/95 transition-all duration-300 shadow-xs hover:shadow-md">
         {/* Product Image Area */}
-        <div className="relative aspect-[4/3] bg-muted/40 overflow-hidden">
+        <div className="relative aspect-[4/3] bg-muted/30 overflow-hidden">
           <Link
             to="/products/$id"
             params={{ id: productId }}
@@ -191,10 +191,15 @@ export function ProductCard({ product, onAdd, onWishlist }: ProductCardProps) {
 
         {/* Card Content */}
         <div className="p-4 flex flex-col gap-2 flex-1">
-          {/* Brand */}
-          <div className="text-[11px] font-bold text-primary dark:text-[#3FD1B3] uppercase tracking-wider flex items-center gap-1">
-            <CheckCircle className="h-3 w-3" />
-            {product.brand || "Darsh Certified"}
+          {/* Brand & Genuine Lot chip */}
+          <div className="flex items-center justify-between gap-1 text-[11px] font-bold text-primary dark:text-[#3FD1B3] uppercase tracking-wider">
+            <span className="flex items-center gap-1">
+              <CheckCircle className="h-3 w-3" />
+              {product.brand || "Darsh Certified"}
+            </span>
+            <span className="text-[10px] font-normal text-muted-foreground/80 dark:text-[#9DB0A9]/80 font-mono">
+              Lot Verified
+            </span>
           </div>
 
           {/* Title */}

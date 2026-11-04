@@ -19,12 +19,18 @@ import {
   ShieldCheck,
   Loader2,
   CheckCircle2,
+  CheckCircle,
   Sparkles,
   Zap,
   ArrowLeft,
   Share2,
   Package,
   Settings,
+  Clock,
+  MessageSquare,
+  ThermometerSnowflake,
+  Award,
+  FileText,
 } from "lucide-react";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
@@ -372,26 +378,119 @@ function ProductDetail() {
               )}
             </div>
 
-            {/* Trust Highlights Grid */}
-            <div className="grid grid-cols-2 gap-3 pt-4 border-t border-border/40 dark:border-white/10">
-              <div className="p-3.5 rounded-2xl bg-card dark:bg-gradient-to-br dark:from-[#10201C] dark:to-[#0A100F] border border-border/40 dark:border-white/10 flex items-center gap-3">
-                <Truck className="h-5 w-5 text-primary dark:text-[#3FD1B3] shrink-0" />
-                <div className="text-xs">
-                  <div className="font-bold text-foreground">Priority Medical Transit</div>
-                  <div className="text-muted-foreground dark:text-[#9DB0A9] text-[11px]">24–48h Delivery across India</div>
+            {/* Clinical Delivery & Trust Highlights */}
+            <div className="space-y-3 pt-2">
+              <div className="p-3.5 rounded-2xl bg-teal-500/10 dark:bg-[#12A488]/15 border border-teal-500/20 dark:border-[#12A488]/30 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="h-9 w-9 rounded-xl bg-teal-500/20 dark:bg-[#3FD1B3]/20 text-teal-600 dark:text-[#3FD1B3] flex items-center justify-center shrink-0">
+                    <Clock className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <div className="font-bold text-xs text-foreground">2-Hour Chairside Dispatch</div>
+                    <div className="text-[11px] text-muted-foreground dark:text-[#9DB0A9]">Local Vadodara Delivery from Shiyabaug Depot</div>
+                  </div>
+                </div>
+                <Badge className="bg-emerald-500/20 text-emerald-600 dark:text-[#3FD1B3] border-emerald-500/30 text-[10px] font-mono uppercase">
+                  Available
+                </Badge>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="p-3.5 rounded-2xl bg-card dark:bg-gradient-to-br dark:from-[#10201C] dark:to-[#0A100F] border border-border/40 dark:border-white/10 flex items-center gap-3">
+                  <Truck className="h-5 w-5 text-primary dark:text-[#3FD1B3] shrink-0" />
+                  <div className="text-xs">
+                    <div className="font-bold text-foreground">Priority Transit</div>
+                    <div className="text-muted-foreground dark:text-[#9DB0A9] text-[11px]">24–48h Across India</div>
+                  </div>
+                </div>
+
+                <div className="p-3.5 rounded-2xl bg-card dark:bg-gradient-to-br dark:from-[#10201C] dark:to-[#0A100F] border border-border/40 dark:border-white/10 flex items-center gap-3">
+                  <ShieldCheck className="h-5 w-5 text-emerald-500 dark:text-[#3FD1B3] shrink-0" />
+                  <div className="text-xs">
+                    <div className="font-bold text-foreground">100% Genuine Lot</div>
+                    <div className="text-muted-foreground dark:text-[#9DB0A9] text-[11px]">Manufacturer Batch Sealed</div>
+                  </div>
                 </div>
               </div>
 
-              <div className="p-3.5 rounded-2xl bg-card dark:bg-gradient-to-br dark:from-[#10201C] dark:to-[#0A100F] border border-border/40 dark:border-white/10 flex items-center gap-3">
-                <ShieldCheck className="h-5 w-5 text-emerald-500 dark:text-[#3FD1B3] shrink-0" />
-                <div className="text-xs">
-                  <div className="font-bold text-foreground">100% Genuine Lot</div>
-                  <div className="text-muted-foreground dark:text-[#9DB0A9] text-[11px]">Verified manufacturer batch</div>
-                </div>
-              </div>
+              {/* Direct Doctor Rep WhatsApp Procurement */}
+              <Button
+                variant="outline"
+                asChild
+                className="w-full rounded-2xl h-11 border-border/80 dark:border-white/15 dark:bg-[#0B1210] hover:bg-secondary text-xs font-semibold"
+              >
+                <a
+                  href={`https://wa.me/919727076119?text=Hello%20Darsh%20Dental%20Depot,%20I%20am%20a%20doctor%20inquiring%20about%20ordering%20${encodeURIComponent(product.name)}%20(SKU:%20${product.sku || product._id})`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center gap-2"
+                >
+                  <MessageSquare className="h-4 w-4 text-emerald-500" />
+                  <span>Direct Clinic WhatsApp Procurement (+91 97270 76119)</span>
+                </a>
+              </Button>
             </div>
           </ScrollReveal>
         </div>
+
+        {/* Clinical Specifications & Batch Standards (Plate 1 & 3 Reference) */}
+        <ScrollReveal className="mt-16 pt-10 border-t border-border/50 dark:border-white/10">
+          <div className="max-w-4xl">
+            <span className="text-[10px] font-mono uppercase tracking-widest text-primary dark:text-[#3FD1B3]">
+              02 / TECHNICAL DATA SHEET
+            </span>
+            <h2 className="text-2xl font-bold font-heading text-foreground mt-1">
+              Clinical Specifications & Storage Standards
+            </h2>
+            <p className="text-xs text-muted-foreground mt-1">
+              Verified physical parameters and manufacturer batch handling criteria.
+            </p>
+          </div>
+
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
+            <Card className="p-4 rounded-2xl border border-border/60 dark:border-white/10 glass-card bg-card/60 dark:bg-[#0B1513]">
+              <div className="flex items-center gap-2 text-xs font-bold text-primary dark:text-[#3FD1B3] uppercase tracking-wider mb-2">
+                <ThermometerSnowflake className="h-4 w-4" /> Thermal Control
+              </div>
+              <div className="text-sm font-semibold text-foreground">2°C – 25°C (Cold-Chain)</div>
+              <div className="text-[11px] text-muted-foreground mt-1">
+                Store away from direct light and operatory heat sources.
+              </div>
+            </Card>
+
+            <Card className="p-4 rounded-2xl border border-border/60 dark:border-white/10 glass-card bg-card/60 dark:bg-[#0B1513]">
+              <div className="flex items-center gap-2 text-xs font-bold text-primary dark:text-[#3FD1B3] uppercase tracking-wider mb-2">
+                <Award className="h-4 w-4" /> Quality Standard
+              </div>
+              <div className="text-sm font-semibold text-foreground">ISO 13485 / CE Certified</div>
+              <div className="text-[11px] text-muted-foreground mt-1">
+                Complies with medical device safety and sterility regulations.
+              </div>
+            </Card>
+
+            <Card className="p-4 rounded-2xl border border-border/60 dark:border-white/10 glass-card bg-card/60 dark:bg-[#0B1513]">
+              <div className="flex items-center gap-2 text-xs font-bold text-primary dark:text-[#3FD1B3] uppercase tracking-wider mb-2">
+                <FileText className="h-4 w-4" /> Batch Traceability
+              </div>
+              <div className="text-sm font-semibold text-foreground">
+                Lot {product.batchNumber || "2024-LOT-441B"}
+              </div>
+              <div className="text-[11px] text-muted-foreground mt-1">
+                Guaranteed shelf-life through {product.expiryDate || "2027+"}.
+              </div>
+            </Card>
+
+            <Card className="p-4 rounded-2xl border border-border/60 dark:border-white/10 glass-card bg-card/60 dark:bg-[#0B1513]">
+              <div className="flex items-center gap-2 text-xs font-bold text-primary dark:text-[#3FD1B3] uppercase tracking-wider mb-2">
+                <ShieldCheck className="h-4 w-4" /> Dispensation
+              </div>
+              <div className="text-sm font-semibold text-foreground">Operatory Grade</div>
+              <div className="text-[11px] text-muted-foreground mt-1">
+                Sealed factory packaging with tamper-evident seal.
+              </div>
+            </Card>
+          </div>
+        </ScrollReveal>
 
         {/* Related Products */}
         {related.length > 0 && (

@@ -2,10 +2,12 @@ import "server-only";
 
 import { parse, type HTMLElement } from "node-html-parser";
 import { getContentOverrides } from "./content";
-import { templates } from "./templates.generated";
+
+/** Page HTML templates keyed by file name (e.g. "index.html"). */
+export type SiteTemplates = Record<string, string>;
 
 /**
- * Public marketing pages are HTML templates in src/site. Elements tagged with
+ * Public marketing pages are HTML templates (Frontend/src/site). Elements tagged with
  * data-cms="<key>" are editable from the admin dashboard; their current markup
  * is the default until a value is saved in the site_content table.
  */
@@ -31,7 +33,7 @@ export type EditableField = {
   defaultValue: string;
 };
 
-function readTemplate(page: SitePage): string {
+function readTemplate(templates: SiteTemplates, page: SitePage): string {
   const html = templates[SITE_PAGES[page].file];
   if (!html)
     throw new Error(`Missing site template ${SITE_PAGES[page].file}; run npm run site:templates`);
@@ -57,8 +59,8 @@ function getMeta(root: HTMLElement) {
 }
 
 /** Render a page with saved overrides applied. */
-export async function renderSitePage(page: SitePage): Promise<string> {
-  const template = readTemplate(page);
+export async function renderSitePage(templates: SiteTemplates, page: SitePage): Promise<string> {
+  const template = readTemplate(templates, page);
   const overrides = await getContentOverrides();
   if (!Object.keys(overrides).some((k) => k.startsWith(`${page}.`))) return template;
   const root = parse(template, { comment: true });
@@ -98,10 +100,10 @@ function sectionName(el: HTMLElement): string {
 }
 
 /** Every editable field across all pages, with its default value. */
-export async function listEditableFields(): Promise<EditableField[]> {
+export async function listEditableFields(templates: SiteTemplates): Promise<EditableField[]> {
   const fields: EditableField[] = [];
   for (const page of Object.keys(SITE_PAGES) as SitePage[]) {
-    const root = parse(readTemplate(page));
+    const root = parse(readTemplate(templates, page));
     const meta = getMeta(root);
     fields.push(
       {

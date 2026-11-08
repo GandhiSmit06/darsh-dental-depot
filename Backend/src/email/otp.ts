@@ -1,3 +1,7 @@
+import "server-only";
+
+import { rateLimit, tooManyRequests } from "../security/rate-limit";
+
 // ─── Server-Side OTP Email Dispatcher ─────────────────────────────────────────
 // Sends OTP emails via the first configured provider: Resend, Brevo, then SMTP
 // without ever exposing the OTP to client browsers.
@@ -8,10 +12,7 @@ interface SendEmailOtpPayload {
   fullName?: string;
 }
 
-export async function handleSendEmailOtpRequest(
-  request: Request,
-  env: Record<string, unknown>,
-): Promise<Response> {
+async function sendEmailOtp(request: Request, env: Record<string, unknown>): Promise<Response> {
   if (request.method !== "POST") {
     return new Response(JSON.stringify({ error: "Method not allowed" }), {
       status: 405,
@@ -118,7 +119,10 @@ export async function handleSendEmailOtpRequest(
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          sender: { name: "Darsh Dental Depot", email: "darshdentaldepot@gmail.com" },
+          sender: {
+            name: "Darsh Dental Depot",
+            email: "darshdentaldepot@gmail.com",
+          },
           to: [{ email, name: doctorName }],
           subject: `🔐 Your Login Code: ${otp} — Darsh Dental Depot`,
           htmlContent,
@@ -166,4 +170,11 @@ export async function handleSendEmailOtpRequest(
       headers: { "Content-Type": "application/json" },
     });
   }
+}
+
+/** POST /api/send-email-otp — rate limited per IP (AUTH_RATE_LIMIT_MAX). */
+export async function handleSendEmailOtpRequest(request: Request): Promise<Response> {
+  const limit = rateLimit(request, "email-otp", Number(process.env.AUTH_RATE_LIMIT_MAX) || 20);
+  if (!limit.ok) return tooManyRequests(limit.retryAfter);
+  return sendEmailOtp(request, process.env);
 }

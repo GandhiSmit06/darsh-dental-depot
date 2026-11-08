@@ -69,7 +69,10 @@ export async function handleCreateRazorpayOrderRequest(
 
     if (!supabaseUrl || !anonKey) {
       return new Response(
-        JSON.stringify({ success: false, message: "Server configuration missing" }),
+        JSON.stringify({
+          success: false,
+          message: "Server configuration missing",
+        }),
         { status: 500, headers: { "Content-Type": "application/json" } },
       );
     }
@@ -83,7 +86,10 @@ export async function handleCreateRazorpayOrderRequest(
     const { data: userData, error: userErr } = await userClient.auth.getUser(token);
     if (userErr || !userData?.user) {
       return new Response(
-        JSON.stringify({ success: false, message: "Unauthorized: Invalid or expired session" }),
+        JSON.stringify({
+          success: false,
+          message: "Unauthorized: Invalid or expired session",
+        }),
         { status: 401, headers: { "Content-Type": "application/json" } },
       );
     }
@@ -125,7 +131,10 @@ export async function handleCreateRazorpayOrderRequest(
 
     if (order.order_status === "cancelled") {
       return new Response(
-        JSON.stringify({ success: false, message: "Cannot pay for a cancelled order" }),
+        JSON.stringify({
+          success: false,
+          message: "Cannot pay for a cancelled order",
+        }),
         { status: 400, headers: { "Content-Type": "application/json" } },
       );
     }
@@ -278,7 +287,10 @@ export async function handleVerifyPaymentRequest(
 
     if (!supabaseUrl || !anonKey) {
       return new Response(
-        JSON.stringify({ success: false, message: "Server configuration missing" }),
+        JSON.stringify({
+          success: false,
+          message: "Server configuration missing",
+        }),
         { status: 500, headers: { "Content-Type": "application/json" } },
       );
     }
@@ -292,7 +304,10 @@ export async function handleVerifyPaymentRequest(
     const { data: userData, error: userErr } = await userClient.auth.getUser(token);
     if (userErr || !userData?.user) {
       return new Response(
-        JSON.stringify({ success: false, message: "Unauthorized: Invalid or expired session" }),
+        JSON.stringify({
+          success: false,
+          message: "Unauthorized: Invalid or expired session",
+        }),
         { status: 401, headers: { "Content-Type": "application/json" } },
       );
     }
@@ -302,7 +317,10 @@ export async function handleVerifyPaymentRequest(
 
     if (!orderId || !razorpayPaymentId) {
       return new Response(
-        JSON.stringify({ success: false, message: "Missing required payment parameters" }),
+        JSON.stringify({
+          success: false,
+          message: "Missing required payment parameters",
+        }),
         { status: 400, headers: { "Content-Type": "application/json" } },
       );
     }
@@ -312,7 +330,10 @@ export async function handleVerifyPaymentRequest(
     if (razorpaySecret) {
       if (!razorpayOrderId || !razorpaySignature) {
         return new Response(
-          JSON.stringify({ success: false, message: "Missing Razorpay order ID or signature" }),
+          JSON.stringify({
+            success: false,
+            message: "Missing Razorpay order ID or signature",
+          }),
           { status: 400, headers: { "Content-Type": "application/json" } },
         );
       }
@@ -326,7 +347,10 @@ export async function handleVerifyPaymentRequest(
 
       if (!isValid) {
         return new Response(
-          JSON.stringify({ success: false, message: "Invalid payment signature" }),
+          JSON.stringify({
+            success: false,
+            message: "Invalid payment signature",
+          }),
           { status: 400, headers: { "Content-Type": "application/json" } },
         );
       }
@@ -352,7 +376,10 @@ export async function handleVerifyPaymentRequest(
 
     if (order.user_id !== userData.user.id) {
       return new Response(
-        JSON.stringify({ success: false, message: "Unauthorized to update this order" }),
+        JSON.stringify({
+          success: false,
+          message: "Unauthorized to update this order",
+        }),
         { status: 403, headers: { "Content-Type": "application/json" } },
       );
     }
@@ -375,7 +402,10 @@ export async function handleVerifyPaymentRequest(
 
     if (order.order_status === "cancelled") {
       return new Response(
-        JSON.stringify({ success: false, message: "Cannot confirm payment for a cancelled order" }),
+        JSON.stringify({
+          success: false,
+          message: "Cannot confirm payment for a cancelled order",
+        }),
         { status: 400, headers: { "Content-Type": "application/json" } },
       );
     }
@@ -383,7 +413,10 @@ export async function handleVerifyPaymentRequest(
     // Idempotent: If already marked paid, return success
     if (order.payment_status === "paid") {
       return new Response(
-        JSON.stringify({ success: true, message: "Order is already marked as paid" }),
+        JSON.stringify({
+          success: true,
+          message: "Order is already marked as paid",
+        }),
         { status: 200, headers: { "Content-Type": "application/json" } },
       );
     }
@@ -429,7 +462,10 @@ export async function handleVerifyPaymentRequest(
                     Authorization: `Basic ${basicAuth}`,
                     "Content-Type": "application/json",
                   },
-                  body: JSON.stringify({ amount: expectedPaise, currency: "INR" }),
+                  body: JSON.stringify({
+                    amount: expectedPaise,
+                    currency: "INR",
+                  }),
                 },
               );
               if (captureRes.ok) {
@@ -476,7 +512,10 @@ export async function handleVerifyPaymentRequest(
 
     if (updateErr) {
       return new Response(
-        JSON.stringify({ success: false, message: "Failed to update order payment status" }),
+        JSON.stringify({
+          success: false,
+          message: "Failed to update order payment status",
+        }),
         { status: 500, headers: { "Content-Type": "application/json" } },
       );
     }
@@ -492,7 +531,10 @@ export async function handleVerifyPaymentRequest(
     }
 
     return new Response(
-      JSON.stringify({ success: true, message: "Payment verified successfully" }),
+      JSON.stringify({
+        success: true,
+        message: "Payment verified successfully",
+      }),
       { status: 200, headers: { "Content-Type": "application/json" } },
     );
   } catch (err: unknown) {

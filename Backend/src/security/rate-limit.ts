@@ -29,7 +29,10 @@ export function rateLimit(
   }
 
   bucket.count += 1;
-  return { ok: bucket.count <= max, retryAfter: Math.ceil((bucket.resetAt - now) / 1000) };
+  return {
+    ok: bucket.count <= max,
+    retryAfter: Math.ceil((bucket.resetAt - now) / 1000),
+  };
 }
 
 export function tooManyRequests(retryAfter: number): Response {

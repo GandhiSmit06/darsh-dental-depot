@@ -9,11 +9,7 @@ export interface ChatMessage {
   text: string;
   timestamp: string;
   cardType?:
-    | "product_list"
-    | "order_status"
-    | "invoice_prompt"
-    | "whatsapp_prompt"
-    | "low_stock_list";
+    "product_list" | "order_status" | "invoice_prompt" | "whatsapp_prompt" | "low_stock_list";
   cardData?: any;
 }
 

@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import crypto from "node:crypto";
-import { verifyRazorpayHmacSignature } from "./server-payment.ts";
+import { verifyRazorpayHmacSignature } from "./razorpay.ts";
 
 test("HMAC-SHA256 signature verification security suite", async (t) => {
   const secret = "secret_key_vadodara_test_12345";
@@ -96,7 +96,7 @@ test("HMAC-SHA256 signature verification security suite", async (t) => {
 
 test("Cloudflare Worker server payment endpoint guards", async (t) => {
   const { handleVerifyPaymentRequest, handleCreateRazorpayOrderRequest } =
-    await import("./server-payment.ts");
+    await import("./razorpay.ts");
 
   await t.test("handleVerifyPaymentRequest rejects non-POST requests with 405", async () => {
     const req = new Request("http://localhost/api/verify-razorpay-payment", { method: "GET" });

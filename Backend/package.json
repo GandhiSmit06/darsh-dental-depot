@@ -1,0 +1,25 @@
+{
+  "name": "@darsh/backend",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Server-side logic for Darsh Dental Depot: payments, OTP email, AI chat, website content and Supabase SQL. Runs inside the Next.js app via /api routes.",
+  "type": "module",
+  "exports": {
+    "./*": "./src/*.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit -p .",
+    "test": "node --test src/payments/razorpay.test.mjs"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.112.3",
+    "node-html-parser": "^7.1.0",
+    "nodemailer": "^7.0.13",
+    "server-only": "^0.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.16.5",
+    "@types/nodemailer": "^8.0.2",
+    "typescript": "^5.8.3"
+  }
+}

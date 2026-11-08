@@ -104,9 +104,7 @@ const compileGlass = (gl: WebGL2RenderingContext) => {
 
 const resolveBackdrop = (
   backdrop?:
-    | RefObject<HTMLImageElement | HTMLVideoElement | HTMLCanvasElement | null>
-    | HTMLElement
-    | null,
+    RefObject<HTMLImageElement | HTMLVideoElement | HTMLCanvasElement | null> | HTMLElement | null,
 ): HTMLImageElement | HTMLVideoElement | HTMLCanvasElement | null => {
   if (typeof window === "undefined" || !backdrop) return null;
   const node = typeof backdrop === "object" && "current" in backdrop ? backdrop.current : backdrop;
@@ -353,9 +351,7 @@ export interface GlassSurfaceProps {
   refraction?: boolean;
   renderer?: "auto" | "svg" | "webgl";
   backdrop?:
-    | RefObject<HTMLImageElement | HTMLVideoElement | HTMLCanvasElement | null>
-    | HTMLElement
-    | null;
+    RefObject<HTMLImageElement | HTMLVideoElement | HTMLCanvasElement | null> | HTMLElement | null;
   shape?: string;
   className?: string;
   style?: CSSProperties;

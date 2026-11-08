@@ -1,6 +1,6 @@
 import "server-only";
 
-import { supabaseAnonKey, supabaseUrl } from "@/lib/supabase";
+import { supabaseAnonKey, supabaseUrl } from "../config";
 import {
   defaultLists,
   defaultSettings,
@@ -16,10 +16,17 @@ const DEFAULT_LOW_STOCK = Number(process.env.LOW_STOCK_THRESHOLD) || 3;
 
 async function supabaseRest<T>(query: string): Promise<T | null> {
   try {
-    const res = await fetch(`${supabaseUrl}/rest/v1/${query}`, {
-      headers: { apikey: supabaseAnonKey, Authorization: `Bearer ${supabaseAnonKey}` },
+    const init: RequestInit & {
+      next?: { revalidate?: number; tags?: string[] };
+    } = {
+      headers: {
+        apikey: supabaseAnonKey,
+        Authorization: `Bearer ${supabaseAnonKey}`,
+      },
+      // Next.js data cache: refreshed every 5 minutes or when the dashboard saves.
       next: { revalidate: REVALIDATE_SECONDS, tags: [SITE_CONTENT_TAG] },
-    });
+    };
+    const res = await fetch(`${supabaseUrl}/rest/v1/${query}`, init);
     if (!res.ok) return null;
     return (await res.json()) as T;
   } catch {

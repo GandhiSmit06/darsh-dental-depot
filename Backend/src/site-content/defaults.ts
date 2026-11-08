@@ -14,7 +14,12 @@ export const defaultSettings = {
 
 export type Category = { id: string; name: string; img: string; blurb: string };
 export type Brand = { name: string; tag: string; cats: string };
-export type Testimonial = { quote: string; name: string; role: string; initials: string };
+export type Testimonial = {
+  quote: string;
+  name: string;
+  role: string;
+  initials: string;
+};
 export type Faq = { q: string; a: string };
 export type CatalogProduct = {
   id: string;

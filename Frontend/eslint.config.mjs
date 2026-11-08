@@ -20,7 +20,15 @@ const config = [
       "react-hooks/immutability": "warn",
     },
   },
-  { ignores: [".next/**", "node_modules/**", "public/**", "next-env.d.ts"] },
+  {
+    ignores: [
+      ".next/**",
+      "node_modules/**",
+      "public/**",
+      "next-env.d.ts",
+      "src/lib/site/templates.generated.ts",
+    ],
+  },
 ];
 
 export default config;

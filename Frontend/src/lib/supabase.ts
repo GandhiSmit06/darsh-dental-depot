@@ -1,11 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
+import { supabaseAnonKey, supabaseUrl } from "@darsh/backend/config";
 
-const DEFAULT_SUPABASE_URL = "https://wzkqjeejgrolkdkywovp.supabase.co";
-const DEFAULT_SUPABASE_ANON_KEY = "sb_publishable_WxtFdrwndFYgyhC6E0hdzw_pSxquJcl";
-
-export const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || DEFAULT_SUPABASE_URL;
-export const supabaseAnonKey =
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || DEFAULT_SUPABASE_ANON_KEY;
+export { supabaseAnonKey, supabaseUrl };
 
 const isBrowser = typeof window !== "undefined";
 

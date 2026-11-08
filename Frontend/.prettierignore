@@ -1,5 +1,0 @@
-node_modules
-.next
-public
-package-lock.json
-src/lib/site/templates.generated.ts

@@ -1,5 +1,7 @@
-import React, { useEffect, useRef, useState } from 'react';
-import './TiltedCard.css';
+"use client";
+
+import React, { useEffect, useRef, useState } from "react";
+import "./TiltedCard.css";
 
 const FLIP_THRESHOLD = 6;
 
@@ -7,23 +9,27 @@ const clamp = (value: number, min: number, max: number): number =>
   Math.min(max, Math.max(min, value));
 
 const parseColor = (value: string | undefined): [number, number, number] | null => {
-  const text = String(value || '').trim();
+  const text = String(value || "").trim();
   const hex = /^#?([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(text);
   if (hex) {
-    const full = hex[1].length === 3 ? hex[1].replace(/./g, digit => digit + digit) : hex[1];
-    return [0, 2, 4].map(index => parseInt(full.slice(index, index + 2), 16)) as [number, number, number];
+    const full = hex[1].length === 3 ? hex[1].replace(/./g, (digit) => digit + digit) : hex[1];
+    return [0, 2, 4].map((index) => parseInt(full.slice(index, index + 2), 16)) as [
+      number,
+      number,
+      number,
+    ];
   }
   const rgb = /^rgba?\(\s*([\d.]+)[\s,]+([\d.]+)[\s,]+([\d.]+)/i.exec(text);
   if (rgb) {
-    return [rgb[1], rgb[2], rgb[3]].map(channel =>
-      clamp(Math.round(parseFloat(channel)), 0, 255)
+    return [rgb[1], rgb[2], rgb[3]].map((channel) =>
+      clamp(Math.round(parseFloat(channel)), 0, 255),
     ) as [number, number, number];
   }
   return null;
 };
 
 const toLength = (value: number | string | undefined): string | undefined =>
-  typeof value === 'number' ? `${value}px` : value;
+  typeof value === "number" ? `${value}px` : value;
 
 const smoother = (t: number): number => {
   const x = clamp(t, 0, 1);
@@ -58,13 +64,14 @@ const step = (
   target: number,
   omega: number,
   zeta: number,
-  dt: number
+  dt: number,
 ): boolean => {
   const velocity = `v${key}`;
   const steps = Math.max(1, Math.ceil(dt / (1 / 240)));
   const h = dt / steps;
   for (let index = 0; index < steps; index++) {
-    state[velocity] += (omega * omega * (target - state[key]) - 2 * zeta * omega * state[velocity]) * h;
+    state[velocity] +=
+      (omega * omega * (target - state[key]) - 2 * zeta * omega * state[velocity]) * h;
     state[key] += state[velocity] * h;
   }
   const settled = Math.abs(target - state[key]) < 0.001 && Math.abs(state[velocity]) < 0.01;
@@ -84,13 +91,13 @@ export interface TiltedCardLayerProps {
 
 export const TiltedCardLayer: React.FC<TiltedCardLayerProps> = ({
   depth = 20,
-  className = '',
+  className = "",
   style,
-  children
+  children,
 }) => (
   <div
     className={`tilted-card__layer ${className}`.trim()}
-    style={{ ['--tc-depth' as any]: depth, ...style }}
+    style={{ ["--tc-depth" as any]: depth, ...style }}
   >
     {children}
   </div>
@@ -122,7 +129,7 @@ export interface TiltedCardProps {
   glareColor?: string;
   shadow?: number;
   parallax?: number;
-  axis?: 'both' | 'horizontal' | 'vertical';
+  axis?: "both" | "horizontal" | "vertical";
   reverse?: boolean;
   trackWindow?: boolean;
   floating?: boolean;
@@ -136,12 +143,12 @@ export interface TiltedCardProps {
 
 export const TiltedCard: React.FC<TiltedCardProps> = ({
   imageSrc,
-  altText = 'Tilted card image',
-  captionText = '',
-  containerHeight = '300px',
-  containerWidth = '100%',
-  imageHeight = '300px',
-  imageWidth = '300px',
+  altText = "Tilted card image",
+  captionText = "",
+  containerHeight = "300px",
+  containerWidth = "100%",
+  imageHeight = "300px",
+  imageWidth = "300px",
   scaleOnHover = 1.05,
   rotateAmplitude = 12,
   showTooltip = true,
@@ -157,10 +164,10 @@ export const TiltedCard: React.FC<TiltedCardProps> = ({
   perspective = 800,
   smoothness = 0.6,
   glare = 0.5,
-  glareColor = '#ffffff',
+  glareColor = "#ffffff",
   shadow = 0.5,
   parallax = 1,
-  axis = 'both',
+  axis = "both",
   reverse = false,
   trackWindow = false,
   floating = false,
@@ -168,8 +175,8 @@ export const TiltedCard: React.FC<TiltedCardProps> = ({
   intro = false,
   introDelay = 0,
   onClick,
-  className = '',
-  style
+  className = "",
+  style,
 }) => {
   const figureRef = useRef<HTMLElement>(null);
   const bodyRef = useRef<HTMLDivElement>(null);
@@ -178,7 +185,7 @@ export const TiltedCard: React.FC<TiltedCardProps> = ({
   const wakeRef = useRef<(() => void) | null>(null);
   const flipRef = useRef<(() => boolean) | null>(null);
   const [innerFlipped, setInnerFlipped] = useState(false);
-  const controlled = typeof flipped === 'boolean';
+  const controlled = typeof flipped === "boolean";
   const isFlipped = Boolean(backContent) && (controlled ? flipped : innerFlipped);
 
   const settings = {
@@ -198,7 +205,7 @@ export const TiltedCard: React.FC<TiltedCardProps> = ({
     flippable: Boolean(backContent) && flipOnClick,
     interactive: (Boolean(backContent) && flipOnClick) || Boolean(onClick),
     flipped: isFlipped,
-    tooltip: showTooltip && Boolean(captionText)
+    tooltip: showTooltip && Boolean(captionText),
   };
   const settingsRef = useRef(settings);
   settingsRef.current = settings;
@@ -212,8 +219,8 @@ export const TiltedCard: React.FC<TiltedCardProps> = ({
     const body = bodyRef.current;
     if (!figure || !body) return;
 
-    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const coarse = window.matchMedia('(hover: none) and (pointer: coarse)').matches;
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const coarse = window.matchMedia("(hover: none) and (pointer: coarse)").matches;
     const state: SpringState = {
       rx: 0,
       vrx: 0,
@@ -232,11 +239,29 @@ export const TiltedCard: React.FC<TiltedCardProps> = ({
       shown: 0,
       vshown: 0,
       tx: 0,
-      tyy: 0
+      tyy: 0,
     };
-    const pointer = { nx: 0, ny: 0, x: 0, y: 0, inside: false, mouse: false, seen: false, vx: 0, last: 0 };
+    const pointer = {
+      nx: 0,
+      ny: 0,
+      x: 0,
+      y: 0,
+      inside: false,
+      mouse: false,
+      seen: false,
+      vx: 0,
+      last: 0,
+    };
     const press = { active: false, x: 0, y: 0, moved: false };
-    const tilt = { gamma: 0, beta: 0, baseGamma: 0, baseBeta: 0, calibrated: false, live: false, asked: false };
+    const tilt = {
+      gamma: 0,
+      beta: 0,
+      baseGamma: 0,
+      baseBeta: 0,
+      calibrated: false,
+      live: false,
+      asked: false,
+    };
     let opacity = 1;
     let entered = true;
     let introAt = -1;
@@ -251,7 +276,7 @@ export const TiltedCard: React.FC<TiltedCardProps> = ({
       opacity = 0;
       state.rx = 16;
       state.ty = 22;
-      body.style.opacity = '0';
+      body.style.opacity = "0";
     }
 
     const frame = (now: number) => {
@@ -282,8 +307,8 @@ export const TiltedCard: React.FC<TiltedCardProps> = ({
         inputY = 0.26 * Math.sin(time * 0.83 + 1.9) + 0.1 * Math.sin(time * 1.57);
         busy = true;
       }
-      if (s.axis === 'horizontal') inputY = 0;
-      if (s.axis === 'vertical') inputX = 0;
+      if (s.axis === "horizontal") inputY = 0;
+      if (s.axis === "vertical") inputX = 0;
       const sign = s.reverse ? -1 : 1;
 
       const omega = 20 * Math.pow(0.2, s.smoothness);
@@ -292,43 +317,52 @@ export const TiltedCard: React.FC<TiltedCardProps> = ({
 
       if (!entered && introAt >= 0 && now >= introAt) entered = true;
       const settle = entered || !s.intro || reduced;
-      busy = step(state, 'rx', settle ? -inputY * amplitude * sign : state.rx, omega, zeta, dt) || busy;
-      busy = step(state, 'ry', settle ? inputX * amplitude * sign : state.ry, omega, zeta, dt) || busy;
+      busy =
+        step(state, "rx", settle ? -inputY * amplitude * sign : state.rx, omega, zeta, dt) || busy;
+      busy =
+        step(state, "ry", settle ? inputX * amplitude * sign : state.ry, omega, zeta, dt) || busy;
       busy =
         step(
           state,
-          'ty',
-          settle ? (s.floating && !following && !reduced ? -4 * Math.sin(time * 0.9) : 0) : state.ty,
+          "ty",
+          settle
+            ? s.floating && !following && !reduced
+              ? -4 * Math.sin(time * 0.9)
+              : 0
+            : state.ty,
           omega * 0.8,
           0.9,
-          dt
+          dt,
         ) || busy;
-      busy = step(state, 'lift', lifted, omega, Math.max(zeta, 0.85), dt) || busy;
-      busy = step(state, 'flip', s.flipped ? 180 : 0, reduced ? 18 : 9.5, 0.72, dt) || busy;
-      busy = step(state, 'press', press.active && !press.moved && s.interactive ? 1 : 0, 26, 0.8, dt) || busy;
+      busy = step(state, "lift", lifted, omega, Math.max(zeta, 0.85), dt) || busy;
+      busy = step(state, "flip", s.flipped ? 180 : 0, reduced ? 18 : 9.5, 0.72, dt) || busy;
+      busy =
+        step(state, "press", press.active && !press.moved && s.interactive ? 1 : 0, 26, 0.8, dt) ||
+        busy;
       if (settle && opacity < 1) {
         opacity = Math.min(1, opacity + dt / 0.45);
         busy = true;
       }
 
       const active = lifted > 0 || state.lift > 0.01;
-      if (active !== figure.hasAttribute('data-active')) figure.toggleAttribute('data-active', active);
+      if (active !== figure.hasAttribute("data-active"))
+        figure.toggleAttribute("data-active", active);
       const scale = 1 + (s.scale - 1) * state.lift - 0.02 * state.press;
       const rx = state.rx;
       const ry = state.ry;
       const radiansX = (rx * Math.PI) / 180;
       const radiansY = (ry * Math.PI) / 180;
       body.style.transform = `translate3d(0, ${state.ty.toFixed(2)}px, 0) rotateX(${rx.toFixed(3)}deg) rotateY(${(ry + state.flip).toFixed(3)}deg) scale(${scale.toFixed(4)})`;
-      body.style.opacity = opacity < 1 ? smoother(opacity).toFixed(3) : '';
-      body.style.setProperty('--tc-px', (Math.sin(radiansY) * s.parallax).toFixed(4));
-      body.style.setProperty('--tc-py', (-Math.sin(radiansX) * s.parallax).toFixed(4));
+      body.style.opacity = opacity < 1 ? smoother(opacity).toFixed(3) : "";
+      body.style.setProperty("--tc-px", (Math.sin(radiansY) * s.parallax).toFixed(4));
+      body.style.setProperty("--tc-py", (-Math.sin(radiansX) * s.parallax).toFixed(4));
       const reach = Math.max(amplitude, 1);
-      body.style.setProperty('--tc-gx', `${(50 + (ry / reach) * 46).toFixed(2)}%`);
-      body.style.setProperty('--tc-gy', `${(50 - (rx / reach) * 46).toFixed(2)}%`);
+      body.style.setProperty("--tc-gx", `${(50 + (ry / reach) * 46).toFixed(2)}%`);
+      body.style.setProperty("--tc-gy", `${(50 - (rx / reach) * 46).toFixed(2)}%`);
       const energy = Math.min(1, Math.hypot(rx, ry) / reach);
       body.style.setProperty(
-        '--tc-glare',
-        (s.glare * Math.max(state.lift, energy) * (opacity < 1 ? smoother(opacity) : 1)).toFixed(3)
+        "--tc-glare",
+        (s.glare * Math.max(state.lift, energy) * (opacity < 1 ? smoother(opacity) : 1)).toFixed(3),
       );
 
       const shade = shadowRef.current;
@@ -345,13 +379,15 @@ export const TiltedCard: React.FC<TiltedCardProps> = ({
       const caption = captionRef.current;
       if (caption) {
         const show = s.tooltip && hovering ? 1 : 0;
-        busy = step(state, 'shown', show, 16, 1, dt) || busy;
+        busy = step(state, "shown", show, 16, 1, dt) || busy;
         const follow = 1 - Math.exp(-dt / 0.035);
         state.tx += (pointer.x - state.tx) * follow;
         state.tyy += (pointer.y - state.tyy) * follow;
         if (Math.abs(pointer.x - state.tx) + Math.abs(pointer.y - state.tyy) > 0.2) busy = true;
         pointer.vx *= Math.exp(-dt / 0.08);
-        busy = step(state, 'tip', reduced ? 0 : clamp(-pointer.vx * 0.012, -14, 14), 18, 0.62, dt) || busy;
+        busy =
+          step(state, "tip", reduced ? 0 : clamp(-pointer.vx * 0.012, -14, 14), 18, 0.62, dt) ||
+          busy;
         caption.style.transform = `translate3d(${state.tx.toFixed(1)}px, ${state.tyy.toFixed(1)}px, 0) rotate(${state.tip.toFixed(2)}deg)`;
         caption.style.opacity = Math.max(0, state.shown).toFixed(3);
       }
@@ -372,7 +408,7 @@ export const TiltedCard: React.FC<TiltedCardProps> = ({
         x: event.clientX - rect.left,
         y: event.clientY - rect.top,
         width: Math.max(1, rect.width),
-        height: Math.max(1, rect.height)
+        height: Math.max(1, rect.height),
       };
     };
 
@@ -391,7 +427,7 @@ export const TiltedCard: React.FC<TiltedCardProps> = ({
 
     const onEnter = (event: PointerEvent) => {
       pointer.inside = true;
-      pointer.mouse = event.pointerType === 'mouse' || event.pointerType === 'pen';
+      pointer.mouse = event.pointerType === "mouse" || event.pointerType === "pen";
       const spot = locate(event, figure);
       pointer.x = spot.x;
       pointer.y = spot.y;
@@ -402,7 +438,7 @@ export const TiltedCard: React.FC<TiltedCardProps> = ({
       wake();
     };
     const onMove = (event: PointerEvent) => {
-      pointer.mouse = event.pointerType === 'mouse' || event.pointerType === 'pen';
+      pointer.mouse = event.pointerType === "mouse" || event.pointerType === "pen";
       if (!pointer.inside && pointer.mouse) {
         pointer.inside = true;
         const spot = locate(event, figure);
@@ -413,7 +449,10 @@ export const TiltedCard: React.FC<TiltedCardProps> = ({
         pointer.vx = 0;
       }
       track(event);
-      if (press.active && Math.hypot(event.clientX - press.x, event.clientY - press.y) > FLIP_THRESHOLD)
+      if (
+        press.active &&
+        Math.hypot(event.clientX - press.x, event.clientY - press.y) > FLIP_THRESHOLD
+      )
         press.moved = true;
       wake();
     };
@@ -443,7 +482,8 @@ export const TiltedCard: React.FC<TiltedCardProps> = ({
       if (!s.gyroscope || !coarse || tilt.asked) return;
       tilt.asked = true;
       const request = (window as any).DeviceOrientationEvent?.requestPermission;
-      if (typeof request === 'function') request.call((window as any).DeviceOrientationEvent).catch(() => {});
+      if (typeof request === "function")
+        request.call((window as any).DeviceOrientationEvent).catch(() => {});
     };
 
     const onDown = (event: PointerEvent) => {
@@ -451,7 +491,7 @@ export const TiltedCard: React.FC<TiltedCardProps> = ({
       press.moved = false;
       press.x = event.clientX;
       press.y = event.clientY;
-      pointer.mouse = event.pointerType === 'mouse' || event.pointerType === 'pen';
+      pointer.mouse = event.pointerType === "mouse" || event.pointerType === "pen";
       if (!pointer.mouse) {
         pointer.inside = true;
         track(event);
@@ -462,7 +502,7 @@ export const TiltedCard: React.FC<TiltedCardProps> = ({
     const onUp = (event: PointerEvent) => {
       if (!press.active) return;
       press.active = false;
-      if (event.pointerType !== 'mouse' && event.pointerType !== 'pen') pointer.inside = false;
+      if (event.pointerType !== "mouse" && event.pointerType !== "pen") pointer.inside = false;
       wake();
     };
     const onCancel = () => {
@@ -491,7 +531,7 @@ export const TiltedCard: React.FC<TiltedCardProps> = ({
     };
 
     const onFocus = () => {
-      focused = figure.matches(':focus-visible');
+      focused = figure.matches(":focus-visible");
       wake();
     };
     const onBlur = () => {
@@ -499,26 +539,27 @@ export const TiltedCard: React.FC<TiltedCardProps> = ({
       wake();
     };
 
-    figure.addEventListener('pointerenter', onEnter as any);
-    figure.addEventListener('pointermove', onMove as any);
-    figure.addEventListener('pointerleave', onLeave as any);
-    figure.addEventListener('pointerdown', onDown as any);
-    figure.addEventListener('focus', onFocus);
-    figure.addEventListener('blur', onBlur);
+    figure.addEventListener("pointerenter", onEnter as any);
+    figure.addEventListener("pointermove", onMove as any);
+    figure.addEventListener("pointerleave", onLeave as any);
+    figure.addEventListener("pointerdown", onDown as any);
+    figure.addEventListener("focus", onFocus);
+    figure.addEventListener("blur", onBlur);
     const hasTrackWindow = Boolean(settingsRef.current.trackWindow);
     const hasGyroscope = Boolean(settingsRef.current.gyroscope) && coarse;
 
     if (hasTrackWindow) {
-      window.addEventListener('pointermove', onWindowMove as any, { passive: true });
-      document.documentElement.addEventListener('pointerleave', onWindowLeave);
+      window.addEventListener("pointermove", onWindowMove as any, { passive: true });
+      document.documentElement.addEventListener("pointerleave", onWindowLeave);
     }
     if (hasGyroscope) {
-      window.addEventListener('deviceorientation', onOrientation);
+      window.addEventListener("deviceorientation", onOrientation);
     }
 
-    const observer = new IntersectionObserver(entries => {
-      visible = entries.some(entry => entry.isIntersecting);
-      if (visible && !entered && introAt < 0) introAt = performance.now() + settingsRef.current.introDelay;
+    const observer = new IntersectionObserver((entries) => {
+      visible = entries.some((entry) => entry.isIntersecting);
+      if (visible && !entered && introAt < 0)
+        introAt = performance.now() + settingsRef.current.introDelay;
       wake();
     });
     observer.observe(figure);
@@ -530,20 +571,20 @@ export const TiltedCard: React.FC<TiltedCardProps> = ({
       wakeRef.current = null;
       flipRef.current = null;
       observer.disconnect();
-      figure.removeEventListener('pointerenter', onEnter as any);
-      figure.removeEventListener('pointermove', onMove as any);
-      figure.removeEventListener('pointerleave', onLeave as any);
-      figure.removeEventListener('pointerdown', onDown as any);
-      figure.removeEventListener('focus', onFocus);
-      figure.removeEventListener('blur', onBlur);
-      window.removeEventListener('pointerup', onUp as any);
-      window.removeEventListener('pointercancel', onCancel as any);
+      figure.removeEventListener("pointerenter", onEnter as any);
+      figure.removeEventListener("pointermove", onMove as any);
+      figure.removeEventListener("pointerleave", onLeave as any);
+      figure.removeEventListener("pointerdown", onDown as any);
+      figure.removeEventListener("focus", onFocus);
+      figure.removeEventListener("blur", onBlur);
+      window.removeEventListener("pointerup", onUp as any);
+      window.removeEventListener("pointercancel", onCancel as any);
       if (hasTrackWindow) {
-        window.removeEventListener('pointermove', onWindowMove as any);
-        document.documentElement.removeEventListener('pointerleave', onWindowLeave);
+        window.removeEventListener("pointermove", onWindowMove as any);
+        document.documentElement.removeEventListener("pointerleave", onWindowLeave);
       }
       if (hasGyroscope) {
-        window.removeEventListener('deviceorientation', onOrientation);
+        window.removeEventListener("deviceorientation", onOrientation);
       }
     };
   }, []);
@@ -564,15 +605,23 @@ export const TiltedCard: React.FC<TiltedCardProps> = ({
   };
 
   const onKeyDown = (event: React.KeyboardEvent<HTMLElement>) => {
-    if (!interactive || event.target !== event.currentTarget || (event.key !== 'Enter' && event.key !== ' ')) return;
+    if (
+      !interactive ||
+      event.target !== event.currentTarget ||
+      (event.key !== "Enter" && event.key !== " ")
+    )
+      return;
     event.preventDefault();
     if (flippable) toggle();
     onClick?.(event as any);
   };
 
   const corner = toLength(radius);
-  const glareRgb = (parseColor(glareColor) || [255, 255, 255]).join(', ');
-  const bleed = Math.ceil(Math.sin((clamp(rotateAmplitude, 0, 60) * Math.PI) / 180) * 24 * Math.max(0, parallax)) + 1;
+  const glareRgb = (parseColor(glareColor) || [255, 255, 255]).join(", ");
+  const bleed =
+    Math.ceil(
+      Math.sin((clamp(rotateAmplitude, 0, 60) * Math.PI) / 180) * 24 * Math.max(0, parallax),
+    ) + 1;
 
   return (
     <figure
@@ -582,12 +631,12 @@ export const TiltedCard: React.FC<TiltedCardProps> = ({
         width: toLength(containerWidth),
         height: toLength(containerHeight),
         perspective: toLength(perspective),
-        ...style
+        ...style,
       }}
-      data-interactive={interactive ? '' : undefined}
-      data-flipped={isFlipped ? '' : undefined}
+      data-interactive={interactive ? "" : undefined}
+      data-flipped={isFlipped ? "" : undefined}
       tabIndex={interactive ? 0 : undefined}
-      role={interactive ? 'button' : undefined}
+      role={interactive ? "button" : undefined}
       aria-pressed={flippable ? isFlipped : undefined}
       aria-label={interactive ? captionText || altText : undefined}
       onClick={interactive ? activate : undefined}
@@ -605,8 +654,8 @@ export const TiltedCard: React.FC<TiltedCardProps> = ({
         style={{
           width: toLength(imageWidth),
           height: toLength(imageHeight),
-          ['--tc-radius' as any]: corner,
-          ['--tc-glare-rgb' as any]: glareRgb
+          ["--tc-radius" as any]: corner,
+          ["--tc-glare-rgb" as any]: glareRgb,
         }}
       >
         <div className="tilted-card__face tilted-card__front">
@@ -617,11 +666,11 @@ export const TiltedCard: React.FC<TiltedCardProps> = ({
               alt={altText}
               draggable={false}
               style={{
-                ['--tc-depth' as any]: -24,
+                ["--tc-depth" as any]: -24,
                 top: `-${bleed}px`,
                 left: `-${bleed}px`,
                 width: `calc(100% + ${bleed * 2}px)`,
-                height: `calc(100% + ${bleed * 2}px)`
+                height: `calc(100% + ${bleed * 2}px)`,
               }}
             />
           )}
@@ -639,7 +688,10 @@ export const TiltedCard: React.FC<TiltedCardProps> = ({
           </div>
         )}
         {displayOverlayContent && overlayContent && (
-          <div className="tilted-card__overlay" style={{ ['--tc-lift' as any]: `${overlayDepth}px` }}>
+          <div
+            className="tilted-card__overlay"
+            style={{ ["--tc-lift" as any]: `${overlayDepth}px` }}
+          >
             {overlayContent}
           </div>
         )}
@@ -652,5 +704,3 @@ export const TiltedCard: React.FC<TiltedCardProps> = ({
     </figure>
   );
 };
-
-export default TiltedCard;

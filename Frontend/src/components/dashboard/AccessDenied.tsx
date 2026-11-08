@@ -1,5 +1,5 @@
 import React from "react";
-import { Link } from "@tanstack/react-router";
+import Link from "next/link";
 import { ShieldAlert, ArrowLeft, Home, LogIn } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -20,9 +20,17 @@ export function AccessDenied({ requiredRole, currentRole }: AccessDeniedProps) {
         <div className="space-y-2">
           <h2 className="text-2xl font-bold tracking-tight">Access Restricted</h2>
           <p className="text-sm text-muted-foreground leading-relaxed">
-            This administrative area requires <span className="font-semibold text-foreground">{requiredRole}</span> privileges.
+            This administrative area requires{" "}
+            <span className="font-semibold text-foreground">{requiredRole}</span> privileges.
             {currentRole ? (
-              <span> You are currently logged in with the <span className="font-mono text-xs px-1.5 py-0.5 rounded bg-muted font-medium">{currentRole}</span> role.</span>
+              <span>
+                {" "}
+                You are currently logged in with the{" "}
+                <span className="font-mono text-xs px-1.5 py-0.5 rounded bg-muted font-medium">
+                  {currentRole}
+                </span>{" "}
+                role.
+              </span>
             ) : (
               <span> Please authenticate with an authorized account to continue.</span>
             )}
@@ -31,7 +39,7 @@ export function AccessDenied({ requiredRole, currentRole }: AccessDeniedProps) {
 
         <div className="pt-2 flex flex-col sm:flex-row gap-3 justify-center">
           <Button variant="outline" asChild className="gap-2">
-            <Link to="/">
+            <Link href="/">
               <Home className="w-4 h-4" />
               Return Home
             </Link>
@@ -39,7 +47,7 @@ export function AccessDenied({ requiredRole, currentRole }: AccessDeniedProps) {
 
           {currentRole === "doctor" && (
             <Button asChild className="gap-2">
-              <Link to="/doctor">
+              <Link href="/doctor">
                 <ArrowLeft className="w-4 h-4" />
                 Go to Doctor Portal
               </Link>
@@ -48,7 +56,7 @@ export function AccessDenied({ requiredRole, currentRole }: AccessDeniedProps) {
 
           {currentRole === "shop_owner" && (
             <Button asChild className="gap-2">
-              <Link to="/shop">
+              <Link href="/shop">
                 <ArrowLeft className="w-4 h-4" />
                 Go to Shop Dashboard
               </Link>
@@ -57,7 +65,7 @@ export function AccessDenied({ requiredRole, currentRole }: AccessDeniedProps) {
 
           {!currentRole && (
             <Button asChild className="gap-2">
-              <Link to="/login">
+              <Link href="/login">
                 <LogIn className="w-4 h-4" />
                 Log In
               </Link>

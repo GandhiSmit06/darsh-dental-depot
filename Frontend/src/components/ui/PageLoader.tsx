@@ -1,5 +1,7 @@
+"use client";
+
 import { useEffect, useState, useRef, useCallback } from "react";
-import { useRouterState } from "@tanstack/react-router";
+import { usePathname } from "next/navigation";
 import { ShieldAlert, RefreshCw, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth-context";
@@ -39,7 +41,7 @@ function easeInOutCubic(t: number): number {
 }
 
 export function PageLoader() {
-  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const pathname = usePathname();
   const auth = useAuth();
   const authLoading = auth?.isLoading ?? false;
 
@@ -209,9 +211,7 @@ export function PageLoader() {
       ctx.moveTo(-2, H + 2);
       ctx.lineTo(-2, fillLevel);
       for (let x = 0; x <= W + 2; x += 1) {
-        const wave =
-          Math.sin(x * freq1 + phase) * amp1 +
-          Math.sin(x * freq2 - phase * 0.7) * amp2;
+        const wave = Math.sin(x * freq1 + phase) * amp1 + Math.sin(x * freq2 - phase * 0.7) * amp2;
         ctx.lineTo(x, fillLevel + wave);
       }
       ctx.lineTo(W + 2, H + 2);
@@ -273,7 +273,7 @@ export function PageLoader() {
         setWaveComplete(true);
       }
     },
-    [LOAD_DURATION]
+    [LOAD_DURATION],
   );
 
   /* ── Canvas resize handler ── */
@@ -330,7 +330,9 @@ export function PageLoader() {
   /* ── Safe Recovery Action when Auth Verification Hangs ── */
   const handleContinueAsGuest = useCallback(() => {
     console.warn("[Auth] User opted to continue in guest mode after verification timeout.");
-    toast.info("Continuing in guest mode. Please sign in if you wish to access your doctor account.");
+    toast.info(
+      "Continuing in guest mode. Please sign in if you wish to access your doctor account.",
+    );
     finishInitialLoader();
   }, [finishInitialLoader]);
 
@@ -403,9 +405,7 @@ export function PageLoader() {
       role="status"
       aria-live="polite"
     >
-      <div
-        className={`neoleaf-loader-foreground ${fgFadeOut ? "neoleaf-fg-fade-out" : ""}`}
-      >
+      <div className={`neoleaf-loader-foreground ${fgFadeOut ? "neoleaf-fg-fade-out" : ""}`}>
         <canvas
           ref={canvasRef}
           style={{
@@ -420,8 +420,7 @@ export function PageLoader() {
 
         {/* Numerical Progress Indicator */}
         <div className="neoleaf-progress" style={{ zIndex: 3 }}>
-          loading...{" "}
-          <span className="neoleaf-progress-num">{progress}</span> %
+          loading... <span className="neoleaf-progress-num">{progress}</span> %
         </div>
 
         {/* Gentle Status when wave is 100% but authentication check is still resolving */}
@@ -442,7 +441,8 @@ export function PageLoader() {
               Authentication Taking Longer
             </h3>
             <p className="text-xs text-muted-foreground max-w-sm mb-4 leading-relaxed">
-              We are having trouble establishing a secure session with depot servers. You can retry verification or continue in guest mode.
+              We are having trouble establishing a secure session with depot servers. You can retry
+              verification or continue in guest mode.
             </p>
             <div className="flex items-center justify-center gap-3">
               <button

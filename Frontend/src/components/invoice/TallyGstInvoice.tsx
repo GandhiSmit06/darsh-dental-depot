@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState } from "react";
 import { numberToIndianWords } from "@/lib/number-to-words";
 import { Printer, Copy, Check } from "lucide-react";
@@ -76,15 +78,16 @@ export function TallyGstInvoice({ order }: TallyGstInvoiceProps) {
 
   // Format Dates in DD-MMM-YYYY format (e.g. 28-Mar-2026)
   const invoiceDateObj = order.invoiceDate ? new Date(order.invoiceDate) : new Date();
-  const formattedDate = invoiceDateObj.toLocaleDateString("en-GB", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  }).replace(/ /g, "-");
+  const formattedDate = invoiceDateObj
+    .toLocaleDateString("en-GB", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    })
+    .replace(/ /g, "-");
 
   const invoiceNo =
-    order.invoiceNumber ||
-    `${order.orderNumber.replace(/[^0-9]/g, "").slice(-3) || "700"}/25-26`;
+    order.invoiceNumber || `${order.orderNumber.replace(/[^0-9]/g, "").slice(-3) || "700"}/25-26`;
   const supplierRef = invoiceNo;
 
   // Payment Mode Formatter
@@ -102,19 +105,20 @@ export function TallyGstInvoice({ order }: TallyGstInvoiceProps) {
   let totalTaxableValue = 0;
   let totalTax = 0;
 
-  const processedItems = (order.items && order.items.length > 0
-    ? order.items
-    : [
-        {
-          name: "Dental Material Package",
-          brand: "Darsh Dental Depot",
-          hsn: "90184900",
-          gstRate: 5,
-          quantity: 1,
-          sellingPrice: order.totalAmount || 500,
-          unit: "PCS",
-        },
-      ]
+  const processedItems = (
+    order.items && order.items.length > 0
+      ? order.items
+      : [
+          {
+            name: "Dental Material Package",
+            brand: "Darsh Dental Depot",
+            hsn: "90184900",
+            gstRate: 5,
+            quantity: 1,
+            sellingPrice: order.totalAmount || 500,
+            unit: "PCS",
+          },
+        ]
   ).map((it, idx) => {
     const gstRate = it.gstRate ?? 5; // Default 5% as per standard dental items in bill
     const qty = it.quantity || 1;
@@ -123,7 +127,7 @@ export function TallyGstInvoice({ order }: TallyGstInvoiceProps) {
     // In wholesale, if price is GST inclusive, back-calculate rate:
     const baseRate = grossPrice / (1 + gstRate / 100);
     const taxableAmount = baseRate * qty;
-    const itemTax = (grossPrice * qty) - taxableAmount;
+    const itemTax = grossPrice * qty - taxableAmount;
 
     totalTaxableValue += taxableAmount;
     totalTax += itemTax;
@@ -169,7 +173,8 @@ export function TallyGstInvoice({ order }: TallyGstInvoiceProps) {
       {/* Top Action Bar (hidden during print) */}
       <div className="w-full max-w-[800px] mb-3 flex flex-wrap items-center justify-between gap-2 p-2.5 bg-muted/60 rounded-xl border border-border/80 print:hidden">
         <div className="text-xs font-bold text-foreground">
-          Invoice: <span className="text-primary font-mono">{invoiceNo}</span> • {order.customer.clinicName || order.customer.fullName}
+          Invoice: <span className="text-primary font-mono">{invoiceNo}</span> •{" "}
+          {order.customer.clinicName || order.customer.fullName}
         </div>
 
         <div className="flex items-center gap-2">
@@ -179,7 +184,11 @@ export function TallyGstInvoice({ order }: TallyGstInvoiceProps) {
             onClick={handleCopySummary}
             className="text-xs h-8 rounded-lg font-semibold gap-1"
           >
-            {copied ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Copy className="h-3.5 w-3.5" />}
+            {copied ? (
+              <Check className="h-3.5 w-3.5 text-emerald-600" />
+            ) : (
+              <Copy className="h-3.5 w-3.5" />
+            )}
             {copied ? "Copied!" : "Copy Details"}
           </Button>
 
@@ -195,7 +204,7 @@ export function TallyGstInvoice({ order }: TallyGstInvoiceProps) {
       </div>
 
       {/* ── Exact Tally Tax Invoice Document Sheet ── */}
-      <div 
+      <div
         id="tally-invoice-sheet"
         className="w-full max-w-[800px] bg-white text-black font-sans text-[11px] leading-[1.3] border border-black p-0 shadow-lg print:shadow-none print:border-black print:max-w-none print:w-full print:m-0"
         style={{ fontFamily: "'Arial', 'Helvetica', sans-serif" }}
@@ -217,7 +226,9 @@ export function TallyGstInvoice({ order }: TallyGstInvoiceProps) {
               <div>{SELLER_INFO.drugLicense1}</div>
               <div>{SELLER_INFO.drugLicense2}</div>
               <div className="font-bold">GSTIN/UIN: {SELLER_INFO.gstin}</div>
-              <div>State Name : {SELLER_INFO.stateName}, Code : {SELLER_INFO.stateCode}</div>
+              <div>
+                State Name : {SELLER_INFO.stateName}, Code : {SELLER_INFO.stateCode}
+              </div>
               <div>E-Mail : {SELLER_INFO.email}</div>
             </div>
 
@@ -246,7 +257,11 @@ export function TallyGstInvoice({ order }: TallyGstInvoiceProps) {
               </div>
               <div>
                 <span className="font-semibold">State Name : </span>
-                {order.customer.address?.state || "Gujarat"}, Code : {order.customer.address?.state?.toLowerCase().includes("gujarat") || !order.customer.address?.state ? "24" : "24"}
+                {order.customer.address?.state || "Gujarat"}, Code :{" "}
+                {order.customer.address?.state?.toLowerCase().includes("gujarat") ||
+                !order.customer.address?.state
+                  ? "24"
+                  : "24"}
               </div>
             </div>
           </div>
@@ -330,10 +345,18 @@ export function TallyGstInvoice({ order }: TallyGstInvoiceProps) {
         <table className="w-full text-left border-collapse border-b border-black text-[10.5px]">
           <thead>
             <tr className="border-b border-black text-center font-bold">
-              <th className="border-r border-black py-1 px-1 w-8">Sl<br />No.</th>
+              <th className="border-r border-black py-1 px-1 w-8">
+                Sl
+                <br />
+                No.
+              </th>
               <th className="border-r border-black py-1 px-2 text-left">Description of Goods</th>
               <th className="border-r border-black py-1 px-1 w-20">HSN/SAC</th>
-              <th className="border-r border-black py-1 px-1 w-14">GST<br />Rate</th>
+              <th className="border-r border-black py-1 px-1 w-14">
+                GST
+                <br />
+                Rate
+              </th>
               <th className="border-r border-black py-1 px-1 w-20">Quantity</th>
               <th className="border-r border-black py-1 px-1 w-18 text-right">Rate</th>
               <th className="border-r border-black py-1 px-1 w-12 text-center">per</th>
@@ -349,10 +372,22 @@ export function TallyGstInvoice({ order }: TallyGstInvoiceProps) {
                 </td>
                 <td className="border-r border-black p-1 text-center font-mono">{item.hsn}</td>
                 <td className="border-r border-black p-1 text-center">{item.gstRate} %</td>
-                <td className="border-r border-black p-1 text-center font-bold">{item.qty} {item.unit}</td>
-                <td className="border-r border-black p-1 text-right">{item.rate.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                <td className="border-r border-black p-1 text-center font-bold">
+                  {item.qty} {item.unit}
+                </td>
+                <td className="border-r border-black p-1 text-right">
+                  {item.rate.toLocaleString("en-IN", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
+                </td>
                 <td className="border-r border-black p-1 text-center">{item.unit}</td>
-                <td className="p-1 text-right font-bold">{item.amount.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                <td className="p-1 text-right font-bold">
+                  {item.amount.toLocaleString("en-IN", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
+                </td>
               </tr>
             ))}
 
@@ -380,7 +415,10 @@ export function TallyGstInvoice({ order }: TallyGstInvoiceProps) {
               <td className="border-r border-black"></td>
               <td className="border-r border-black"></td>
               <td className="p-1 text-right font-bold border-t border-black">
-                {totalTaxableValue.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                {totalTaxableValue.toLocaleString("en-IN", {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })}
               </td>
             </tr>
 
@@ -396,7 +434,10 @@ export function TallyGstInvoice({ order }: TallyGstInvoiceProps) {
                   <td className="border-r border-black"></td>
                   <td className="border-r border-black"></td>
                   <td className="px-2 py-0.5 text-right font-bold">
-                    {totalCgst.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    {totalCgst.toLocaleString("en-IN", {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}
                   </td>
                 </tr>
                 <tr>
@@ -408,7 +449,10 @@ export function TallyGstInvoice({ order }: TallyGstInvoiceProps) {
                   <td className="border-r border-black"></td>
                   <td className="border-r border-black"></td>
                   <td className="px-2 py-0.5 text-right font-bold">
-                    {totalSgst.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    {totalSgst.toLocaleString("en-IN", {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}
                   </td>
                 </tr>
               </>
@@ -422,7 +466,10 @@ export function TallyGstInvoice({ order }: TallyGstInvoiceProps) {
                 <td className="border-r border-black"></td>
                 <td className="border-r border-black"></td>
                 <td className="px-2 py-0.5 text-right font-bold">
-                  {totalIgst.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  {totalIgst.toLocaleString("en-IN", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
                 </td>
               </tr>
             )}
@@ -440,7 +487,9 @@ export function TallyGstInvoice({ order }: TallyGstInvoiceProps) {
                 <td className="border-r border-black"></td>
                 <td className="border-r border-black"></td>
                 <td className="px-2 py-0.5 text-right text-[10px]">
-                  {roundOff < 0 ? `(-)${Math.abs(roundOff).toFixed(2)}` : `(+) ${roundOff.toFixed(2)}`}
+                  {roundOff < 0
+                    ? `(-)${Math.abs(roundOff).toFixed(2)}`
+                    : `(+) ${roundOff.toFixed(2)}`}
                 </td>
               </tr>
             )}
@@ -451,7 +500,11 @@ export function TallyGstInvoice({ order }: TallyGstInvoiceProps) {
                 Total
               </td>
               <td className="px-2 py-1 text-right whitespace-nowrap">
-                ₹ {finalAmount.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                ₹{" "}
+                {finalAmount.toLocaleString("en-IN", {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })}
               </td>
             </tr>
           </tbody>
@@ -463,9 +516,7 @@ export function TallyGstInvoice({ order }: TallyGstInvoiceProps) {
             <div className="text-[9.5px] text-neutral-600">Amount Chargeable (in words)</div>
             <div className="font-extrabold text-[11px] mt-0.5">{amountInWords}</div>
           </div>
-          <div className="text-right text-[9.5px] font-semibold text-neutral-600">
-            E. & O.E
-          </div>
+          <div className="text-right text-[9.5px] font-semibold text-neutral-600">E. & O.E</div>
         </div>
 
         {/* Declaration & Bank Details & Signatures */}
@@ -476,7 +527,8 @@ export function TallyGstInvoice({ order }: TallyGstInvoiceProps) {
               <div className="font-bold mb-2">Company's PAN : {SELLER_INFO.pan}</div>
               <div className="text-[10px] font-semibold text-neutral-600 mb-0.5">Declaration</div>
               <p className="text-[9.5px] leading-tight text-neutral-700">
-                We declare that this invoice shows the actual price of the goods described and that all particulars are true and correct.
+                We declare that this invoice shows the actual price of the goods described and that
+                all particulars are true and correct.
               </p>
             </div>
           </div>
@@ -484,27 +536,37 @@ export function TallyGstInvoice({ order }: TallyGstInvoiceProps) {
           {/* Right Column: Bank Details & Authorised Signatory */}
           <div className="p-2 flex flex-col justify-between">
             <div>
-              <div className="text-[10px] font-semibold text-neutral-600 mb-0.5">Company's Bank Details</div>
+              <div className="text-[10px] font-semibold text-neutral-600 mb-0.5">
+                Company's Bank Details
+              </div>
               <div className="text-[9.5px] leading-snug">
-                <div><span className="text-neutral-600">Bank Name : </span><span className="font-bold">{SELLER_INFO.bankDetails.bankName}</span></div>
-                <div><span className="text-neutral-600">A/c No. : </span><span className="font-mono font-bold">{SELLER_INFO.bankDetails.accNumber}</span></div>
-                <div><span className="text-neutral-600">Branch & IFS Code : </span><span className="font-bold">{SELLER_INFO.bankDetails.branchIfsc}</span></div>
+                <div>
+                  <span className="text-neutral-600">Bank Name : </span>
+                  <span className="font-bold">{SELLER_INFO.bankDetails.bankName}</span>
+                </div>
+                <div>
+                  <span className="text-neutral-600">A/c No. : </span>
+                  <span className="font-mono font-bold">{SELLER_INFO.bankDetails.accNumber}</span>
+                </div>
+                <div>
+                  <span className="text-neutral-600">Branch & IFS Code : </span>
+                  <span className="font-bold">{SELLER_INFO.bankDetails.branchIfsc}</span>
+                </div>
               </div>
             </div>
 
             <div className="pt-6 text-right">
               <div className="font-bold text-[10px]">for {SELLER_INFO.name}</div>
               <div className="h-7"></div>
-              <div className="font-bold text-[9.5px]">
-                Authorised Signatory
-              </div>
+              <div className="font-bold text-[9.5px]">Authorised Signatory</div>
             </div>
           </div>
         </div>
 
         {/* Statutory Jurisdiction Note */}
         <div className="border-t border-black text-center py-1 text-[9px] font-bold tracking-wider uppercase">
-          SUBJECT TO JURISDICTION OF VADODARA JURISDICTION<br />
+          SUBJECT TO JURISDICTION OF VADODARA JURISDICTION
+          <br />
           This is a Computer Generated Invoice
         </div>
       </div>

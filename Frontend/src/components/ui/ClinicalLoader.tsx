@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import { cn } from "@/lib/utils";
 
@@ -41,10 +43,7 @@ export function ClinicalLoader({
     <div
       role="status"
       aria-live="polite"
-      className={cn(
-        "flex flex-col items-center justify-center text-center select-none",
-        className
-      )}
+      className={cn("flex flex-col items-center justify-center text-center select-none", className)}
     >
       <div className="relative flex items-center justify-center">
         {/* Ambient clinical glow behind loader */}
@@ -52,7 +51,7 @@ export function ClinicalLoader({
           className={cn(
             "absolute rounded-full blur-2xl pointer-events-none transition-all duration-700 opacity-60",
             "bg-gradient-to-tr from-[#12A488]/30 via-[#3FD1B3]/25 to-transparent",
-            size === "sm" ? "w-16 h-16" : size === "md" ? "w-28 h-28" : "w-48 h-48"
+            size === "sm" ? "w-16 h-16" : size === "md" ? "w-28 h-28" : "w-48 h-48",
           )}
         />
 
@@ -66,7 +65,7 @@ export function ClinicalLoader({
             onError={() => setImgError(true)}
             className={cn(
               "relative z-10 object-contain drop-shadow-[0_4px_20px_rgba(18,164,136,0.25)] transition-transform",
-              sizeMap[size]
+              sizeMap[size],
             )}
             loading="eager"
           />
@@ -74,7 +73,7 @@ export function ClinicalLoader({
           <div
             className={cn(
               "relative z-10 flex items-center justify-center rounded-full border border-[#12A488]/30 bg-[#12A488]/10 text-[#3FD1B3]",
-              sizeMap[size]
+              sizeMap[size],
             )}
           >
             <div className="w-1/2 h-1/2 rounded-full border-2 border-[#12A488] border-t-[#3FD1B3] animate-spin" />
@@ -88,11 +87,7 @@ export function ClinicalLoader({
         </p>
       )}
 
-      {subtext && (
-        <p className="mt-1 text-xs text-muted-foreground/80 max-w-xs">
-          {subtext}
-        </p>
-      )}
+      {subtext && <p className="mt-1 text-xs text-muted-foreground/80 max-w-xs">{subtext}</p>}
       <span className="sr-only">{text || "Loading content..."}</span>
     </div>
   );

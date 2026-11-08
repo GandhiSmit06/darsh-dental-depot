@@ -1,8 +1,8 @@
 .code-slots {
-  --cs-accent: #12A488;
-  --cs-ink: #3FD1B3;
-  --cs-slot: #131F1C;
-  --cs-digit: #04110E;
+  --cs-accent: #12a488;
+  --cs-ink: #3fd1b3;
+  --cs-slot: #131f1c;
+  --cs-digit: #04110e;
   --cs-danger: #ef4444;
   --cs-size: 44px;
   --cs-height: 52px;
@@ -80,7 +80,10 @@
   overflow: hidden;
   background: var(--cs-slot);
   border: 1.5px solid rgba(125, 125, 125, 0.2);
-  transition: background-color 200ms ease, border-color 200ms ease, box-shadow 200ms ease;
+  transition:
+    background-color 200ms ease,
+    border-color 200ms ease,
+    box-shadow 200ms ease;
   user-select: none;
   -webkit-user-select: none;
 }
@@ -90,7 +93,8 @@
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .code-slots__row[data-status='idle']:not([data-disabled]):hover .code-slots__slot:not([data-active]) {
+  .code-slots__row[data-status="idle"]:not([data-disabled]):hover
+    .code-slots__slot:not([data-active]) {
     background: color-mix(in srgb, var(--cs-ink) 4%, var(--cs-slot));
   }
 }
@@ -101,13 +105,13 @@
   box-shadow: 0 0 0 1px var(--cs-ink);
 }
 
-.code-slots__row[data-status='error'] .code-slots__slot {
+.code-slots__row[data-status="error"] .code-slots__slot {
   background: color-mix(in srgb, var(--cs-danger) 20%, var(--cs-slot));
   border-color: var(--cs-danger);
   box-shadow: 0 0 0 1px var(--cs-danger);
 }
 
-.code-slots__row[data-status='error'] .code-slots__fill {
+.code-slots__row[data-status="error"] .code-slots__fill {
   background: var(--cs-danger);
 }
 
@@ -197,7 +201,7 @@
     transition: opacity 200ms ease;
   }
 
-  .code-slots__row[data-status='success'] .code-slots__wash {
+  .code-slots__row[data-status="success"] .code-slots__wash {
     opacity: 1;
   }
 }

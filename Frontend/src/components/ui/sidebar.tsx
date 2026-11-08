@@ -1,7 +1,9 @@
+"use client";
+
 import React, { useState, createContext, useContext } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Menu, X, PanelLeft } from "lucide-react";
-import { Link } from "@tanstack/react-router";
+import Link from "next/link";
 import { cn } from "@/lib/utils";
 
 export interface SidebarLinkItem {
@@ -120,7 +122,7 @@ export const DesktopSidebar = ({
       className={cn(
         "h-screen sticky top-0 py-4 hidden md:flex md:flex-col bg-card/90 dark:bg-[#070B0A] border-r border-border/50 dark:border-white/10 backdrop-blur-xl flex-shrink-0 z-40 transition-colors duration-200 overflow-hidden",
         open ? "px-3 w-[260px]" : "px-2 w-[72px]",
-        className
+        className,
       )}
       animate={{
         width: animate ? (open ? "260px" : "72px") : "260px",
@@ -136,21 +138,17 @@ export const DesktopSidebar = ({
   );
 };
 
-export const MobileSidebar = ({
-  className,
-  children,
-  ...props
-}: React.ComponentProps<"div">) => {
+export const MobileSidebar = ({ className, children, ...props }: React.ComponentProps<"div">) => {
   const { openMobile, setOpenMobile } = useSidebar();
   return (
     <>
       <div
         className={cn(
-          "h-14 px-4 flex flex-row md:hidden items-center justify-between bg-card/95 dark:bg-[#070B0A] border-b border-border/50 dark:border-white/10 w-full sticky top-0 z-40"
+          "h-14 px-4 flex flex-row md:hidden items-center justify-between bg-card/95 dark:bg-[#070B0A] border-b border-border/50 dark:border-white/10 w-full sticky top-0 z-40",
         )}
         {...props}
       >
-        <Link to="/" className="flex items-center gap-2.5 select-none">
+        <Link href="/" className="flex items-center gap-2.5 select-none">
           <div className="h-8 w-8 rounded-xl overflow-hidden bg-white/95 dark:bg-[#10201C] border border-white/60 dark:border-white/10 shadow-xs flex items-center justify-center p-0.5">
             <img
               src="/logo.jpg"
@@ -184,7 +182,7 @@ export const MobileSidebar = ({
               }}
               className={cn(
                 "fixed h-full w-full inset-0 bg-background/98 dark:bg-[#070B0A]/98 backdrop-blur-2xl p-6 z-[100] flex flex-col justify-between overflow-y-auto",
-                className
+                className,
               )}
             >
               <div
@@ -193,9 +191,7 @@ export const MobileSidebar = ({
               >
                 <X className="h-5 w-5" />
               </div>
-              <div className="flex-1 flex flex-col pt-2">
-                {children}
-              </div>
+              <div className="flex-1 flex flex-col pt-2">{children}</div>
             </motion.div>
           )}
         </AnimatePresence>
@@ -204,13 +200,7 @@ export const MobileSidebar = ({
   );
 };
 
-export const SidebarLink = ({
-  link,
-  className,
-}: {
-  link: SidebarLinkItem;
-  className?: string;
-}) => {
+export const SidebarLink = ({ link, className }: { link: SidebarLinkItem; className?: string }) => {
   const { open, animate, setOpenMobile } = useSidebar();
   const isActive = link.active;
 
@@ -219,7 +209,7 @@ export const SidebarLink = ({
       <div
         className={cn(
           "flex items-center justify-center shrink-0 transition-colors",
-          open ? "w-5 h-5" : "w-5 h-5 mx-auto"
+          open ? "w-5 h-5" : "w-5 h-5 mx-auto",
         )}
       >
         {link.icon}
@@ -264,14 +254,14 @@ export const SidebarLink = ({
       ? "bg-primary text-primary-foreground dark:bg-[#12A488] dark:text-[#04110E] font-bold shadow-sm"
       : "text-muted-foreground dark:text-[#9DB0A9] hover:text-foreground dark:hover:text-[#F2F6F4] hover:bg-secondary/70 dark:hover:bg-[#10201C]",
     className,
-    link.className
+    link.className,
   );
 
   if (link.to || link.href) {
     const target = link.to || link.href || "/";
     return (
       <Link
-        to={target}
+        href={target}
         title={!open ? link.label : undefined}
         onClick={() => setOpenMobile(false)}
         className={baseClasses}
@@ -296,11 +286,7 @@ export const SidebarLink = ({
   );
 };
 
-export const SidebarTrigger = ({
-  className,
-}: {
-  className?: string;
-}) => {
+export const SidebarTrigger = ({ className }: { className?: string }) => {
   const { open, setOpen, openMobile, setOpenMobile } = useSidebar();
   return (
     <button
@@ -315,7 +301,7 @@ export const SidebarTrigger = ({
       }}
       className={cn(
         "rounded-xl h-9 w-9 flex items-center justify-center border border-border/60 dark:border-white/10 hover:bg-secondary dark:hover:bg-[#10201C] text-muted-foreground hover:text-foreground cursor-pointer transition-colors",
-        className
+        className,
       )}
     >
       <PanelLeft className="h-4 w-4" />

@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import { Package, Clock, CheckCircle2, Truck, FileText, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -49,12 +51,20 @@ export function ChatOrderCard({ order, onOpenInvoice }: ChatOrderCardProps) {
       {/* Header Info */}
       <div className="flex items-center justify-between border-b border-border/60 dark:border-white/10 pb-2">
         <div>
-          <span className="text-[10px] text-muted-foreground dark:text-[#9DB0A9] uppercase font-bold block">Active Depot Order</span>
-          <span className="font-mono font-extrabold text-primary dark:text-[#3FD1B3] text-sm">#{order.orderId}</span>
+          <span className="text-[10px] text-muted-foreground dark:text-[#9DB0A9] uppercase font-bold block">
+            Active Depot Order
+          </span>
+          <span className="font-mono font-extrabold text-primary dark:text-[#3FD1B3] text-sm">
+            #{order.orderId}
+          </span>
         </div>
         <div className="text-right">
-          <div className="text-sm font-extrabold text-foreground dark:text-[#F2F6F4]">₹{order.total.toFixed(2)}</div>
-          <div className="text-[10px] text-muted-foreground dark:text-[#9DB0A9]">{order.itemCount} Item{order.itemCount > 1 ? "s" : ""}</div>
+          <div className="text-sm font-extrabold text-foreground dark:text-[#F2F6F4]">
+            ₹{order.total.toFixed(2)}
+          </div>
+          <div className="text-[10px] text-muted-foreground dark:text-[#9DB0A9]">
+            {order.itemCount} Item{order.itemCount > 1 ? "s" : ""}
+          </div>
         </div>
       </div>
 
@@ -73,7 +83,10 @@ export function ChatOrderCard({ order, onOpenInvoice }: ChatOrderCardProps) {
             const isDone = idx <= currentIdx;
             const isCurrent = idx === currentIdx;
             return (
-              <div key={s.key} className="relative flex flex-col items-center gap-1 z-10 text-center">
+              <div
+                key={s.key}
+                className="relative flex flex-col items-center gap-1 z-10 text-center"
+              >
                 <div
                   className={`h-7 w-7 rounded-full grid place-items-center border-2 transition-all ${
                     isDone
@@ -83,7 +96,9 @@ export function ChatOrderCard({ order, onOpenInvoice }: ChatOrderCardProps) {
                 >
                   <s.icon className="h-3.5 w-3.5" />
                 </div>
-                <span className={`text-[10px] font-bold ${isDone ? "text-foreground dark:text-[#F2F6F4]" : "text-muted-foreground dark:text-[#9DB0A9]"}`}>
+                <span
+                  className={`text-[10px] font-bold ${isDone ? "text-foreground dark:text-[#F2F6F4]" : "text-muted-foreground dark:text-[#9DB0A9]"}`}
+                >
                   {s.label}
                 </span>
               </div>

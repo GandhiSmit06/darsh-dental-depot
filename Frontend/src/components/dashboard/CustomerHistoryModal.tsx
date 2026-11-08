@@ -1,10 +1,7 @@
+"use client";
+
 import { useState, useEffect, useMemo } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -48,20 +45,8 @@ import {
   Sparkles,
   AlertCircle,
 } from "lucide-react";
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
-  CartesianGrid,
-} from "recharts";
-import {
-  shopApi,
-  type CustomerHistoryData,
-  type CustomerOrderTransaction,
-} from "@/lib/api";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
+import { shopApi, type CustomerHistoryData, type CustomerOrderTransaction } from "@/lib/api";
 import { toast } from "sonner";
 
 interface CustomerHistoryModalProps {
@@ -70,11 +55,7 @@ interface CustomerHistoryModalProps {
   onClose: () => void;
 }
 
-export function CustomerHistoryModal({
-  customerId,
-  isOpen,
-  onClose,
-}: CustomerHistoryModalProps) {
+export function CustomerHistoryModal({ customerId, isOpen, onClose }: CustomerHistoryModalProps) {
   const [data, setData] = useState<CustomerHistoryData | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -142,10 +123,12 @@ export function CustomerHistoryModal({
       }
       // Payment filter
       if (paymentFilter !== "all") {
-        if (paymentFilter === "razorpay" && t.paymentMethod.toLowerCase() !== "razorpay") return false;
+        if (paymentFilter === "razorpay" && t.paymentMethod.toLowerCase() !== "razorpay")
+          return false;
         if (paymentFilter === "cod" && t.paymentMethod.toLowerCase() !== "cod") return false;
         if (paymentFilter === "paid" && t.paymentStatus.toLowerCase() !== "paid") return false;
-        if (paymentFilter === "pending" && t.paymentStatus.toLowerCase() !== "pending") return false;
+        if (paymentFilter === "pending" && t.paymentStatus.toLowerCase() !== "pending")
+          return false;
       }
       return true;
     });
@@ -194,7 +177,7 @@ export function CustomerHistoryModal({
         <td style="padding: 10px; border-bottom: 1px solid #e2e8f0; text-align: center;">${i.quantity}</td>
         <td style="padding: 10px; border-bottom: 1px solid #e2e8f0; text-align: right;">₹${i.price.toFixed(2)}</td>
         <td style="padding: 10px; border-bottom: 1px solid #e2e8f0; text-align: right; font-weight: bold;">₹${i.total.toFixed(2)}</td>
-      </tr>`
+      </tr>`,
       )
       .join("");
 
@@ -307,7 +290,7 @@ export function CustomerHistoryModal({
     }
     const phone = cleanPhone(data.profile.phone);
     const text = encodeURIComponent(
-      `Hello Dr. ${data.profile.name},\n\nHere is your receipt from *Darsh Dental Depot Vadodara* for Order *#${order.orderId}*:\n\n• Date: ${order.date}\n• Items: ${order.items.length} item(s)\n• Total Amount: ₹${order.totalPrice.toFixed(2)}\n• Payment: ${order.paymentMethod.toUpperCase()} (${order.paymentStatus.toUpperCase()})\n• Status: ${order.orderStatus.toUpperCase()}\n\nThank you for your trusted partnership! Call +91 97270 76119 for any inquiries.`
+      `Hello Dr. ${data.profile.name},\n\nHere is your receipt from *Darsh Dental Depot Vadodara* for Order *#${order.orderId}*:\n\n• Date: ${order.date}\n• Items: ${order.items.length} item(s)\n• Total Amount: ₹${order.totalPrice.toFixed(2)}\n• Payment: ${order.paymentMethod.toUpperCase()} (${order.paymentStatus.toUpperCase()})\n• Status: ${order.orderStatus.toUpperCase()}\n\nThank you for your trusted partnership! Call +91 97270 76119 for any inquiries.`,
     );
     window.open(`https://wa.me/91${phone.replace(/^91/, "")}?text=${text}`, "_blank");
   };
@@ -339,7 +322,8 @@ export function CustomerHistoryModal({
                   )}
                   {data?.profile.memberSince && (
                     <span className="text-muted-foreground flex items-center gap-1">
-                      • Member Since: <strong className="text-foreground">{data.profile.memberSince}</strong>
+                      • Member Since:{" "}
+                      <strong className="text-foreground">{data.profile.memberSince}</strong>
                     </span>
                   )}
                 </div>
@@ -390,7 +374,9 @@ export function CustomerHistoryModal({
           ) : error || !data ? (
             <div className="text-center py-16 text-muted-foreground space-y-2">
               <AlertCircle className="h-10 w-10 text-rose-500 mx-auto" />
-              <p className="font-semibold text-foreground">Could not load customer purchase history</p>
+              <p className="font-semibold text-foreground">
+                Could not load customer purchase history
+              </p>
               <p className="text-xs">{error || "Please try again later"}</p>
             </div>
           ) : (
@@ -406,7 +392,8 @@ export function CustomerHistoryModal({
                     ₹{data.lifetimeStats.ltv.toFixed(2)}
                   </div>
                   <div className="text-[11px] text-muted-foreground mt-0.5">
-                    Across {data.lifetimeStats.totalOrders} order{data.lifetimeStats.totalOrders !== 1 ? "s" : ""}
+                    Across {data.lifetimeStats.totalOrders} order
+                    {data.lifetimeStats.totalOrders !== 1 ? "s" : ""}
                   </div>
                 </Card>
 
@@ -419,7 +406,8 @@ export function CustomerHistoryModal({
                     {data.lifetimeStats.totalOrders}
                   </div>
                   <div className="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold mt-0.5">
-                    {data.lifetimeStats.completedOrders} Delivered • {data.lifetimeStats.pendingOrders} Active
+                    {data.lifetimeStats.completedOrders} Delivered •{" "}
+                    {data.lifetimeStats.pendingOrders} Active
                   </div>
                 </Card>
 
@@ -463,7 +451,8 @@ export function CustomerHistoryModal({
                     value="ledger"
                     className="rounded-xl text-xs font-bold gap-1.5 data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-xs"
                   >
-                    <Receipt className="h-3.5 w-3.5" /> Order History Ledger ({data.transactions.length})
+                    <Receipt className="h-3.5 w-3.5" /> Order History Ledger (
+                    {data.transactions.length})
                   </TabsTrigger>
                   <TabsTrigger
                     value="analytics"
@@ -620,7 +609,11 @@ export function CustomerHistoryModal({
                                   size="icon"
                                   className="h-8 w-8 rounded-full text-muted-foreground"
                                 >
-                                  {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                                  {isExpanded ? (
+                                    <ChevronUp className="h-4 w-4" />
+                                  ) : (
+                                    <ChevronDown className="h-4 w-4" />
+                                  )}
                                 </Button>
                               </div>
                             </div>
@@ -687,7 +680,9 @@ export function CustomerHistoryModal({
                                       📍 Delivery Destination:
                                     </span>
                                     <p className="text-foreground">
-                                      {order.shippingAddress?.street || data?.profile.address || "Vadodara Clinic Dispatch"}
+                                      {order.shippingAddress?.street ||
+                                        data?.profile.address ||
+                                        "Vadodara Clinic Dispatch"}
                                     </p>
                                     {order.notes && (
                                       <p className="text-muted-foreground mt-1 italic">
@@ -698,7 +693,9 @@ export function CustomerHistoryModal({
                                   <div className="sm:text-right space-y-1">
                                     {order.paymentId && (
                                       <div>
-                                        <span className="text-muted-foreground font-medium">Payment ID: </span>
+                                        <span className="text-muted-foreground font-medium">
+                                          Payment ID:{" "}
+                                        </span>
                                         <span className="font-mono font-bold text-primary bg-primary/10 px-1.5 py-0.5 rounded text-[11px]">
                                           {order.paymentId}
                                         </span>
@@ -752,7 +749,9 @@ export function CustomerHistoryModal({
                     </div>
                     {availableYears.length > 1 && (
                       <div className="flex items-center gap-2">
-                        <span className="text-xs font-semibold text-muted-foreground">Filter Year:</span>
+                        <span className="text-xs font-semibold text-muted-foreground">
+                          Filter Year:
+                        </span>
                         <Select value={selectedYear} onValueChange={setSelectedYear}>
                           <SelectTrigger className="h-8 w-28 text-xs font-bold rounded-xl bg-background">
                             <SelectValue placeholder="Year" />
@@ -778,7 +777,10 @@ export function CustomerHistoryModal({
                       </div>
                       <div className="h-56 w-full">
                         <ResponsiveContainer width="100%" height="100%">
-                          <BarChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                          <BarChart
+                            data={chartData}
+                            margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+                          >
                             <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.3} />
                             <XAxis
                               dataKey="month"
@@ -793,7 +795,10 @@ export function CustomerHistoryModal({
                               tickFormatter={(v) => `₹${v}`}
                             />
                             <Tooltip
-                              formatter={(value: any) => [`₹${Number(value).toFixed(2)}`, "Total Spent"]}
+                              formatter={(value: any) => [
+                                `₹${Number(value).toFixed(2)}`,
+                                "Total Spent",
+                              ]}
                               labelFormatter={(label) => `Period: ${label}`}
                               contentStyle={{
                                 background: "var(--color-card)",
@@ -958,7 +963,8 @@ export function CustomerHistoryModal({
 
                     <div className="pt-4 border-t border-border/50 flex items-center justify-between flex-wrap gap-3">
                       <div className="text-xs text-muted-foreground">
-                        Account Created: <strong className="text-foreground">{data.profile.memberSince}</strong>
+                        Account Created:{" "}
+                        <strong className="text-foreground">{data.profile.memberSince}</strong>
                       </div>
                       {data.profile.phone && (
                         <Button
@@ -966,11 +972,11 @@ export function CustomerHistoryModal({
                           onClick={() => {
                             const phone = cleanPhone(data.profile.phone);
                             const text = encodeURIComponent(
-                              `Hello Dr. ${data.profile.name}, this is Darsh Dental Depot Vadodara. How can we assist your clinic with dental supplies today?`
+                              `Hello Dr. ${data.profile.name}, this is Darsh Dental Depot Vadodara. How can we assist your clinic with dental supplies today?`,
                             );
                             window.open(
                               `https://wa.me/91${phone.replace(/^91/, "")}?text=${text}`,
-                              "_blank"
+                              "_blank",
                             );
                           }}
                           className="rounded-xl text-xs gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold"
@@ -989,5 +995,3 @@ export function CustomerHistoryModal({
     </Dialog>
   );
 }
-
-export default CustomerHistoryModal;

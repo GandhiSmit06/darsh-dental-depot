@@ -5,7 +5,8 @@ export const DEPOT_KNOWLEDGE = {
     name: "Darsh Dental Depot",
     tagline: "Vadodara's Most Trusted Dental Wholesale & Clinic Supply Depot",
     proprietors: "Hetal Gandhi & Smit Gandhi",
-    address: "Bordi Faliya Small Lane, B/h Khanderao Market, Siyabaug / Kevdabaug, Vadodara, Gujarat - 390001",
+    address:
+      "Bordi Faliya Small Lane, B/h Khanderao Market, Siyabaug / Kevdabaug, Vadodara, Gujarat - 390001",
     landmark: "Vraj Vihar Complex, Char Rasta, Near Khanderao Market",
     phoneNumbers: ["+91-97270 76119", "+91-91577 16989"],
     email: "hetalgandhi16@gmail.com",
@@ -23,14 +24,18 @@ export const DEPOT_KNOWLEDGE = {
   },
 
   services: {
-    sameDayDelivery: "Express same-day clinic delivery across all Vadodara zones (Akshar Chowk, Old Padra Road, Alkapuri, Sayajigunj, Manjalpur, Karelibaug, Gotri, Waghodia Road, Fatehgunj, Sama, Vasna, Subhanpura, Nizampura).",
+    sameDayDelivery:
+      "Express same-day clinic delivery across all Vadodara zones (Akshar Chowk, Old Padra Road, Alkapuri, Sayajigunj, Manjalpur, Karelibaug, Gotri, Waghodia Road, Fatehgunj, Sama, Vasna, Subhanpura, Nizampura).",
     paymentModes: [
       "Pay on Delivery (Cash / Clinic Cheque on delivery)",
       "Razorpay Online (UPI, Google Pay, PhonePe, Paytm, Visa, Mastercard, Net Banking)",
     ],
-    invoicing: "Official Tally ERP GST Tax Invoices (with HSN codes 90184900, 30064000, 27111300 and 5%/12%/18% tax breakdown) downloadable with 1 click from doctor and shop portals.",
-    orderTracking: "Real-time 4-stage tracking: 1. Pending (Received) -> 2. Processing (Packing in Depot) -> 3. Shipped (Out for Delivery) -> 4. Delivered.",
-    whatsappAlerts: "Instant 1-click WhatsApp dispatch alerts sent directly to doctor mobile numbers with itemized summary.",
+    invoicing:
+      "Official Tally ERP GST Tax Invoices (with HSN codes 90184900, 30064000, 27111300 and 5%/12%/18% tax breakdown) downloadable with 1 click from doctor and shop portals.",
+    orderTracking:
+      "Real-time 4-stage tracking: 1. Pending (Received) -> 2. Processing (Packing in Depot) -> 3. Shipped (Out for Delivery) -> 4. Delivered.",
+    whatsappAlerts:
+      "Instant 1-click WhatsApp dispatch alerts sent directly to doctor mobile numbers with itemized summary.",
   },
 
   featuredProducts: [
@@ -42,7 +47,8 @@ export const DEPOT_KNOWLEDGE = {
       hsn: "90184900",
       gstRate: 5,
       price: 300,
-      description: "High-grade Japanese multi-use diamond rotary burs for cavity preparation and crown cutting.",
+      description:
+        "High-grade Japanese multi-use diamond rotary burs for cavity preparation and crown cutting.",
     },
     {
       id: "gc-gold-label-1",
@@ -52,7 +58,8 @@ export const DEPOT_KNOWLEDGE = {
       hsn: "30064000",
       gstRate: 5,
       price: 3169,
-      description: "Universal glass ionomer luting cement for crowns, bridges, inlays, and orthodontic bands.",
+      description:
+        "Universal glass ionomer luting cement for crowns, bridges, inlays, and orthodontic bands.",
     },
     {
       id: "gc-fuji-ix",
@@ -62,7 +69,8 @@ export const DEPOT_KNOWLEDGE = {
       hsn: "30064000",
       gstRate: 5,
       price: 2450,
-      description: "High-strength packable glass ionomer restorative cement for posterior restorations and core build-up.",
+      description:
+        "High-strength packable glass ionomer restorative cement for posterior restorations and core build-up.",
     },
     {
       id: "tetric-n-ceram",
@@ -72,7 +80,8 @@ export const DEPOT_KNOWLEDGE = {
       hsn: "30064000",
       gstRate: 5,
       price: 1250,
-      description: "Light-curing, radiopaque nano-hybrid composite for direct restorative procedures (Anterior & Posterior).",
+      description:
+        "Light-curing, radiopaque nano-hybrid composite for direct restorative procedures (Anterior & Posterior).",
     },
     {
       id: "tetric-n-flow",
@@ -82,7 +91,8 @@ export const DEPOT_KNOWLEDGE = {
       hsn: "30064000",
       gstRate: 5,
       price: 892.86,
-      description: "Flowable nano-hybrid composite with excellent wettability for cavity lining and small restorations.",
+      description:
+        "Flowable nano-hybrid composite with excellent wettability for cavity lining and small restorations.",
     },
     {
       id: "progel-b",
@@ -92,7 +102,8 @@ export const DEPOT_KNOWLEDGE = {
       hsn: "30039034",
       gstRate: 5,
       price: 447.62,
-      description: "Fast-acting 20% benzocaine topical anesthetic gel with pleasant bubblegum/mint flavor.",
+      description:
+        "Fast-acting 20% benzocaine topical anesthetic gel with pleasant bubblegum/mint flavor.",
     },
     {
       id: "rc-help",
@@ -102,7 +113,8 @@ export const DEPOT_KNOWLEDGE = {
       hsn: "30064000",
       gstRate: 5,
       price: 133.33,
-      description: "Water-soluble 17% EDTA gel with carbamide peroxide for root canal lubrication and chelation.",
+      description:
+        "Water-soluble 17% EDTA gel with carbamide peroxide for root canal lubrication and chelation.",
     },
     {
       id: "gdc-curette",
@@ -112,7 +124,8 @@ export const DEPOT_KNOWLEDGE = {
       hsn: "9018",
       gstRate: 5,
       price: 535,
-      description: "Premium surgical stainless steel periodontal subgingival scaling and root planing instruments.",
+      description:
+        "Premium surgical stainless steel periodontal subgingival scaling and root planing instruments.",
     },
   ],
 

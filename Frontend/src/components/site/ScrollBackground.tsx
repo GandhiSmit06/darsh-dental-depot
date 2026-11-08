@@ -1,3 +1,5 @@
+"use client";
+
 import { motion, useScroll, useTransform, useSpring } from "framer-motion";
 
 export function ScrollBackground() {
@@ -16,28 +18,20 @@ export function ScrollBackground() {
   const toothX = useTransform(
     smoothProgress,
     [0, 0.25, 0.5, 0.75, 1],
-    ["0vw", "-22vw", "-45vw", "-66vw", "-82vw"]
+    ["0vw", "-22vw", "-45vw", "-66vw", "-82vw"],
   );
 
   // Vertical wave undulation: Follows the flowing crests and troughs of the clinical line
   const toothY = useTransform(
     smoothProgress,
     [0, 0.2, 0.4, 0.6, 0.8, 1],
-    ["0px", "-38px", "26px", "-42px", "18px", "-22px"]
+    ["0px", "-38px", "26px", "-42px", "18px", "-22px"],
   );
 
   // Gentle angular tilt as the tooth navigates the ribbon wave
-  const toothRotate = useTransform(
-    smoothProgress,
-    [0, 0.25, 0.5, 0.75, 1],
-    [-8, 4, -13, 5, -9]
-  );
+  const toothRotate = useTransform(smoothProgress, [0, 0.25, 0.5, 0.75, 1], [-8, 4, -13, 5, -9]);
 
-  const toothScale = useTransform(
-    smoothProgress,
-    [0, 0.3, 0.6, 1],
-    [1, 1.05, 0.97, 1.02]
-  );
+  const toothScale = useTransform(smoothProgress, [0, 0.3, 0.6, 1], [1, 1.05, 0.97, 1.02]);
 
   // ─── 2. Wavy Ribbon Line: Flows from RIGHT to LEFT with Scroll ───
   // Translates leftwards in lockstep with the tooth assembly
@@ -153,8 +147,18 @@ export function ScrollBackground() {
           className="absolute top-0 right-0 w-[55vw] h-[450px] pointer-events-none opacity-30 dark:opacity-40"
           xmlns="http://www.w3.org/2000/svg"
         >
-          <rect width="100%" height="100%" fill="url(#dark-dot-grid)" className="hidden dark:block" />
-          <rect width="100%" height="100%" fill="url(#light-dot-grid)" className="block dark:hidden" />
+          <rect
+            width="100%"
+            height="100%"
+            fill="url(#dark-dot-grid)"
+            className="hidden dark:block"
+          />
+          <rect
+            width="100%"
+            height="100%"
+            fill="url(#light-dot-grid)"
+            className="block dark:hidden"
+          />
         </svg>
       </div>
 
@@ -412,10 +416,36 @@ export function ScrollBackground() {
           />
 
           {/* Sparkle Nodes */}
-          <circle cx="132" cy="-85" r="4.5" fill="#A5F3E2" className="hidden dark:block animate-pulse" />
-          <circle cx="132" cy="-85" r="4.5" fill="#087F6B" className="block dark:hidden animate-pulse" />
-          <circle cx="-150" cy="55" r="3.5" fill="#3FD1B3" className="hidden dark:block animate-ping" style={{ animationDuration: "4s" }} />
-          <circle cx="-150" cy="55" r="3.5" fill="#12A488" className="block dark:hidden animate-ping" style={{ animationDuration: "4s" }} />
+          <circle
+            cx="132"
+            cy="-85"
+            r="4.5"
+            fill="#A5F3E2"
+            className="hidden dark:block animate-pulse"
+          />
+          <circle
+            cx="132"
+            cy="-85"
+            r="4.5"
+            fill="#087F6B"
+            className="block dark:hidden animate-pulse"
+          />
+          <circle
+            cx="-150"
+            cy="55"
+            r="3.5"
+            fill="#3FD1B3"
+            className="hidden dark:block animate-ping"
+            style={{ animationDuration: "4s" }}
+          />
+          <circle
+            cx="-150"
+            cy="55"
+            r="3.5"
+            fill="#12A488"
+            className="block dark:hidden animate-ping"
+            style={{ animationDuration: "4s" }}
+          />
         </svg>
       </motion.div>
     </div>

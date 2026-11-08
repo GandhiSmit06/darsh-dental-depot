@@ -18,7 +18,7 @@ test("HMAC-SHA256 signature verification security suite", async (t) => {
       secret,
       razorpayOrderId,
       razorpayPaymentId,
-      authenticSignature
+      authenticSignature,
     );
     assert.equal(valid, true);
   });
@@ -28,7 +28,7 @@ test("HMAC-SHA256 signature verification security suite", async (t) => {
       secret,
       razorpayOrderId,
       razorpayPaymentId,
-      authenticSignature.toUpperCase()
+      authenticSignature.toUpperCase(),
     );
     assert.equal(valid, true);
   });
@@ -39,7 +39,7 @@ test("HMAC-SHA256 signature verification security suite", async (t) => {
       secret,
       razorpayOrderId,
       razorpayPaymentId,
-      forgedSignature
+      forgedSignature,
     );
     assert.equal(valid, false);
   });
@@ -49,7 +49,7 @@ test("HMAC-SHA256 signature verification security suite", async (t) => {
       secret,
       razorpayOrderId,
       "pay_AttackerSubstitutedPayment",
-      authenticSignature
+      authenticSignature,
     );
     assert.equal(valid, false);
   });
@@ -59,7 +59,7 @@ test("HMAC-SHA256 signature verification security suite", async (t) => {
       secret,
       "order_DifferentOrder999",
       razorpayPaymentId,
-      authenticSignature
+      authenticSignature,
     );
     assert.equal(valid, false);
   });
@@ -69,21 +69,34 @@ test("HMAC-SHA256 signature verification security suite", async (t) => {
       "wrong_secret_key",
       razorpayOrderId,
       razorpayPaymentId,
-      authenticSignature
+      authenticSignature,
     );
     assert.equal(valid, false);
   });
 
   await t.test("rejects missing or empty inputs safely without throwing", async () => {
-    assert.equal(await verifyRazorpayHmacSignature("", razorpayOrderId, razorpayPaymentId, authenticSignature), false);
-    assert.equal(await verifyRazorpayHmacSignature(secret, "", razorpayPaymentId, authenticSignature), false);
-    assert.equal(await verifyRazorpayHmacSignature(secret, razorpayOrderId, "", authenticSignature), false);
-    assert.equal(await verifyRazorpayHmacSignature(secret, razorpayOrderId, razorpayPaymentId, ""), false);
+    assert.equal(
+      await verifyRazorpayHmacSignature("", razorpayOrderId, razorpayPaymentId, authenticSignature),
+      false,
+    );
+    assert.equal(
+      await verifyRazorpayHmacSignature(secret, "", razorpayPaymentId, authenticSignature),
+      false,
+    );
+    assert.equal(
+      await verifyRazorpayHmacSignature(secret, razorpayOrderId, "", authenticSignature),
+      false,
+    );
+    assert.equal(
+      await verifyRazorpayHmacSignature(secret, razorpayOrderId, razorpayPaymentId, ""),
+      false,
+    );
   });
 });
 
 test("Cloudflare Worker server payment endpoint guards", async (t) => {
-  const { handleVerifyPaymentRequest, handleCreateRazorpayOrderRequest } = await import("./server-payment.ts");
+  const { handleVerifyPaymentRequest, handleCreateRazorpayOrderRequest } =
+    await import("./server-payment.ts");
 
   await t.test("handleVerifyPaymentRequest rejects non-POST requests with 405", async () => {
     const req = new Request("http://localhost/api/verify-razorpay-payment", { method: "GET" });
@@ -97,29 +110,35 @@ test("Cloudflare Worker server payment endpoint guards", async (t) => {
     assert.equal(res.status, 405);
   });
 
-  await t.test("handleVerifyPaymentRequest returns 500 when Supabase config is missing", async () => {
-    const req = new Request("http://localhost/api/verify-razorpay-payment", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ orderId: "123", razorpayPaymentId: "pay_123" }),
-    });
-    const res = await handleVerifyPaymentRequest(req, {});
-    assert.equal(res.status, 500);
-    const body = await res.json();
-    assert.match(body.message, /configuration missing/i);
-  });
+  await t.test(
+    "handleVerifyPaymentRequest returns 500 when Supabase config is missing",
+    async () => {
+      const req = new Request("http://localhost/api/verify-razorpay-payment", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orderId: "123", razorpayPaymentId: "pay_123" }),
+      });
+      const res = await handleVerifyPaymentRequest(req, {});
+      assert.equal(res.status, 500);
+      const body = await res.json();
+      assert.match(body.message, /configuration missing/i);
+    },
+  );
 
-  await t.test("handleCreateRazorpayOrderRequest returns 500 when Supabase config is missing", async () => {
-    const req = new Request("http://localhost/api/create-razorpay-order", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ orderId: "123" }),
-    });
-    const res = await handleCreateRazorpayOrderRequest(req, {});
-    assert.equal(res.status, 500);
-    const body = await res.json();
-    assert.match(body.message, /configuration missing/i);
-  });
+  await t.test(
+    "handleCreateRazorpayOrderRequest returns 500 when Supabase config is missing",
+    async () => {
+      const req = new Request("http://localhost/api/create-razorpay-order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orderId: "123" }),
+      });
+      const res = await handleCreateRazorpayOrderRequest(req, {});
+      assert.equal(res.status, 500);
+      const body = await res.json();
+      assert.match(body.message, /configuration missing/i);
+    },
+  );
 });
 
 test("Order lifecycle & cart aggregation simulation suite", async (t) => {
@@ -164,26 +183,26 @@ test("Order lifecycle & cart aggregation simulation suite", async (t) => {
   await t.test("rejects malformed cart item (missing product_id)", () => {
     assert.throws(
       () => aggregateCartItems([{ product_id: null, quantity: 2 }]),
-      /Invalid product in cart/
+      /Invalid product in cart/,
     );
   });
 
   await t.test("rejects invalid quantity (zero, negative, fractional, or > 1000)", () => {
     assert.throws(
       () => aggregateCartItems([{ product_id: "prod-1", quantity: 0 }]),
-      /Invalid product quantity/
+      /Invalid product quantity/,
     );
     assert.throws(
       () => aggregateCartItems([{ product_id: "prod-1", quantity: -5 }]),
-      /Invalid product quantity/
+      /Invalid product quantity/,
     );
     assert.throws(
       () => aggregateCartItems([{ product_id: "prod-1", quantity: 1.5 }]),
-      /Invalid product quantity/
+      /Invalid product quantity/,
     );
     assert.throws(
       () => aggregateCartItems([{ product_id: "prod-1", quantity: 1001 }]),
-      /Invalid product quantity/
+      /Invalid product quantity/,
     );
   });
 
@@ -215,7 +234,7 @@ test("Order lifecycle & cart aggregation simulation suite", async (t) => {
     }));
     assert.throws(
       () => aggregateCartItems(fiftyOneItems),
-      /Cart exceeds maximum allowed limit of 50 distinct items/
+      /Cart exceeds maximum allowed limit of 50 distinct items/,
     );
   });
 
@@ -298,94 +317,107 @@ test("Order lifecycle & cart aggregation simulation suite", async (t) => {
     assert.throws(() => validateOrderTotal(-500), /Order total must be greater than zero/);
   });
 
-  await t.test("two-pass atomic validation guarantees zero inventory deduction if any item fails", () => {
-    // Catalog state
-    const catalog = {
-      "prod-1": { name: "Composite Kit", stock: 10, price: 1500, status: "active" },
-      "prod-2": { name: "Dental Bur", stock: 2, price: 300, status: "active" }, // only 2 in stock
-    };
+  await t.test(
+    "two-pass atomic validation guarantees zero inventory deduction if any item fails",
+    () => {
+      // Catalog state
+      const catalog = {
+        "prod-1": { name: "Composite Kit", stock: 10, price: 1500, status: "active" },
+        "prod-2": { name: "Dental Bur", stock: 2, price: 300, status: "active" }, // only 2 in stock
+      };
 
-    // Customer cart requests 5 units of prod-1 and 5 units of prod-2
-    const cart = [
-      { product_id: "prod-1", quantity: 5 },
-      { product_id: "prod-2", quantity: 5 }, // Will fail stock check!
-    ];
+      // Customer cart requests 5 units of prod-1 and 5 units of prod-2
+      const cart = [
+        { product_id: "prod-1", quantity: 5 },
+        { product_id: "prod-2", quantity: 5 }, // Will fail stock check!
+      ];
 
-    // Simulate Pass 1: Validation only (no stock updates)
-    let pass1Failed = false;
-    let failureMessage = "";
-    for (const item of cart) {
-      const prod = catalog[item.product_id];
-      if (prod.stock < item.quantity) {
-        pass1Failed = true;
-        failureMessage = `Insufficient stock for ${prod.name}`;
-        break;
-      }
-    }
-
-    assert.equal(pass1Failed, true);
-    assert.equal(failureMessage, "Insufficient stock for Dental Bur");
-
-    // PASS 2 is NEVER reached! Verify catalog stock is 100% untouched
-    assert.equal(catalog["prod-1"].stock, 10); // NOT decremented to 5!
-    assert.equal(catalog["prod-2"].stock, 2);
-  });
-
-  await t.test("profile trigger prevents non-staff from mutating role, is_verified, or is_active", () => {
-    const simulateProfileTrigger = (oldRow, newRow, callerRole) => {
-      const isStaff = callerRole === "admin" || callerRole === "shop_owner";
-      if (!isStaff) {
-        if (newRow.role !== oldRow.role) {
-          throw new Error("Privilege escalation rejected: only administrators can modify user roles");
-        }
-        if (newRow.is_verified !== oldRow.is_verified) {
-          throw new Error("Verification modification rejected: only depot staff can verify profiles");
-        }
-        if (newRow.is_active !== oldRow.is_active) {
-          throw new Error("Account status modification rejected: only administrators can change account activation");
+      // Simulate Pass 1: Validation only (no stock updates)
+      let pass1Failed = false;
+      let failureMessage = "";
+      for (const item of cart) {
+        const prod = catalog[item.product_id];
+        if (prod.stock < item.quantity) {
+          pass1Failed = true;
+          failureMessage = `Insufficient stock for ${prod.name}`;
+          break;
         }
       }
-      return { ...newRow, updated_at: new Date().toISOString() };
-    };
 
-    const doctorProfile = {
-      id: "u-1",
-      role: "doctor",
-      is_verified: false,
-      is_active: true,
-      clinic_name: "Original Clinic",
-    };
+      assert.equal(pass1Failed, true);
+      assert.equal(failureMessage, "Insufficient stock for Dental Bur");
 
-    // Doctor attempting self-promotion to admin -> REJECTED
-    assert.throws(
-      () => simulateProfileTrigger(doctorProfile, { ...doctorProfile, role: "admin" }, "doctor"),
-      /Privilege escalation rejected/
-    );
+      // PASS 2 is NEVER reached! Verify catalog stock is 100% untouched
+      assert.equal(catalog["prod-1"].stock, 10); // NOT decremented to 5!
+      assert.equal(catalog["prod-2"].stock, 2);
+    },
+  );
 
-    // Doctor attempting self-verification -> REJECTED
-    assert.throws(
-      () => simulateProfileTrigger(doctorProfile, { ...doctorProfile, is_verified: true }, "doctor"),
-      /Verification modification rejected/
-    );
+  await t.test(
+    "profile trigger prevents non-staff from mutating role, is_verified, or is_active",
+    () => {
+      const simulateProfileTrigger = (oldRow, newRow, callerRole) => {
+        const isStaff = callerRole === "admin" || callerRole === "shop_owner";
+        if (!isStaff) {
+          if (newRow.role !== oldRow.role) {
+            throw new Error(
+              "Privilege escalation rejected: only administrators can modify user roles",
+            );
+          }
+          if (newRow.is_verified !== oldRow.is_verified) {
+            throw new Error(
+              "Verification modification rejected: only depot staff can verify profiles",
+            );
+          }
+          if (newRow.is_active !== oldRow.is_active) {
+            throw new Error(
+              "Account status modification rejected: only administrators can change account activation",
+            );
+          }
+        }
+        return { ...newRow, updated_at: new Date().toISOString() };
+      };
 
-    // Doctor updating legitimate details (clinic name, phone, address) -> ALLOWED
-    const updated = simulateProfileTrigger(
-      doctorProfile,
-      { ...doctorProfile, clinic_name: "Updated Smile Clinic" },
-      "doctor"
-    );
-    assert.equal(updated.clinic_name, "Updated Smile Clinic");
-    assert.equal(updated.role, "doctor");
-    assert.equal(updated.is_verified, false);
+      const doctorProfile = {
+        id: "u-1",
+        role: "doctor",
+        is_verified: false,
+        is_active: true,
+        clinic_name: "Original Clinic",
+      };
 
-    // Admin updating doctor's verification status -> ALLOWED
-    const adminVerified = simulateProfileTrigger(
-      doctorProfile,
-      { ...doctorProfile, is_verified: true },
-      "admin"
-    );
-    assert.equal(adminVerified.is_verified, true);
-  });
+      // Doctor attempting self-promotion to admin -> REJECTED
+      assert.throws(
+        () => simulateProfileTrigger(doctorProfile, { ...doctorProfile, role: "admin" }, "doctor"),
+        /Privilege escalation rejected/,
+      );
+
+      // Doctor attempting self-verification -> REJECTED
+      assert.throws(
+        () =>
+          simulateProfileTrigger(doctorProfile, { ...doctorProfile, is_verified: true }, "doctor"),
+        /Verification modification rejected/,
+      );
+
+      // Doctor updating legitimate details (clinic name, phone, address) -> ALLOWED
+      const updated = simulateProfileTrigger(
+        doctorProfile,
+        { ...doctorProfile, clinic_name: "Updated Smile Clinic" },
+        "doctor",
+      );
+      assert.equal(updated.clinic_name, "Updated Smile Clinic");
+      assert.equal(updated.role, "doctor");
+      assert.equal(updated.is_verified, false);
+
+      // Admin updating doctor's verification status -> ALLOWED
+      const adminVerified = simulateProfileTrigger(
+        doctorProfile,
+        { ...doctorProfile, is_verified: true },
+        "admin",
+      );
+      assert.equal(adminVerified.is_verified, true);
+    },
+  );
 
   await t.test("validates exact amount and currency matching", () => {
     const expectedPaise = 585000; // ₹5,850.00
@@ -395,7 +427,10 @@ test("Order lifecycle & cart aggregation simulation suite", async (t) => {
     const tamperedAmount = { amount: 540000, currency: "INR" };
     const tamperedCurrency = { amount: 585000, currency: "USD" };
 
-    assert.equal(validPayment.amount === expectedPaise && validPayment.currency === expectedCurrency, true);
+    assert.equal(
+      validPayment.amount === expectedPaise && validPayment.currency === expectedCurrency,
+      true,
+    );
     assert.equal(tamperedAmount.amount === expectedPaise, false);
     assert.equal(tamperedCurrency.currency === expectedCurrency, false);
   });

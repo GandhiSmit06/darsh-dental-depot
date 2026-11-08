@@ -71,7 +71,9 @@ export const notificationService = {
         // A. Orders & Delivery Status Notifications
         const { data: userOrders } = await supabase
           .from("orders")
-          .select("id, order_number, total_price, order_status, payment_status, created_at, updated_at")
+          .select(
+            "id, order_number, total_price, order_status, payment_status, created_at, updated_at",
+          )
           .eq("user_id", userId)
           .order("created_at", { ascending: false })
           .limit(10);
@@ -150,7 +152,8 @@ export const notificationService = {
         // Read local wishlist items
         let wishlistItems: Array<{ productId: string; name: string }> = [];
         try {
-          const raw = typeof window !== "undefined" ? localStorage.getItem("ddd_wishlist_items") : null;
+          const raw =
+            typeof window !== "undefined" ? localStorage.getItem("ddd_wishlist_items") : null;
           if (raw) wishlistItems = JSON.parse(raw);
         } catch {
           wishlistItems = [];
@@ -191,7 +194,9 @@ export const notificationService = {
         // A. Incoming Orders from Clinics
         const { data: shopOrders } = await supabase
           .from("orders")
-          .select("id, order_number, total_price, order_status, created_at, profiles(full_name, clinic_name)")
+          .select(
+            "id, order_number, total_price, order_status, created_at, profiles(full_name, clinic_name)",
+          )
           .order("created_at", { ascending: false })
           .limit(10);
 

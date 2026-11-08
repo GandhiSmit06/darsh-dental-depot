@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState } from "react";
 import { ShoppingCart, Check, Loader2, Package } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -29,10 +31,7 @@ export function ChatProductCard({ product }: ChatProductCardProps) {
   const price = product.sellingPrice || product.price || 0;
   const productId = product._id || product.id || "prod-sample";
   const inStock = (product.stock ?? 1) > 0;
-  const imageUrl =
-    product.imageUrl ||
-    product.image ||
-    "/products/filtek-z350.jpg";
+  const imageUrl = product.imageUrl || product.image || "/products/filtek-z350.jpg";
 
   const handleAddToCart = async () => {
     if (!user) {
@@ -70,12 +69,16 @@ export function ChatProductCard({ product }: ChatProductCardProps) {
       />
 
       <div className="flex-1 min-w-0">
-        <div className="font-bold text-foreground dark:text-[#F2F6F4] truncate leading-tight">{product.name}</div>
+        <div className="font-bold text-foreground dark:text-[#F2F6F4] truncate leading-tight">
+          {product.name}
+        </div>
         <div className="text-[11px] text-muted-foreground dark:text-[#9DB0A9] mt-0.5 truncate">
           {product.brand || "Darsh Dental Depot"}
         </div>
         <div className="flex items-center gap-2 mt-1">
-          <span className="font-extrabold text-primary dark:text-[#3FD1B3] text-sm">₹{price.toFixed(2)}</span>
+          <span className="font-extrabold text-primary dark:text-[#3FD1B3] text-sm">
+            ₹{price.toFixed(2)}
+          </span>
           <Badge
             variant="outline"
             className={`text-[9px] px-1.5 py-0 h-4 font-semibold ${

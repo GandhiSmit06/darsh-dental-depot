@@ -1,5 +1,7 @@
-import { useEffect, useRef, type CSSProperties } from 'react';
-import './GridDistortion.css';
+"use client";
+
+import { useEffect, useRef, type CSSProperties } from "react";
+import "./GridDistortion.css";
 
 const VERTEX = `#version 300 es
 in vec2 aPosition;
@@ -52,7 +54,7 @@ void main() {
   outColor = vec4(color * uReveal, uReveal);
 }`;
 
-const MODES = ['drag', 'push', 'swirl'] as const;
+const MODES = ["drag", "push", "swirl"] as const;
 const GAIN = 18;
 const RIPPLE_LIFE = 1.6;
 
@@ -81,7 +83,7 @@ export interface GridDistortionProps {
   radius?: number;
   strength?: number;
   relaxation?: number;
-  mode?: 'drag' | 'push' | 'swirl';
+  mode?: "drag" | "push" | "swirl";
   softness?: number;
   chroma?: number;
   idle?: number;
@@ -97,14 +99,14 @@ export const GridDistortion = ({
   radius = 0.18,
   strength = 0.15,
   relaxation = 0.96,
-  mode = 'drag',
+  mode = "drag",
   softness = 0,
   chroma = 0,
   idle = 0.3,
   clickRipple = true,
   intro = true,
-  className = '',
-  style
+  className = "",
+  style,
 }: GridDistortionProps) => {
   const rootRef = useRef<HTMLDivElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -114,12 +116,12 @@ export const GridDistortion = ({
     radius: clamp(radius, 0.01, 1),
     strength: Math.max(0, strength),
     relaxation: clamp(relaxation, 0, 0.995),
-    mode: MODES.includes(mode) ? mode : 'drag',
+    mode: MODES.includes(mode) ? mode : "drag",
     softness: clamp(softness, 0, 1),
     chroma: clamp(chroma, 0, 2),
     idle: clamp(idle, 0, 1),
     clickRipple,
-    intro
+    intro,
   };
   const settingsRef = useRef(settings);
   settingsRef.current = settings;
@@ -127,7 +129,11 @@ export const GridDistortion = ({
   useEffect(() => {
     const root = rootRef.current;
     const canvas = canvasRef.current;
-    const gl = canvas?.getContext('webgl2', { alpha: true, premultipliedAlpha: true, antialias: false });
+    const gl = canvas?.getContext("webgl2", {
+      alpha: true,
+      premultipliedAlpha: true,
+      antialias: false,
+    });
     if (!root || !canvas || !gl) return undefined;
 
     const vertex = compile(gl, gl.VERTEX_SHADER, VERTEX);
@@ -143,12 +149,12 @@ export const GridDistortion = ({
     const buffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
-    const position = gl.getAttribLocation(program, 'aPosition');
+    const position = gl.getAttribLocation(program, "aPosition");
     gl.enableVertexAttribArray(position);
     gl.vertexAttribPointer(position, 2, gl.FLOAT, false, 0, 0);
 
     const uniforms: Record<string, WebGLUniformLocation | null> = {};
-    for (const name of ['uImage', 'uField', 'uGrid', 'uCover', 'uSoftness', 'uChroma', 'uReveal']) {
+    for (const name of ["uImage", "uField", "uGrid", "uCover", "uSoftness", "uChroma", "uReveal"]) {
       uniforms[name] = gl.getUniformLocation(program, name);
     }
     gl.uniform1i(uniforms.uImage, 0);
@@ -157,7 +163,17 @@ export const GridDistortion = ({
     const imageTexture = gl.createTexture();
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, imageTexture);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array([0, 0, 0, 0]));
+    gl.texImage2D(
+      gl.TEXTURE_2D,
+      0,
+      gl.RGBA,
+      1,
+      1,
+      0,
+      gl.RGBA,
+      gl.UNSIGNED_BYTE,
+      new Uint8Array([0, 0, 0, 0]),
+    );
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.MIRRORED_REPEAT);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.MIRRORED_REPEAT);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
@@ -171,7 +187,7 @@ export const GridDistortion = ({
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
-    const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
+    const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
     const pointer = { x: 0, y: 0, px: 0, py: 0, inside: false };
     const state = {
       width: 1,
@@ -187,7 +203,7 @@ export const GridDistortion = ({
       imageAspect: 1,
       request: 0,
       lastMove: -10,
-      phantom: 1
+      phantom: 1,
     };
     let raf = 0;
     let last = 0;
@@ -218,7 +234,14 @@ export const GridDistortion = ({
       }
     };
 
-    const brush = (s: typeof settings, x: number, y: number, dx: number, dy: number, weight: number) => {
+    const brush = (
+      s: typeof settings,
+      x: number,
+      y: number,
+      dx: number,
+      dy: number,
+      weight: number,
+    ) => {
       const { sim, cols, rows, width, height } = state;
       const reach = Math.max(1, s.radius * width);
       const cellWidth = width / cols;
@@ -239,11 +262,11 @@ export const GridDistortion = ({
           const k = s.strength * GAIN * weight * t * t;
           let vx = dx;
           let vy = dy;
-          if (s.mode !== 'drag') {
+          if (s.mode !== "drag") {
             const nx = distance > 0 ? ox / distance : 0;
             const ny = distance > 0 ? oy / distance : 0;
-            vx = s.mode === 'push' ? nx * speed : -ny * speed;
-            vy = s.mode === 'push' ? ny * speed : nx * speed;
+            vx = s.mode === "push" ? nx * speed : -ny * speed;
+            vy = s.mode === "push" ? ny * speed : nx * speed;
           }
           const i = (row * cols + col) * 2;
           const px = sim[i] * width + vx * k;
@@ -258,7 +281,7 @@ export const GridDistortion = ({
 
     const wander = (t: number) => [
       state.width * (0.5 + 0.34 * Math.sin(t * 0.43) + 0.08 * Math.sin(t * 1.21 + 1.7)),
-      state.height * (0.5 + 0.3 * Math.sin(t * 0.61 + 0.9) + 0.08 * Math.cos(t * 1.03 + 0.4))
+      state.height * (0.5 + 0.3 * Math.sin(t * 0.61 + 0.9) + 0.08 * Math.cos(t * 1.03 + 0.4)),
     ];
 
     const simulate = (s: typeof settings, dt: number) => {
@@ -302,7 +325,7 @@ export const GridDistortion = ({
         const span = Math.hypot(width, height);
         const band = Math.max(cellWidth, cellHeight) * 1.2 + span * 0.03;
         const amount = width * (0.03 + s.strength * 0.3);
-        state.ripples = state.ripples.filter(ripple => time - ripple.start < RIPPLE_LIFE);
+        state.ripples = state.ripples.filter((ripple) => time - ripple.start < RIPPLE_LIFE);
         for (const ripple of state.ripples) {
           const age = (time - ripple.start) / RIPPLE_LIFE;
           const front = age * span * 0.75;
@@ -326,7 +349,10 @@ export const GridDistortion = ({
     const render = () => {
       const { width, height } = state;
       const aspect = width / height;
-      const cover = aspect > state.imageAspect ? [1, state.imageAspect / aspect] : [aspect / state.imageAspect, 1];
+      const cover =
+        aspect > state.imageAspect
+          ? [1, state.imageAspect / aspect]
+          : [aspect / state.imageAspect, 1];
       gl.viewport(0, 0, canvas.width, canvas.height);
       gl.activeTexture(gl.TEXTURE1);
       gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, state.cols, state.rows, gl.RG, gl.FLOAT, state.out);
@@ -353,7 +379,8 @@ export const GridDistortion = ({
       const peak = simulate(s, dt);
       compose(s);
       render();
-      const busy = peak > 0 || state.ripples.length > 0 || (s.idle > 0 && !reduce) || state.reveal < 1;
+      const busy =
+        peak > 0 || state.ripples.length > 0 || (s.idle > 0 && !reduce) || state.reveal < 1;
       if (busy) raf = requestAnimationFrame(frame);
       else last = 0;
     };
@@ -367,8 +394,12 @@ export const GridDistortion = ({
       const request = ++state.request;
       if (!src) return;
       const image = new Image();
-      if (typeof window !== 'undefined' && src.startsWith('http') && !src.startsWith(window.location.origin)) {
-        image.crossOrigin = 'anonymous';
+      if (
+        typeof window !== "undefined" &&
+        src.startsWith("http") &&
+        !src.startsWith(window.location.origin)
+      ) {
+        image.crossOrigin = "anonymous";
       }
       image.onload = () => {
         if (!alive || request !== state.request) return;
@@ -384,7 +415,7 @@ export const GridDistortion = ({
         wake();
       };
       image.onerror = (e) => {
-        console.warn('GridDistortion: Error loading image', src, e);
+        console.warn("GridDistortion: Error loading image", src, e);
       };
       image.src = src;
     };
@@ -433,16 +464,16 @@ export const GridDistortion = ({
 
     const resizeObserver = new ResizeObserver(resize);
     resizeObserver.observe(root);
-    const visibility = new IntersectionObserver(entries => {
-      visible = entries.some(entry => entry.isIntersecting);
+    const visibility = new IntersectionObserver((entries) => {
+      visible = entries.some((entry) => entry.isIntersecting);
       if (visible) {
         last = 0;
         wake();
       }
     });
     visibility.observe(root);
-    window.addEventListener('pointermove', onPointerMove, { passive: true });
-    window.addEventListener('pointerdown', onPointerDown, { passive: true });
+    window.addEventListener("pointermove", onPointerMove, { passive: true });
+    window.addEventListener("pointerdown", onPointerDown, { passive: true });
     resize();
     load(imageSrc);
 
@@ -452,8 +483,8 @@ export const GridDistortion = ({
       controlRef.current = null;
       resizeObserver.disconnect();
       visibility.disconnect();
-      window.removeEventListener('pointermove', onPointerMove);
-      window.removeEventListener('pointerdown', onPointerDown);
+      window.removeEventListener("pointermove", onPointerMove);
+      window.removeEventListener("pointerdown", onPointerDown);
       gl.deleteTexture(imageTexture);
       gl.deleteTexture(fieldTexture);
       gl.deleteBuffer(buffer);
@@ -474,11 +505,11 @@ export const GridDistortion = ({
   return (
     <div
       ref={rootRef}
-      className={`distortion-container${className ? ` ${className}` : ''}`}
+      className={`distortion-container${className ? ` ${className}` : ""}`}
       style={{
         backgroundImage: `url("${imageSrc}")`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
+        backgroundSize: "cover",
+        backgroundPosition: "center",
         ...style,
       }}
     >
@@ -486,5 +517,3 @@ export const GridDistortion = ({
     </div>
   );
 };
-
-export default GridDistortion;

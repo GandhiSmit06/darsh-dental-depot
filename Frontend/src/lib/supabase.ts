@@ -1,40 +1,26 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient } from "@supabase/supabase-js";
 
-const DEFAULT_SUPABASE_URL = 'https://wzkqjeejgrolkdkywovp.supabase.co';
-const DEFAULT_SUPABASE_ANON_KEY = 'sb_publishable_WxtFdrwndFYgyhC6E0hdzw_pSxquJcl';
+const DEFAULT_SUPABASE_URL = "https://wzkqjeejgrolkdkywovp.supabase.co";
+const DEFAULT_SUPABASE_ANON_KEY = "sb_publishable_WxtFdrwndFYgyhC6E0hdzw_pSxquJcl";
 
-const supabaseUrl =
-  import.meta.env.VITE_SUPABASE_URL || DEFAULT_SUPABASE_URL;
-const supabaseAnonKey =
-  import.meta.env.VITE_SUPABASE_ANON_KEY || DEFAULT_SUPABASE_ANON_KEY;
+export const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || DEFAULT_SUPABASE_URL;
+export const supabaseAnonKey =
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || DEFAULT_SUPABASE_ANON_KEY;
 
-function initSupabase() {
-  try {
-    return createClient(supabaseUrl, supabaseAnonKey, {
-      auth: {
-        persistSession: typeof window !== 'undefined',
-        autoRefreshToken: typeof window !== 'undefined',
-        detectSessionInUrl: typeof window !== 'undefined',
-      },
-    });
-  } catch (err) {
-    console.error('Failed to initialize Supabase client with env vars, falling back to default:', err);
-    return createClient(DEFAULT_SUPABASE_URL, DEFAULT_SUPABASE_ANON_KEY, {
-      auth: {
-        persistSession: typeof window !== 'undefined',
-        autoRefreshToken: typeof window !== 'undefined',
-        detectSessionInUrl: typeof window !== 'undefined',
-      },
-    });
-  }
-}
+const isBrowser = typeof window !== "undefined";
 
-export const supabase = initSupabase();
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    persistSession: isBrowser,
+    autoRefreshToken: isBrowser,
+    detectSessionInUrl: isBrowser,
+  },
+});
 
 export type Profile = {
   id: string;
   email: string;
-  role: 'doctor' | 'admin' | 'shop_owner';
+  role: "doctor" | "admin" | "shop_owner";
   full_name: string;
   phone?: string;
   clinic_name?: string;
@@ -64,7 +50,7 @@ export type Product = {
   selling_price: number;
   discount_price?: number;
   expiry_date?: string;
-  status: 'active' | 'inactive' | 'out_of_stock';
+  status: "active" | "inactive" | "out_of_stock";
   low_stock_threshold: number;
   rating: number;
   review_count: number;
@@ -79,9 +65,9 @@ export type Order = {
   total_price: number;
   subtotal: number;
   tax_amount: number;
-  order_status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
-  payment_status: 'pending' | 'paid' | 'failed' | 'refunded';
-  payment_method: 'razorpay' | 'stripe' | 'cod';
+  order_status: "pending" | "processing" | "shipped" | "delivered" | "cancelled";
+  payment_status: "pending" | "paid" | "failed" | "refunded";
+  payment_method: "razorpay" | "stripe" | "cod";
   payment_id?: string;
   shipping_address: {
     street?: string;

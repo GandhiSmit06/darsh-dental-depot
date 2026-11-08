@@ -1,5 +1,5 @@
-// ─── Server-Side Email Dispatcher for Cloudflare Worker ───────────────────────
-// Sends OTP emails securely via configured email providers (Resend, Brevo, or SMTP proxy)
+// ─── Server-Side OTP Email Dispatcher ─────────────────────────────────────────
+// Sends OTP emails via the first configured provider: Resend, Brevo, then SMTP
 // without ever exposing the OTP to client browsers.
 
 interface SendEmailOtpPayload {
@@ -10,7 +10,7 @@ interface SendEmailOtpPayload {
 
 export async function handleSendEmailOtpRequest(
   request: Request,
-  env: Record<string, unknown>
+  env: Record<string, unknown>,
 ): Promise<Response> {
   if (request.method !== "POST") {
     return new Response(JSON.stringify({ error: "Method not allowed" }), {
@@ -31,8 +31,12 @@ export async function handleSendEmailOtpRequest(
     }
 
     const doctorName = fullName || "Doctor";
-    const resendApiKey = (env.RESEND_API_KEY as string) || (typeof process !== "undefined" ? process.env?.RESEND_API_KEY : "");
-    const brevoApiKey = (env.BREVO_API_KEY as string) || (typeof process !== "undefined" ? process.env?.BREVO_API_KEY : "");
+    const resendApiKey =
+      (env.RESEND_API_KEY as string) ||
+      (typeof process !== "undefined" ? process.env?.RESEND_API_KEY : "");
+    const brevoApiKey =
+      (env.BREVO_API_KEY as string) ||
+      (typeof process !== "undefined" ? process.env?.BREVO_API_KEY : "");
 
     const htmlContent = `
 <!DOCTYPE html>
@@ -86,7 +90,7 @@ export async function handleSendEmailOtpRequest(
       const res = await fetch("https://api.resend.com/emails", {
         method: "POST",
         headers: {
-          "Authorization": `Bearer ${resendApiKey}`,
+          Authorization: `Bearer ${resendApiKey}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
@@ -129,9 +133,31 @@ export async function handleSendEmailOtpRequest(
       }
     }
 
-    // If no third-party email key is bound in worker, return success acknowledging receipt
-    return new Response(JSON.stringify({ success: true, provider: "default" }), {
-      status: 200,
+    if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
+      const nodemailer = await import("nodemailer");
+      const port = Number(process.env.SMTP_PORT) || 587;
+      const transporter = nodemailer.createTransport({
+        host: process.env.SMTP_HOST,
+        port,
+        secure: port === 465,
+        auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
+      });
+      const fromName = process.env.SMTP_FROM_NAME || "Darsh Dental Depot";
+      const fromEmail = process.env.SMTP_FROM_EMAIL || process.env.SMTP_USER;
+      await transporter.sendMail({
+        from: `"${fromName}" <${fromEmail}>`,
+        to: email,
+        subject: `🔐 Your Login Code: ${otp} — Darsh Dental Depot`,
+        html: htmlContent,
+      });
+      return new Response(JSON.stringify({ success: true, provider: "smtp" }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    return new Response(JSON.stringify({ success: false, error: "No email provider configured" }), {
+      status: 503,
       headers: { "Content-Type": "application/json" },
     });
   } catch (err: any) {

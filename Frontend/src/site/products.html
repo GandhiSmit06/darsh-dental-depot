@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dental Catalog — Darsh Dental Depot</title>
+  <meta name="description" content="Browse genuine dental composites, rotary files, impression materials and sterilization supplies at direct depot prices for Vadodara doctors.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/site/assets/css/style.css">
+  <link rel="icon" type="image/svg+xml" href="/site/assets/img/logo-mark.svg">
+</head>
+<body data-page="products">
+
+  <div id="siteChrome"></div>
+
+  <main>
+    <section class="page-hero">
+      <div class="container">
+        <span data-cms="products.t1" class="eyebrow"><span class="num">Catalog</span> — Updated daily from depot stock</span>
+        <h1 data-cms="products.t2" class="display reveal">The Dental <em>Catalog</em></h1>
+        <div class="crumbs">
+          <a href="/">Home</a> <span>/</span> <span>Products</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container-wide">
+        <div class="catalog-layout">
+
+          <!-- Desktop filters -->
+          <aside class="filters" aria-label="Catalog filters">
+            <div class="f-group">
+              <h4 data-cms="products.t3">Speciality Category</h4>
+              <div id="catFilters"></div>
+            </div>
+            <div class="f-group">
+              <h4 data-cms="products.t4">Leading Brands</h4>
+              <div id="brandFilters" style="max-height:230px;overflow-y:auto"></div>
+            </div>
+            <div class="f-group">
+              <h4 data-cms="products.t5">Max Price</h4>
+              <div class="price-wrap">
+                <input type="range" class="price-slider" id="priceRange" min="500" max="15000" step="50" value="15000">
+                <div class="price-labels"><span>₹500</span><span id="priceOut">₹15,000</span></div>
+              </div>
+            </div>
+            <div class="f-group">
+              <label class="switch"><input type="checkbox" id="stockOnly"><span class="track"></span><span>In stock only — ready for 2-hr dispatch</span></label>
+            </div>
+            <div class="f-group">
+              <button class="link-arrow" id="clearFilters" style="border:none;padding:0">Clear all filters</button>
+            </div>
+          </aside>
+
+          <!-- Catalog -->
+          <div>
+            <div class="catalog-top">
+              <div class="search">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                <input type="search" id="searchInput" placeholder="Search materials, brands, products…" aria-label="Search products">
+              </div>
+              <select class="f-select" id="sortSelect" aria-label="Sort products">
+                <option value="featured">Sort · Featured</option>
+                <option value="discount">Sort · Biggest Discount</option>
+                <option value="price-asc">Sort · Price: Low to High</option>
+                <option value="price-desc">Sort · Price: High to Low</option>
+                <option value="rating">Sort · Top Rated</option>
+              </select>
+              <button class="btn btn-outline btn-sm filter-toggle" id="filterOpen">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="15" height="15"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+                Filters
+              </button>
+              <div class="result-count" id="resultCount"></div>
+            </div>
+
+            <div class="prod-grid" id="productGrid"></div>
+
+            <div class="empty-state" id="emptyState" style="display:none">
+              <div class="es-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="26" height="26"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg></div>
+              <h3 data-cms="products.t6">No materials match those filters</h3>
+              <p data-cms="products.t7">Try widening the price range or clearing a brand — or just message the depot, we source on request.</p>
+              <a class="btn btn-sm btn-wa" href="https://wa.me/919727076119?text=Hello%20Darsh%20Dental%20Depot!%20I%20am%20looking%20for%20a%20product%20that%20is%20not%20in%20your%20catalog." target="_blank" rel="noopener">Request on WhatsApp</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Trust band -->
+    <section class="dark-section section-tight">
+      <div class="container-wide">
+        <div class="trust-grid" style="color:#EDF3F0">
+          <div class="trust-item" style="border-color:rgba(236,243,241,.14)">
+            <span class="t-ico" style="border-color:rgba(175,204,205,.3)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--mint)"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg></span>
+            <h3 data-cms="products.t8" style="color:#EDF3F0">Genuine Stock Verified</h3>
+            <p data-cms="products.t9" style="color:rgba(236,243,241,.6)">Original batch numbers &amp; mfg dates on every product.</p>
+          </div>
+          <div class="trust-item" style="border-color:rgba(236,243,241,.14)">
+            <span class="t-ico" style="border-color:rgba(175,204,205,.3)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--mint)"><path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><path d="M15 18H9"/><path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.62l-3.48-4.35A1 1 0 0 0 17.52 8H14"/><circle cx="17" cy="18" r="2"/><circle cx="7" cy="18" r="2"/></svg></span>
+            <h3 data-cms="products.t10" style="color:#EDF3F0">2-Hour Vadodara Delivery</h3>
+            <p data-cms="products.t11" style="color:rgba(236,243,241,.6)">Order before 7:30 PM — at your clinic the same day.</p>
+          </div>
+          <div class="trust-item" style="border-color:rgba(236,243,241,.14)">
+            <span class="t-ico" style="border-color:rgba(175,204,205,.3)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--mint)"><path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z"/><circle cx="7.5" cy="7.5" r=".5" fill="currentColor"/></svg></span>
+            <h3 data-cms="products.t12" style="color:#EDF3F0">Direct Depot Pricing</h3>
+            <p data-cms="products.t13" style="color:rgba(236,243,241,.6)">Wholesale rates for registered Vadodara doctors.</p>
+          </div>
+          <div class="trust-item" style="border-color:rgba(236,243,241,.14)">
+            <span class="t-ico" style="border-color:rgba(175,204,205,.3)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--mint)"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg></span>
+            <h3 data-cms="products.t14" style="color:#EDF3F0">GST Invoice Included</h3>
+            <p data-cms="products.t15" style="color:rgba(236,243,241,.6)">Automated billing with every depot dispatch.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="siteFooter"></div>
+
+  <!-- Mobile filters drawer -->
+  <div class="mobile-filters" id="mobileFilters">
+    <div class="mf-panel">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
+        <h3 style="font-size:20px">Filters</h3>
+        <button class="icon-btn" id="filterClose" aria-label="Close filters"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+      </div>
+      <div id="mobileFilterBody"></div>
+      <button class="btn mt-3" id="filterApply" style="width:100%">Show results</button>
+    </div>
+  </div>
+
+  <script src="/site-data.js"></script>
+  <script src="/site/assets/js/main.js"></script>
+  <script src="/site/assets/js/catalog.js"></script>
+</body>
+</html>

@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Darsh Dental Depot">
+  <defs>
+    <linearGradient id="ddTile" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1F4348"/>
+      <stop offset=".55" stop-color="#16332F"/>
+      <stop offset="1" stop-color="#0E1F21"/>
+    </linearGradient>
+    <linearGradient id="ddSheen" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity=".09"/>
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="ddTooth" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FEFEFC"/>
+      <stop offset=".5" stop-color="#EFF4F2"/>
+      <stop offset="1" stop-color="#BFDBDA"/>
+    </linearGradient>
+    <linearGradient id="ddSpark" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#E4F0EF"/>
+      <stop offset="1" stop-color="#AFCCCD"/>
+    </linearGradient>
+    <clipPath id="ddClip"><rect x="2" y="2" width="60" height="60" rx="17"/></clipPath>
+  </defs>
+
+  <!-- tile -->
+  <rect x="2" y="2" width="60" height="60" rx="17" fill="url(#ddTile)"/>
+  <rect x="2" y="2" width="60" height="34" clip-path="url(#ddClip)" fill="url(#ddSheen)"/>
+  <rect x="2.75" y="2.75" width="58.5" height="58.5" rx="16.25" fill="none" stroke="#AFCCCD" stroke-opacity=".38" stroke-width="1.5"/>
+
+  <!-- tooth -->
+  <path d="M25.2 13.9c-8.6 0-14.1 5.5-14.1 12.8 0 5.5 2.1 8.8 3.4 13 .8 3.4 1.5 13.7 4.8 13.7 3.8 0 2.3-9.7 5.9-9.7s2.1 9.7 5.9 9.7c3.4 0 4-10.3 4.8-13.7 1.3-4.2 3.4-7.5 3.4-13 0-7.4-5.5-12.8-14.1-12.8z" fill="url(#ddTooth)"/>
+  <path d="M25.2 13.9c-8.6 0-14.1 5.5-14.1 12.8 0 5.5 2.1 8.8 3.4 13 .8 3.4 1.5 13.7 4.8 13.7 3.8 0 2.3-9.7 5.9-9.7s2.1 9.7 5.9 9.7c3.4 0 4-10.3 4.8-13.7 1.3-4.2 3.4-7.5 3.4-13 0-7.4-5.5-12.8-14.1-12.8z" fill="none" stroke="#9DBEC0" stroke-opacity=".28" stroke-width="1"/>
+
+  <!-- sparkle -->
+  <path d="M47 9.5 Q48.3 15.7 54.5 17 Q48.3 18.3 47 24.5 Q45.7 18.3 39.5 17 Q45.7 15.7 47 9.5 Z" fill="url(#ddSpark)"/>
+  <path d="M54 25.2 Q54.6 28 57.4 28.6 Q54.6 29.2 54 32 Q53.4 29.2 50.6 28.6 Q53.4 28 54 25.2 Z" fill="#AFCCCD" opacity=".85"/>
+</svg>

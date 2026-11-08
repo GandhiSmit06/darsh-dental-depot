@@ -17,9 +17,7 @@ export const firebaseConfig = {
 };
 
 // Initialize Firebase
-export const firebaseApp = !getApps().length
-  ? initializeApp(firebaseConfig)
-  : getApp();
+export const firebaseApp = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 
 export const firebaseAuth = getAuth(firebaseApp);
 
@@ -65,11 +63,7 @@ export const phoneAuth = {
       throw new Error("Unable to initialize reCAPTCHA verification.");
     }
 
-    confirmationResult = await signInWithPhoneNumber(
-      firebaseAuth,
-      cleanPhone,
-      appVerifier
-    );
+    confirmationResult = await signInWithPhoneNumber(firebaseAuth, cleanPhone, appVerifier);
 
     return {
       success: true,

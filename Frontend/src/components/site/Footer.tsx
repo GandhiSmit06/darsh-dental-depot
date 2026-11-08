@@ -1,4 +1,6 @@
-import { Link } from "@tanstack/react-router";
+"use client";
+
+import Link from "next/link";
 import { Logo } from "./Navbar";
 import {
   ShieldCheck,
@@ -17,11 +19,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { useState } from "react";
-import {
-  ScrollReveal,
-  StaggerContainer,
-  StaggerItem,
-} from "@/components/animations/ScrollReveal";
+import { ScrollReveal, StaggerContainer, StaggerItem } from "@/components/animations/ScrollReveal";
 
 export function Footer() {
   const [email, setEmail] = useState("");
@@ -40,15 +38,22 @@ export function Footer() {
 
       {/* Trust & Guarantee Highlights Bar */}
       <div className="border-b border-border/40 dark:border-white/8 py-8 bg-secondary/30 dark:bg-[#0B1210] backdrop-blur-md">
-        <StaggerContainer staggerDelay={0.1} className="container mx-auto px-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <StaggerContainer
+          staggerDelay={0.1}
+          className="container mx-auto px-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
+        >
           <StaggerItem>
             <div className="flex items-center gap-3.5 p-3.5 rounded-2xl bg-background/50 dark:bg-gradient-to-br dark:from-[#10201C] dark:to-[#0A100F] border border-border/30 dark:border-white/8">
               <div className="h-10 w-10 rounded-xl bg-primary/10 dark:bg-[#12A488]/15 text-primary dark:text-[#3FD1B3] grid place-items-center shrink-0">
                 <ShieldCheck className="h-5 w-5" />
               </div>
               <div>
-                <div className="font-bold text-xs uppercase tracking-wider text-foreground">100% Genuine Guaranteed</div>
-                <div className="text-xs text-muted-foreground">Direct manufacturer authentic batch</div>
+                <div className="font-bold text-xs uppercase tracking-wider text-foreground">
+                  100% Genuine Guaranteed
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  Direct manufacturer authentic batch
+                </div>
               </div>
             </div>
           </StaggerItem>
@@ -59,7 +64,9 @@ export function Footer() {
                 <Truck className="h-5 w-5" />
               </div>
               <div>
-                <div className="font-bold text-xs uppercase tracking-wider text-foreground">Same-Day Vadodara Delivery</div>
+                <div className="font-bold text-xs uppercase tracking-wider text-foreground">
+                  Same-Day Vadodara Delivery
+                </div>
                 <div className="text-xs text-muted-foreground">Direct to your dental clinic</div>
               </div>
             </div>
@@ -71,7 +78,9 @@ export function Footer() {
                 <Clock className="h-5 w-5" />
               </div>
               <div>
-                <div className="font-bold text-xs uppercase tracking-wider text-foreground">Mon–Sat: 10AM – 8:30PM</div>
+                <div className="font-bold text-xs uppercase tracking-wider text-foreground">
+                  Mon–Sat: 10AM – 8:30PM
+                </div>
                 <div className="text-xs text-muted-foreground">Sunday: Emergency on call</div>
               </div>
             </div>
@@ -83,20 +92,29 @@ export function Footer() {
                 <CheckCircle2 className="h-5 w-5" />
               </div>
               <div>
-                <div className="font-bold text-xs uppercase tracking-wider text-foreground">Direct Depot Wholesale Rates</div>
-                <div className="text-xs text-muted-foreground">Special pricing for Vadodara doctors</div>
+                <div className="font-bold text-xs uppercase tracking-wider text-foreground">
+                  Direct Depot Wholesale Rates
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  Special pricing for Vadodara doctors
+                </div>
               </div>
             </div>
           </StaggerItem>
         </StaggerContainer>
       </div>
 
-      <StaggerContainer staggerDelay={0.12} className="container mx-auto px-4 py-16 grid gap-10 md:grid-cols-2 lg:grid-cols-5">
+      <StaggerContainer
+        staggerDelay={0.12}
+        className="container mx-auto px-4 py-16 grid gap-10 md:grid-cols-2 lg:grid-cols-5"
+      >
         {/* Brand Column */}
         <StaggerItem className="lg:col-span-2 space-y-4">
           <Logo />
           <p className="text-sm text-muted-foreground leading-relaxed max-w-sm">
-            Darsh Dental Depot is Vadodara's premier physical & digital dental supply depot, providing local dentists with factory-certified composites, instruments, and consumables with prompt local clinic delivery.
+            Darsh Dental Depot is Vadodara's premier physical & digital dental supply depot,
+            providing local dentists with factory-certified composites, instruments, and consumables
+            with prompt local clinic delivery.
           </p>
 
           <div className="pt-2">
@@ -109,7 +127,11 @@ export function Footer() {
                 className="rounded-full bg-background/80 dark:bg-[#070B0A] text-xs h-10 border-border/60 dark:border-white/10 focus:border-[#12A488]"
                 required
               />
-              <Button type="submit" size="sm" className="rounded-full px-4 h-10 bg-[#12A488] hover:bg-[#3FD1B3] text-[#04110E] font-bold shadow-md">
+              <Button
+                type="submit"
+                size="sm"
+                className="rounded-full px-4 h-10 bg-[#12A488] hover:bg-[#3FD1B3] text-[#04110E] font-bold shadow-md"
+              >
                 <Send className="h-3.5 w-3.5" />
               </Button>
             </form>
@@ -125,11 +147,46 @@ export function Footer() {
             Dental Catalog
           </h4>
           <ul className="space-y-2.5 text-sm text-muted-foreground">
-            <li><Link to="/products" className="hover:text-primary transition-colors flex items-center gap-1.5">All Products</Link></li>
-            <li><Link to="/products" className="hover:text-primary transition-colors flex items-center gap-1.5">Composite & Restorative</Link></li>
-            <li><Link to="/products" className="hover:text-primary transition-colors flex items-center gap-1.5">Endodontic Rotary Files</Link></li>
-            <li><Link to="/products" className="hover:text-primary transition-colors flex items-center gap-1.5">Impression Materials</Link></li>
-            <li><Link to="/products" className="hover:text-primary transition-colors flex items-center gap-1.5">Sterilization & Disposables</Link></li>
+            <li>
+              <Link
+                href="/products"
+                className="hover:text-primary transition-colors flex items-center gap-1.5"
+              >
+                All Products
+              </Link>
+            </li>
+            <li>
+              <Link
+                href="/products"
+                className="hover:text-primary transition-colors flex items-center gap-1.5"
+              >
+                Composite & Restorative
+              </Link>
+            </li>
+            <li>
+              <Link
+                href="/products"
+                className="hover:text-primary transition-colors flex items-center gap-1.5"
+              >
+                Endodontic Rotary Files
+              </Link>
+            </li>
+            <li>
+              <Link
+                href="/products"
+                className="hover:text-primary transition-colors flex items-center gap-1.5"
+              >
+                Impression Materials
+              </Link>
+            </li>
+            <li>
+              <Link
+                href="/products"
+                className="hover:text-primary transition-colors flex items-center gap-1.5"
+              >
+                Sterilization & Disposables
+              </Link>
+            </li>
           </ul>
         </StaggerItem>
 
@@ -139,10 +196,26 @@ export function Footer() {
             Vadodara Doctor Portal
           </h4>
           <ul className="space-y-2.5 text-sm text-muted-foreground">
-            <li><Link to="/about" className="hover:text-primary transition-colors">Our Vadodara Store</Link></li>
-            <li><Link to="/contact" className="hover:text-primary transition-colors">Depot Location & Hours</Link></li>
-            <li><Link to="/login" className="hover:text-primary transition-colors">Doctor Portal Login</Link></li>
-            <li><Link to="/register" className="hover:text-primary transition-colors">Register Clinic (Vadodara)</Link></li>
+            <li>
+              <Link href="/about" className="hover:text-primary transition-colors">
+                Our Vadodara Store
+              </Link>
+            </li>
+            <li>
+              <Link href="/contact" className="hover:text-primary transition-colors">
+                Depot Location & Hours
+              </Link>
+            </li>
+            <li>
+              <Link href="/login" className="hover:text-primary transition-colors">
+                Doctor Portal Login
+              </Link>
+            </li>
+            <li>
+              <Link href="/register" className="hover:text-primary transition-colors">
+                Register Clinic (Vadodara)
+              </Link>
+            </li>
           </ul>
         </StaggerItem>
 
@@ -154,7 +227,10 @@ export function Footer() {
           <ul className="space-y-3 text-xs text-muted-foreground">
             <li className="flex items-center gap-2">
               <Phone className="h-4 w-4 text-primary shrink-0" />
-              <a href="tel:+919727076119" className="font-bold text-foreground hover:text-primary transition-colors">
+              <a
+                href="tel:+919727076119"
+                className="font-bold text-foreground hover:text-primary transition-colors"
+              >
                 +91 97270 76119
               </a>
             </li>
@@ -173,7 +249,9 @@ export function Footer() {
               <Clock className="h-4 w-4 text-primary shrink-0 mt-0.5" />
               <div>
                 <span className="font-bold text-foreground">Mon – Sat:</span> 10:00 AM – 8:30 PM
-                <div className="text-[11px] text-muted-foreground">Sunday: Closed (Surgeries on Call)</div>
+                <div className="text-[11px] text-muted-foreground">
+                  Sunday: Closed (Surgeries on Call)
+                </div>
               </div>
             </li>
             <li className="flex items-start gap-2 pt-1 border-t border-border/40">
@@ -181,7 +259,8 @@ export function Footer() {
               <div>
                 <span className="font-bold text-foreground">Darsh Dental Depot:</span>
                 <p className="text-[11px] leading-tight text-muted-foreground mt-0.5">
-                  FF-10/11, Vraj Vihar Complex, Char Rasta, Opp. Kachhia Patel Wadi, Shiyabaug, Kevdabaug, Vadodara, Gujarat 390001
+                  FF-10/11, Vraj Vihar Complex, Char Rasta, Opp. Kachhia Patel Wadi, Shiyabaug,
+                  Kevdabaug, Vadodara, Gujarat 390001
                 </p>
                 <a
                   href="https://maps.app.goo.gl/7czn6gwYUgdSm8b46"
@@ -199,10 +278,17 @@ export function Footer() {
 
       <div className="border-t border-border/40 py-6 text-center text-xs text-muted-foreground flex flex-col sm:flex-row items-center justify-between container mx-auto px-4 gap-3">
         <div>
-          © {new Date().getFullYear()} <span className="font-semibold text-foreground">Darsh Dental Depot</span>. Exclusively serving dentists across Vadodara, Gujarat.
+          © {new Date().getFullYear()}{" "}
+          <span className="font-semibold text-foreground">Darsh Dental Depot</span>. Exclusively
+          serving dentists across Vadodara, Gujarat.
         </div>
         <div className="flex items-center gap-4 text-[11px]">
-          <a href="https://maps.app.goo.gl/7czn6gwYUgdSm8b46" target="_blank" rel="noreferrer" className="hover:text-primary cursor-pointer">
+          <a
+            href="https://maps.app.goo.gl/7czn6gwYUgdSm8b46"
+            target="_blank"
+            rel="noreferrer"
+            className="hover:text-primary cursor-pointer"
+          >
             Google Maps Location
           </a>
           <span>•</span>

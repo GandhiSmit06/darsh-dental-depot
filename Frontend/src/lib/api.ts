@@ -16,7 +16,7 @@ export class ApiError extends Error {
   }
 }
 
-export function getAccessToken(): string | null {
+function getAccessToken(): string | null {
   if (typeof window === "undefined") return null;
   return localStorage.getItem("sb-token") || sessionStorage.getItem("sb-token");
 }
@@ -32,11 +32,6 @@ export function clearTokens() {
   localStorage.removeItem("sb-token");
   localStorage.removeItem("sb-refresh-token");
   localStorage.removeItem("ddd_current_user_id");
-}
-
-export function getRefreshToken(): string | null {
-  if (typeof window === "undefined") return null;
-  return localStorage.getItem("sb-refresh-token");
 }
 
 // ─── Types & Interfaces ─────────────────────────────────────────────────────
@@ -225,7 +220,7 @@ export interface PlaceOrderResponse {
   message?: string;
 }
 
-export interface ShopProduct extends ProductResponse { }
+export type ShopProduct = ProductResponse;
 export interface ShopInventoryItem {
   _id: string;
   sku: string;
@@ -449,8 +444,10 @@ function mapProduct(p: any): ProductResponse {
     stock: Number(p.stock || 0),
     rating: Number(p.rating || 4.8),
     reviewCount: Number(p.review_count || 0),
-    images: Array.isArray(p.images) && p.images.length > 0 ? p.images : ["/products/filtek-z350.jpg"],
-    imageUrl: Array.isArray(p.images) && p.images.length > 0 ? p.images[0] : "/products/filtek-z350.jpg",
+    images:
+      Array.isArray(p.images) && p.images.length > 0 ? p.images : ["/products/filtek-z350.jpg"],
+    imageUrl:
+      Array.isArray(p.images) && p.images.length > 0 ? p.images[0] : "/products/filtek-z350.jpg",
     SKU: p.sku || `DDD-${p.id.slice(0, 6).toUpperCase()}`,
     sku: p.sku || `DDD-${p.id.slice(0, 6).toUpperCase()}`,
     description: p.description || "",
@@ -518,7 +515,11 @@ function saveLocalCart(items: DoctorCartItem[]) {
   if (typeof window === "undefined") return;
   localStorage.setItem(getCartKey(), JSON.stringify(items));
   try {
-    window.dispatchEvent(new CustomEvent("ddd_cart_updated", { detail: { count: items.reduce((s, i) => s + (i.quantity || 1), 0) } }));
+    window.dispatchEvent(
+      new CustomEvent("ddd_cart_updated", {
+        detail: { count: items.reduce((s, i) => s + (i.quantity || 1), 0) },
+      }),
+    );
   } catch {}
 }
 
@@ -592,7 +593,11 @@ export const authApi = {
     if (error || !sessionData.session) {
       throw new ApiError(400, "Registration completed. Please sign in with your password.");
     }
-    const profileRes = await supabase.from("profiles").select("*").eq("id", sessionData.session.user.id).single();
+    const profileRes = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", sessionData.session.user.id)
+      .single();
     const user = mapProfileToUser(profileRes.data || {}, sessionData.session.user.email);
     return {
       success: true,
@@ -646,7 +651,11 @@ export const authApi = {
 
     // Fetch profile
     let profileData: any = null;
-    const { data: prof } = await supabase.from("profiles").select("*").eq("id", authData.user.id).maybeSingle();
+    const { data: prof } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", authData.user.id)
+      .maybeSingle();
 
     if (prof) {
       profileData = prof;
@@ -703,7 +712,10 @@ export const authApi = {
         .maybeSingle();
 
       if (!profile && !profError) {
-        throw new ApiError(404, "No registered clinic account found with this email. Please register your clinic first.");
+        throw new ApiError(
+          404,
+          "No registered clinic account found with this email. Please register your clinic first.",
+        );
       }
     } else {
       // Mobile Number -> Find the associated registered email (since SMS is paid)
@@ -724,7 +736,7 @@ export const authApi = {
       if (!profile || !profile.email) {
         throw new ApiError(
           404,
-          `No registered clinic account found for mobile number ${rawId}. Please register your clinic first or log in with your email.`
+          `No registered clinic account found for mobile number ${rawId}. Please register your clinic first or log in with your email.`,
         );
       }
 
@@ -739,10 +751,13 @@ export const authApi = {
     // Store securely in session for verification (never sent to client in response)
     if (typeof window !== "undefined") {
       try {
-        sessionStorage.setItem("ddd_otp_" + targetEmail, JSON.stringify({
-          otp: localOtp,
-          expiresAt: Date.now() + 10 * 60 * 1000,
-        }));
+        sessionStorage.setItem(
+          "ddd_otp_" + targetEmail,
+          JSON.stringify({
+            otp: localOtp,
+            expiresAt: Date.now() + 10 * 60 * 1000,
+          }),
+        );
         if (!isEmail) {
           // Also link the mobile query to this verification
           const cleanPhone = rawId.replace(/\D/g, "").slice(-10);
@@ -847,7 +862,11 @@ export const authApi = {
 
         if (!error && authData?.user && authData?.session) {
           verified = true;
-          const { data: prof } = await supabase.from("profiles").select("*").eq("id", authData.user.id).maybeSingle();
+          const { data: prof } = await supabase
+            .from("profiles")
+            .select("*")
+            .eq("id", authData.user.id)
+            .maybeSingle();
           const user = mapProfileToUser(prof || {}, authData.user.email);
           setTokens(authData.session.access_token, authData.session.refresh_token);
 
@@ -867,7 +886,11 @@ export const authApi = {
     }
 
     if (verified) {
-      const { data: prof } = await supabase.from("profiles").select("*").eq("email", targetEmail).maybeSingle();
+      const { data: prof } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("email", targetEmail)
+        .maybeSingle();
       if (!prof) {
         throw new ApiError(400, "Doctor profile record not found.");
       }
@@ -901,7 +924,11 @@ export const authApi = {
     if (error || !data.session) {
       throw new ApiError(401, "Session expired");
     }
-    const profileRes = await supabase.from("profiles").select("*").eq("id", data.session.user.id).maybeSingle();
+    const profileRes = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", data.session.user.id)
+      .maybeSingle();
     const user = mapProfileToUser(profileRes.data || {}, data.session.user.email);
     return {
       success: true,
@@ -916,7 +943,11 @@ export const authApi = {
   getMe: async () => {
     const { data: userData } = await supabase.auth.getUser();
     if (userData?.user) {
-      let { data: profile } = await supabase.from("profiles").select("*").eq("id", userData.user.id).maybeSingle();
+      let { data: profile } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", userData.user.id)
+        .maybeSingle();
       if (!profile) {
         // Auto-provision profile record if newly authenticated via OAuth
         const meta = userData.user.user_metadata || {};
@@ -952,7 +983,11 @@ export const authApi = {
       const cleanToken = token.startsWith("ddd_token_") ? token.replace("ddd_token_", "") : token;
       const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
       if (uuidRegex.test(cleanToken)) {
-        const { data: profile } = await supabase.from("profiles").select("*").eq("id", cleanToken).maybeSingle();
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", cleanToken)
+          .maybeSingle();
         if (profile) {
           const user = mapProfileToUser(profile, profile.email);
           return {
@@ -987,11 +1022,15 @@ export const authApi = {
     if (isEmail) {
       const cleanEmail = rawId.toLowerCase();
       const { error } = await supabase.auth.resetPasswordForEmail(cleanEmail, {
-        redirectTo: typeof window !== "undefined" ? `${window.location.origin}/reset-password` : undefined,
+        redirectTo:
+          typeof window !== "undefined" ? `${window.location.origin}/reset-password` : undefined,
       });
 
       if (error) {
-        throw new ApiError(400, error.message || "Failed to send reset code. Please check your email.");
+        throw new ApiError(
+          400,
+          error.message || "Failed to send reset code. Please check your email.",
+        );
       }
 
       return {
@@ -1077,7 +1116,10 @@ export const authApi = {
 
       // If email exists, update password on user profile
       if (profile.email) {
-        await supabase.from("profiles").update({ updated_at: new Date().toISOString() }).eq("id", profile.id);
+        await supabase
+          .from("profiles")
+          .update({ updated_at: new Date().toISOString() })
+          .eq("id", profile.id);
       }
     }
 
@@ -1113,11 +1155,7 @@ export const productsApi = {
   },
 
   getProductById: async (id: string) => {
-    const { data, error } = await supabase
-      .from("products")
-      .select("*")
-      .eq("id", id)
-      .single();
+    const { data, error } = await supabase.from("products").select("*").eq("id", id).single();
 
     if (error || !data) {
       throw new ApiError(404, "Product not found");
@@ -1149,12 +1187,15 @@ export const doctorApi = {
     const { data: userData } = await supabase.auth.getUser();
     if (!userData.user) throw new ApiError(401, "Not logged in");
 
-    await supabase.from("profiles").update({
-      full_name: data.name,
-      clinic_name: data.clinicName,
-      phone: data.phone,
-      address: data.address,
-    }).eq("id", userData.user.id);
+    await supabase
+      .from("profiles")
+      .update({
+        full_name: data.name,
+        clinic_name: data.clinicName,
+        phone: data.phone,
+        address: data.address,
+      })
+      .eq("id", userData.user.id);
 
     return { success: true as const, message: "Profile updated" };
   },
@@ -1236,9 +1277,7 @@ export const doctorApi = {
     if (quantity <= 0) {
       cart = cart.filter((i) => i.cartItemId !== id && i.productId !== id);
     } else {
-      cart = cart.map((i) =>
-        i.cartItemId === id || i.productId === id ? { ...i, quantity } : i
-      );
+      cart = cart.map((i) => (i.cartItemId === id || i.productId === id ? { ...i, quantity } : i));
     }
     saveLocalCart(cart);
     return { success: true as const, message: "Cart updated", data: cart };
@@ -1279,7 +1318,9 @@ export const doctorApi = {
   },
 
   removeFromWishlist: async (id: string) => {
-    const wishlist = getLocalWishlist().filter((w) => w.wishlistItemId !== id && w.productId !== id);
+    const wishlist = getLocalWishlist().filter(
+      (w) => w.wishlistItemId !== id && w.productId !== id,
+    );
     saveLocalWishlist(wishlist);
     return { success: true as const, message: "Removed from wishlist", data: wishlist };
   },
@@ -1311,7 +1352,8 @@ export const doctorApi = {
         subtotal: Number(order.subtotal || order.total_price || 0),
         taxAmount: Number(order.tax_amount || 0),
         status: order.order_status,
-        paymentStatus: order.payment_status || (order.payment_method === "cod" ? "pending" : "paid"),
+        paymentStatus:
+          order.payment_status || (order.payment_method === "cod" ? "pending" : "paid"),
         paymentMethod: order.payment_method || "cod",
         paymentId: order.payment_id || "",
         shippingAddress: order.shipping_address,
@@ -1531,6 +1573,7 @@ export const shopApi = {
       .single();
 
     if (error || !prod) throw new ApiError(400, error?.message || "Failed to create product");
+    void siteContentApi.refreshPublicSite();
     return { success: true as const, message: "Product created", data: mapProduct(prod) };
   },
 
@@ -1560,12 +1603,14 @@ export const shopApi = {
       .single();
 
     if (error || !prod) throw new ApiError(400, error?.message || "Failed to update product");
+    void siteContentApi.refreshPublicSite();
     return { success: true as const, message: "Product updated", data: mapProduct(prod) };
   },
 
   deleteProduct: async (id: string) => {
     const { error } = await supabase.from("products").delete().eq("id", id);
     if (error) throw new ApiError(400, error.message);
+    void siteContentApi.refreshPublicSite();
     return { success: true as const, message: "Product deleted", data: null };
   },
 
@@ -1632,8 +1677,13 @@ export const shopApi = {
   },
 
   getStats: async () => {
-    const { data: orders } = await supabase.from("orders").select("total_price, order_status, created_at");
-    const { data: customers } = await supabase.from("profiles").select("id, created_at").eq("role", "doctor");
+    const { data: orders } = await supabase
+      .from("orders")
+      .select("total_price, order_status, created_at");
+    const { data: customers } = await supabase
+      .from("profiles")
+      .select("id, created_at")
+      .eq("role", "doctor");
 
     const validOrders = (orders || []).filter((o) => o.order_status !== "cancelled");
     const revenue = validOrders.reduce((sum, o) => sum + Number(o.total_price || 0), 0);
@@ -1648,7 +1698,7 @@ export const shopApi = {
 
     const thisWeekOrders = (orders || []).filter((o) => new Date(o.created_at) >= oneWeekAgo);
     const prevWeekOrders = (orders || []).filter(
-      (o) => new Date(o.created_at) >= twoWeeksAgo && new Date(o.created_at) < oneWeekAgo
+      (o) => new Date(o.created_at) >= twoWeeksAgo && new Date(o.created_at) < oneWeekAgo,
     );
 
     const thisWeekRev = thisWeekOrders.reduce((s, o) => s + Number(o.total_price || 0), 0);
@@ -1760,10 +1810,10 @@ export const shopApi = {
       const aov = stats.count > 0 ? Math.round(stats.spent / stats.count) : 0;
       const memberSince = p.created_at
         ? new Date(p.created_at).toLocaleDateString("en-IN", {
-          day: "numeric",
-          month: "short",
-          year: "numeric",
-        })
+            day: "numeric",
+            month: "short",
+            year: "numeric",
+          })
         : "—";
 
       return {
@@ -1782,10 +1832,10 @@ export const shopApi = {
         aov,
         lastOrderDate: stats.lastOrderDate
           ? new Date(stats.lastOrderDate).toLocaleDateString("en-IN", {
-            day: "numeric",
-            month: "short",
-            year: "numeric",
-          })
+              day: "numeric",
+              month: "short",
+              year: "numeric",
+            })
           : undefined,
         statusBreakdown: {
           delivered: stats.delivered,
@@ -1866,7 +1916,10 @@ export const shopApi = {
     const aov = validOrders.length > 0 ? Math.round(ltv / validOrders.length) : 0;
     const completedOrders = transactions.filter((t) => t.orderStatus === "delivered").length;
     const pendingOrders = transactions.filter(
-      (t) => t.orderStatus === "pending" || t.orderStatus === "processing" || t.orderStatus === "shipped"
+      (t) =>
+        t.orderStatus === "pending" ||
+        t.orderStatus === "processing" ||
+        t.orderStatus === "shipped",
     ).length;
     const cancelledOrders = transactions.filter((t) => t.orderStatus === "cancelled").length;
 
@@ -1880,23 +1933,36 @@ export const shopApi = {
     const firstOrderDate =
       transactions.length > 0
         ? new Date(transactions[transactions.length - 1].rawDate).toLocaleDateString("en-IN", {
-          day: "numeric",
-          month: "short",
-          year: "numeric",
-        })
+            day: "numeric",
+            month: "short",
+            year: "numeric",
+          })
         : undefined;
 
     const lastOrderDate =
       transactions.length > 0
         ? new Date(transactions[0].rawDate).toLocaleDateString("en-IN", {
-          day: "numeric",
-          month: "short",
-          year: "numeric",
-        })
+            day: "numeric",
+            month: "short",
+            year: "numeric",
+          })
         : undefined;
 
     // 5. Month-by-Month & Year-by-Year Aggregations
-    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const monthNames = [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
+    ];
     const monthMap: Record<string, CustomerMonthlySpending> = {};
     const yearMap: Record<string, CustomerYearlySpending> = {};
 
@@ -1981,10 +2047,10 @@ export const shopApi = {
       createdAt: profile.created_at,
       memberSince: profile.created_at
         ? new Date(profile.created_at).toLocaleDateString("en-IN", {
-          day: "numeric",
-          month: "short",
-          year: "numeric",
-        })
+            day: "numeric",
+            month: "short",
+            year: "numeric",
+          })
         : "—",
       orders: totalOrders,
       spent: ltv,
@@ -2037,7 +2103,13 @@ export const shopApi = {
 
     const daysOrder = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
     const salesByDay: Record<string, number> = {
-      Mon: 0, Tue: 0, Wed: 0, Thu: 0, Fri: 0, Sat: 0, Sun: 0,
+      Mon: 0,
+      Tue: 0,
+      Wed: 0,
+      Thu: 0,
+      Fri: 0,
+      Sat: 0,
+      Sun: 0,
     };
 
     (orders || []).forEach((o) => {
@@ -2057,7 +2129,20 @@ export const shopApi = {
   },
 
   getMonthlyTrend: async () => {
-    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const monthNames = [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
+    ];
     const now = new Date();
     const resultMonths: { month: string; sales: number; orders: number; key: string }[] = [];
 
@@ -2131,16 +2216,14 @@ export const shopApi = {
   }),
 };
 
-export const orderApi = {
-  updateStatus: shopApi.updateOrderStatus,
-  cancelOrder: doctorApi.cancelOrder,
-};
-
 // ─── Admin API ──────────────────────────────────────────────────────────────
 
-export const userApi = {
+const userApi = {
   getAllUsers: async () => {
-    const { data: profiles } = await supabase.from("profiles").select("*").order("created_at", { ascending: false });
+    const { data: profiles } = await supabase
+      .from("profiles")
+      .select("*")
+      .order("created_at", { ascending: false });
     const users: User[] = (profiles || []).map((p: any) => ({
       _id: p.id,
       id: p.id,
@@ -2191,15 +2274,18 @@ export const userApi = {
   },
 
   updateUser: async (id: string, data: Partial<User>) => {
-    await supabase.from("profiles").update({
-      full_name: data.fullName,
-      phone: data.phone,
-      clinic_name: data.clinicName,
-      address: data.address,
-      is_verified: data.isVerified,
-      is_active: data.isActive,
-      role: data.role,
-    }).eq("id", id);
+    await supabase
+      .from("profiles")
+      .update({
+        full_name: data.fullName,
+        phone: data.phone,
+        clinic_name: data.clinicName,
+        address: data.address,
+        is_verified: data.isVerified,
+        is_active: data.isActive,
+        role: data.role,
+      })
+      .eq("id", id);
     return userApi.getUserById(id);
   },
 
@@ -2212,7 +2298,10 @@ export const userApi = {
 export const adminApi = {
   ...userApi,
   getDashboardData: async () => {
-    const { data: profiles } = await supabase.from("profiles").select("*").order("created_at", { ascending: false });
+    const { data: profiles } = await supabase
+      .from("profiles")
+      .select("*")
+      .order("created_at", { ascending: false });
     const { data: orders } = await supabase
       .from("orders")
       .select("*, profiles(full_name, email)")
@@ -2225,7 +2314,7 @@ export const adminApi = {
       .filter((o) => o.order_status !== "cancelled")
       .reduce((sum, o) => sum + Number(o.total_price || 0), 0);
     const lowStockCount = (products || []).filter(
-      (p) => (p.stock || 0) <= (p.low_stock_threshold || 3)
+      (p) => (p.stock || 0) <= (p.low_stock_threshold || 3),
     ).length;
 
     // Recent orders formatted for table
@@ -2311,10 +2400,13 @@ export const adminApi = {
     return { success: true as const, message: "Deleted", data: { id } };
   },
   updateUserStatus: async (id: string, data: { isActive?: boolean; isVerified?: boolean }) => {
-    await supabase.from("profiles").update({
-      is_active: data.isActive,
-      is_verified: data.isVerified,
-    }).eq("id", id);
+    await supabase
+      .from("profiles")
+      .update({
+        is_active: data.isActive,
+        is_verified: data.isVerified,
+      })
+      .eq("id", id);
     const updated = await userApi.getUserById(id);
     return { success: true as const, message: "Status updated", data: updated.data };
   },
@@ -2323,32 +2415,96 @@ export const adminApi = {
 // ─── Image Storage API (Supabase Storage) ───────────────────────────────────
 
 export const uploadApi = {
-  uploadImage: async (file: File, _folder = "products"): Promise<string> => {
+  uploadImage: async (file: File, bucket = "product-images"): Promise<string> => {
     const fileExt = file.name.split(".").pop();
     const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 9)}.${fileExt}`;
     const filePath = `uploads/${fileName}`;
 
-    const { error: uploadError } = await supabase.storage
-      .from("product-images")
-      .upload(filePath, file, {
-        cacheControl: "3600",
-        upsert: false,
-      });
+    const { error: uploadError } = await supabase.storage.from(bucket).upload(filePath, file, {
+      cacheControl: "3600",
+      upsert: false,
+    });
 
     if (uploadError) {
       throw new ApiError(400, uploadError.message || "Failed to upload image");
     }
 
-    const { data } = supabase.storage.from("product-images").getPublicUrl(filePath);
+    const { data } = supabase.storage.from(bucket).getPublicUrl(filePath);
     return data.publicUrl;
   },
 
-  uploadMultiple: async (files: File[], folder = "products"): Promise<string[]> => {
+  uploadMultiple: async (files: File[], bucket = "product-images"): Promise<string[]> => {
     const urls: string[] = [];
     for (const file of files) {
-      const url = await uploadApi.uploadImage(file, folder);
+      const url = await uploadApi.uploadImage(file, bucket);
       urls.push(url);
     }
     return urls;
+  },
+};
+// ─── Website Content API (public marketing pages) ───────────────────────────
+
+export type SiteFieldType = "text" | "image" | "count" | "meta";
+
+export type SiteEditableField = {
+  key: string;
+  page: string;
+  section: string;
+  type: SiteFieldType;
+  label: string;
+  defaultValue: string;
+};
+
+export type SiteContentSchema = {
+  pages: Record<string, { file: string; label: string; path: string }>;
+  fields: SiteEditableField[];
+  settings: Record<string, string>;
+  lists: Record<string, Record<string, string>[]>;
+};
+
+export const siteContentApi = {
+  /** Editable fields and their defaults (parsed from the page templates). */
+  getSchema: async (): Promise<SiteContentSchema> => {
+    const res = await fetch("/api/site-content/fields");
+    if (!res.ok) throw new ApiError(res.status, "Failed to load website fields");
+    return res.json();
+  },
+
+  /** Values saved from the dashboard, keyed by field key. */
+  getSaved: async (): Promise<Record<string, string>> => {
+    const { data, error } = await supabase.from("site_content").select("key, value");
+    if (error) throw new ApiError(400, error.message);
+    return Object.fromEntries(
+      (data || []).map((r: { key: string; value: string }) => [r.key, r.value]),
+    );
+  },
+
+  save: async (entries: Record<string, string>) => {
+    const rows = Object.entries(entries).map(([key, value]) => ({ key, value }));
+    if (!rows.length) return;
+    const { error } = await supabase.from("site_content").upsert(rows, { onConflict: "key" });
+    if (error) throw new ApiError(400, error.message);
+    await siteContentApi.refreshPublicSite();
+  },
+
+  /** Remove saved values so the defaults show again. */
+  reset: async (keys: string[]) => {
+    if (!keys.length) return;
+    const { error } = await supabase.from("site_content").delete().in("key", keys);
+    if (error) throw new ApiError(400, error.message);
+    await siteContentApi.refreshPublicSite();
+  },
+
+  uploadImage: (file: File) => uploadApi.uploadImage(file, "site-media"),
+
+  /** Clear the server cache so edits appear on the public site immediately. */
+  refreshPublicSite: async () => {
+    const { data } = await supabase.auth.getSession();
+    const token = data.session?.access_token;
+    if (!token) return;
+    await fetch("/api/site-content/revalidate", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+    }).catch(() => undefined);
   },
 };

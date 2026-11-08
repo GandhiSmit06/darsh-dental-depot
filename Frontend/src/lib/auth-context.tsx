@@ -1,3 +1,5 @@
+"use client";
+
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from "react";
 import {
   authApi,
@@ -37,7 +39,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           if (isMounted) {
             setUser(me.data);
             if (typeof window !== "undefined") {
-              localStorage.setItem("ddd_current_user_id", me.data._id || me.data.id || me.data.email);
+              localStorage.setItem(
+                "ddd_current_user_id",
+                me.data._id || me.data.id || me.data.email,
+              );
             }
           }
         } else {
@@ -47,7 +52,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             if (isMounted) {
               setUser(me.data);
               if (typeof window !== "undefined") {
-                localStorage.setItem("ddd_current_user_id", me.data._id || me.data.id || me.data.email);
+                localStorage.setItem(
+                  "ddd_current_user_id",
+                  me.data._id || me.data.id || me.data.email,
+                );
               }
               return;
             }
@@ -76,7 +84,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           if (isMounted) {
             setUser(me.data);
             if (typeof window !== "undefined") {
-              localStorage.setItem("ddd_current_user_id", me.data._id || me.data.id || me.data.email);
+              localStorage.setItem(
+                "ddd_current_user_id",
+                me.data._id || me.data.id || me.data.email,
+              );
             }
           }
         } catch {
@@ -101,7 +112,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const res = await authApi.login(data);
     setUser(res.data.user);
     if (typeof window !== "undefined") {
-      localStorage.setItem("ddd_current_user_id", res.data.user._id || res.data.user.id || res.data.user.email);
+      localStorage.setItem(
+        "ddd_current_user_id",
+        res.data.user._id || res.data.user.id || res.data.user.email,
+      );
     }
     return res.data.user;
   }, []);
@@ -117,13 +131,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     clearTokens();
   }, []);
 
-  const setSession = useCallback((authUser: AuthUser, accessToken: string, refreshToken?: string) => {
-    setTokens(accessToken, refreshToken || "");
-    setUser(authUser);
-    if (typeof window !== "undefined") {
-      localStorage.setItem("ddd_current_user_id", authUser._id || authUser.id || authUser.email);
-    }
-  }, []);
+  const setSession = useCallback(
+    (authUser: AuthUser, accessToken: string, refreshToken?: string) => {
+      setTokens(accessToken, refreshToken || "");
+      setUser(authUser);
+      if (typeof window !== "undefined") {
+        localStorage.setItem("ddd_current_user_id", authUser._id || authUser.id || authUser.email);
+      }
+    },
+    [],
+  );
 
   return (
     <AuthContext.Provider

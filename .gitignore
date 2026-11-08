@@ -7,19 +7,13 @@ node_modules/
 .env
 .env.*
 !.env.example
-.dev.vars
 
 # Build outputs
 dist/
 dist-ssr/
 build/
-.output/
-.vinxi/
-.nitro/
 
 # Cache directories
-.tanstack/
-.wrangler/
 .turbo/
 .cache/
 
@@ -53,3 +47,8 @@ screenshots/
 .agent/
 .agents/
 .impeccable/
+
+# Next.js
+.next/
+next-env.d.ts
+*.tsbuildinfo

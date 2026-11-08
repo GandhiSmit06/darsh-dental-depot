@@ -1,6 +1,18 @@
-import { Link, useNavigate } from "@tanstack/react-router";
+"use client";
+
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { Heart, ShoppingCart, Star, CheckCircle, Zap, Package, Settings, Loader2 } from "lucide-react";
+import {
+  Heart,
+  ShoppingCart,
+  Star,
+  CheckCircle,
+  Zap,
+  Package,
+  Settings,
+  Loader2,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
@@ -18,7 +30,7 @@ export interface ProductCardProps {
 }
 
 export function ProductCard({ product, onAdd, onWishlist }: ProductCardProps) {
-  const navigate = useNavigate();
+  const navigate = useRouter();
   const { user } = useAuth();
   const isShopOwner = user?.role === "shop_owner";
   const isAdmin = user?.role === "admin";
@@ -51,7 +63,7 @@ export function ProductCard({ product, onAdd, onWishlist }: ProductCardProps) {
 
     if (!user) {
       toast.info("Please sign in as a doctor to save items to your clinic wishlist");
-      navigate({ to: "/login", search: { redirect: `/products/${productId}` } as any });
+      navigate.push(`/login?redirect=${encodeURIComponent(`/products/${productId}`)}`);
       return;
     }
 
@@ -83,7 +95,7 @@ export function ProductCard({ product, onAdd, onWishlist }: ProductCardProps) {
 
     if (!user) {
       toast.info("Please sign in as a doctor to purchase supplies for your clinic");
-      navigate({ to: "/login", search: { redirect: `/products/${productId}` } as any });
+      navigate.push(`/login?redirect=${encodeURIComponent(`/products/${productId}`)}`);
       return;
     }
 
@@ -132,11 +144,7 @@ export function ProductCard({ product, onAdd, onWishlist }: ProductCardProps) {
       <Card className="overflow-hidden h-full flex flex-col group glass-card border border-border/60 hover:border-primary/50 dark:border-white/10 dark:hover:border-[#3FD1B3]/50 rounded-3xl bg-card/95 transition-all duration-300 shadow-xs hover:shadow-md">
         {/* Product Image Area */}
         <div className="relative aspect-[4/3] bg-muted/30 overflow-hidden">
-          <Link
-            to="/products/$id"
-            params={{ id: productId }}
-            className="block h-full w-full"
-          >
+          <Link href={`/products/${productId}`} className="block h-full w-full">
             <img
               src={imageUrl}
               alt={product.name}
@@ -152,7 +160,10 @@ export function ProductCard({ product, onAdd, onWishlist }: ProductCardProps) {
           <TiltedCardLayer depth={25}>
             <div className="absolute top-3 left-3 flex flex-col gap-1.5 z-10 pointer-events-none">
               {!inStock ? (
-                <Badge variant="destructive" className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 shadow-sm pointer-events-auto">
+                <Badge
+                  variant="destructive"
+                  className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 shadow-sm pointer-events-auto"
+                >
                   Out of Stock
                 </Badge>
               ) : discountPercent > 0 ? (
@@ -204,8 +215,7 @@ export function ProductCard({ product, onAdd, onWishlist }: ProductCardProps) {
 
           {/* Title */}
           <Link
-            to="/products/$id"
-            params={{ id: productId }}
+            href={`/products/${productId}`}
             className="font-semibold text-sm leading-snug line-clamp-2 text-foreground group-hover:text-primary dark:group-hover:text-[#3FD1B3] transition-colors"
           >
             {product.name}
@@ -242,7 +252,7 @@ export function ProductCard({ product, onAdd, onWishlist }: ProductCardProps) {
                 asChild
                 className="rounded-xl px-3 h-8 text-xs font-semibold border-primary/40 text-primary dark:text-[#3FD1B3] hover:bg-primary/10 transition-all"
               >
-                <Link to="/shop">
+                <Link href="/shop">
                   <Package className="h-3.5 w-3.5 mr-1" /> Depot Stock
                 </Link>
               </Button>
@@ -253,21 +263,23 @@ export function ProductCard({ product, onAdd, onWishlist }: ProductCardProps) {
                 asChild
                 className="rounded-xl px-3 h-8 text-xs font-semibold border-primary/40 text-primary dark:text-[#3FD1B3] hover:bg-primary/10 transition-all"
               >
-                <Link to="/admin">
+                <Link href="/admin">
                   <Settings className="h-3.5 w-3.5 mr-1" /> Admin
                 </Link>
               </Button>
             ) : (
-              <div data-magnetic data-magnetic-shape="rounded" className="inline-block rounded-xl"><AddToCartAnimation
-                onClick={handleAddToCart}
-                disabled={!inStock}
-                isAdding={isAdding}
-                isAdded={isAdded}
-                mode="onAction"
-                pillColor="#0A1B17"
-                textColor="#3FD1B3"
-                className="h-8 w-28 shrink-0 rounded-xl"
-              /></div>
+              <div data-magnetic data-magnetic-shape="rounded" className="inline-block rounded-xl">
+                <AddToCartAnimation
+                  onClick={handleAddToCart}
+                  disabled={!inStock}
+                  isAdding={isAdding}
+                  isAdded={isAdded}
+                  mode="onAction"
+                  pillColor="#0A1B17"
+                  textColor="#3FD1B3"
+                  className="h-8 w-28 shrink-0 rounded-xl"
+                />
+              </div>
             )}
           </div>
         </div>

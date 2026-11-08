@@ -24,7 +24,7 @@ interface CreateRazorpayOrderPayload {
 
 export async function handleCreateRazorpayOrderRequest(
   request: Request,
-  env: Record<string, unknown>
+  env: Record<string, unknown>,
 ): Promise<Response> {
   if (request.method !== "POST") {
     return new Response(JSON.stringify({ success: false, message: "Method not allowed" }), {
@@ -38,16 +38,39 @@ export async function handleCreateRazorpayOrderRequest(
     const token = authHeader.replace(/^Bearer\s+/i, "");
 
     const typedEnv = (env || {}) as ServerEnv;
-    const supabaseUrl = (typeof typedEnv.VITE_SUPABASE_URL === "string" ? typedEnv.VITE_SUPABASE_URL : "") || process.env.VITE_SUPABASE_URL || "";
-    const anonKey = (typeof typedEnv.VITE_SUPABASE_ANON_KEY === "string" ? typedEnv.VITE_SUPABASE_ANON_KEY : "") || process.env.VITE_SUPABASE_ANON_KEY || "";
-    const serviceRoleKey = (typeof typedEnv.SUPABASE_SERVICE_ROLE_KEY === "string" ? typedEnv.SUPABASE_SERVICE_ROLE_KEY : "") || process.env.SUPABASE_SERVICE_ROLE_KEY || anonKey;
-    const razorpayKeyId = (typeof typedEnv.VITE_RAZORPAY_KEY_ID === "string" ? typedEnv.VITE_RAZORPAY_KEY_ID : "") || process.env.VITE_RAZORPAY_KEY_ID || "";
-    const razorpaySecret = (typeof typedEnv.RAZORPAY_KEY_SECRET === "string" ? typedEnv.RAZORPAY_KEY_SECRET : "") || process.env.RAZORPAY_KEY_SECRET || "";
+    const supabaseUrl =
+      (typeof typedEnv.NEXT_PUBLIC_SUPABASE_URL === "string"
+        ? typedEnv.NEXT_PUBLIC_SUPABASE_URL
+        : "") ||
+      process.env.NEXT_PUBLIC_SUPABASE_URL ||
+      "";
+    const anonKey =
+      (typeof typedEnv.NEXT_PUBLIC_SUPABASE_ANON_KEY === "string"
+        ? typedEnv.NEXT_PUBLIC_SUPABASE_ANON_KEY
+        : "") ||
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+      "";
+    const serviceRoleKey =
+      (typeof typedEnv.SUPABASE_SERVICE_ROLE_KEY === "string"
+        ? typedEnv.SUPABASE_SERVICE_ROLE_KEY
+        : "") ||
+      process.env.SUPABASE_SERVICE_ROLE_KEY ||
+      anonKey;
+    const razorpayKeyId =
+      (typeof typedEnv.NEXT_PUBLIC_RAZORPAY_KEY_ID === "string"
+        ? typedEnv.NEXT_PUBLIC_RAZORPAY_KEY_ID
+        : "") ||
+      process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID ||
+      "";
+    const razorpaySecret =
+      (typeof typedEnv.RAZORPAY_KEY_SECRET === "string" ? typedEnv.RAZORPAY_KEY_SECRET : "") ||
+      process.env.RAZORPAY_KEY_SECRET ||
+      "";
 
     if (!supabaseUrl || !anonKey) {
       return new Response(
         JSON.stringify({ success: false, message: "Server configuration missing" }),
-        { status: 500, headers: { "Content-Type": "application/json" } }
+        { status: 500, headers: { "Content-Type": "application/json" } },
       );
     }
 
@@ -61,16 +84,16 @@ export async function handleCreateRazorpayOrderRequest(
     if (userErr || !userData?.user) {
       return new Response(
         JSON.stringify({ success: false, message: "Unauthorized: Invalid or expired session" }),
-        { status: 401, headers: { "Content-Type": "application/json" } }
+        { status: 401, headers: { "Content-Type": "application/json" } },
       );
     }
 
     const payload: CreateRazorpayOrderPayload = await request.json();
     if (!payload.orderId) {
-      return new Response(
-        JSON.stringify({ success: false, message: "Missing order ID" }),
-        { status: 400, headers: { "Content-Type": "application/json" } }
-      );
+      return new Response(JSON.stringify({ success: false, message: "Missing order ID" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
     const adminClient = createClient(supabaseUrl, serviceRoleKey, {
@@ -84,31 +107,34 @@ export async function handleCreateRazorpayOrderRequest(
       .single();
 
     if (orderErr || !order) {
-      return new Response(
-        JSON.stringify({ success: false, message: "Order not found" }),
-        { status: 404, headers: { "Content-Type": "application/json" } }
-      );
+      return new Response(JSON.stringify({ success: false, message: "Order not found" }), {
+        status: 404,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
     if (order.user_id !== userData.user.id) {
       return new Response(
-        JSON.stringify({ success: false, message: "Unauthorized: Order belongs to another account" }),
-        { status: 403, headers: { "Content-Type": "application/json" } }
+        JSON.stringify({
+          success: false,
+          message: "Unauthorized: Order belongs to another account",
+        }),
+        { status: 403, headers: { "Content-Type": "application/json" } },
       );
     }
 
     if (order.order_status === "cancelled") {
       return new Response(
         JSON.stringify({ success: false, message: "Cannot pay for a cancelled order" }),
-        { status: 400, headers: { "Content-Type": "application/json" } }
+        { status: 400, headers: { "Content-Type": "application/json" } },
       );
     }
 
     if (order.payment_status === "paid") {
-      return new Response(
-        JSON.stringify({ success: false, message: "Order is already paid" }),
-        { status: 400, headers: { "Content-Type": "application/json" } }
-      );
+      return new Response(JSON.stringify({ success: false, message: "Order is already paid" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
     const amountInPaise = Math.round(Number(order.total_price) * 100);
@@ -143,8 +169,11 @@ export async function handleCreateRazorpayOrderRequest(
         const errText = await rzpRes.text();
         console.error("Razorpay API order creation failed:", errText);
         return new Response(
-          JSON.stringify({ success: false, message: "Payment provider failed to create order. Please try again." }),
-          { status: 502, headers: { "Content-Type": "application/json" } }
+          JSON.stringify({
+            success: false,
+            message: "Payment provider failed to create order. Please try again.",
+          }),
+          { status: 502, headers: { "Content-Type": "application/json" } },
         );
       }
     } else {
@@ -168,15 +197,15 @@ export async function handleCreateRazorpayOrderRequest(
         currency: "INR",
         keyId: razorpayKeyId || "",
       }),
-      { status: 200, headers: { "Content-Type": "application/json" } }
+      { status: 200, headers: { "Content-Type": "application/json" } },
     );
   } catch (err: unknown) {
     console.error("Create Razorpay order error:", err);
     const message = err instanceof Error ? err.message : "Internal server error";
-    return new Response(
-      JSON.stringify({ success: false, message }),
-      { status: 500, headers: { "Content-Type": "application/json" } }
-    );
+    return new Response(JSON.stringify({ success: false, message }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 }
 
@@ -184,7 +213,7 @@ export async function verifyRazorpayHmacSignature(
   secret: string,
   razorpayOrderId: string,
   razorpayPaymentId: string,
-  signature: string
+  signature: string,
 ): Promise<boolean> {
   if (!secret || !razorpayOrderId || !razorpayPaymentId || !signature) {
     return false;
@@ -196,7 +225,7 @@ export async function verifyRazorpayHmacSignature(
     enc.encode(secret),
     { name: "HMAC", hash: "SHA-256" },
     false,
-    ["sign"]
+    ["sign"],
   );
   const sigBuffer = await crypto.subtle.sign("HMAC", cryptoKey, enc.encode(message));
   const expectedSignature = Array.from(new Uint8Array(sigBuffer))
@@ -210,7 +239,7 @@ export async function verifyRazorpayHmacSignature(
 
 export async function handleVerifyPaymentRequest(
   request: Request,
-  env: Record<string, unknown>
+  env: Record<string, unknown>,
 ): Promise<Response> {
   if (request.method !== "POST") {
     return new Response(JSON.stringify({ success: false, message: "Method not allowed" }), {
@@ -224,15 +253,33 @@ export async function handleVerifyPaymentRequest(
     const token = authHeader.replace(/^Bearer\s+/i, "");
 
     const typedEnv = (env || {}) as ServerEnv;
-    const supabaseUrl = (typeof typedEnv.VITE_SUPABASE_URL === "string" ? typedEnv.VITE_SUPABASE_URL : "") || process.env.VITE_SUPABASE_URL || "";
-    const anonKey = (typeof typedEnv.VITE_SUPABASE_ANON_KEY === "string" ? typedEnv.VITE_SUPABASE_ANON_KEY : "") || process.env.VITE_SUPABASE_ANON_KEY || "";
-    const serviceRoleKey = (typeof typedEnv.SUPABASE_SERVICE_ROLE_KEY === "string" ? typedEnv.SUPABASE_SERVICE_ROLE_KEY : "") || process.env.SUPABASE_SERVICE_ROLE_KEY || anonKey;
-    const razorpaySecret = (typeof typedEnv.RAZORPAY_KEY_SECRET === "string" ? typedEnv.RAZORPAY_KEY_SECRET : "") || process.env.RAZORPAY_KEY_SECRET || "";
+    const supabaseUrl =
+      (typeof typedEnv.NEXT_PUBLIC_SUPABASE_URL === "string"
+        ? typedEnv.NEXT_PUBLIC_SUPABASE_URL
+        : "") ||
+      process.env.NEXT_PUBLIC_SUPABASE_URL ||
+      "";
+    const anonKey =
+      (typeof typedEnv.NEXT_PUBLIC_SUPABASE_ANON_KEY === "string"
+        ? typedEnv.NEXT_PUBLIC_SUPABASE_ANON_KEY
+        : "") ||
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+      "";
+    const serviceRoleKey =
+      (typeof typedEnv.SUPABASE_SERVICE_ROLE_KEY === "string"
+        ? typedEnv.SUPABASE_SERVICE_ROLE_KEY
+        : "") ||
+      process.env.SUPABASE_SERVICE_ROLE_KEY ||
+      anonKey;
+    const razorpaySecret =
+      (typeof typedEnv.RAZORPAY_KEY_SECRET === "string" ? typedEnv.RAZORPAY_KEY_SECRET : "") ||
+      process.env.RAZORPAY_KEY_SECRET ||
+      "";
 
     if (!supabaseUrl || !anonKey) {
       return new Response(
         JSON.stringify({ success: false, message: "Server configuration missing" }),
-        { status: 500, headers: { "Content-Type": "application/json" } }
+        { status: 500, headers: { "Content-Type": "application/json" } },
       );
     }
 
@@ -246,7 +293,7 @@ export async function handleVerifyPaymentRequest(
     if (userErr || !userData?.user) {
       return new Response(
         JSON.stringify({ success: false, message: "Unauthorized: Invalid or expired session" }),
-        { status: 401, headers: { "Content-Type": "application/json" } }
+        { status: 401, headers: { "Content-Type": "application/json" } },
       );
     }
 
@@ -256,7 +303,7 @@ export async function handleVerifyPaymentRequest(
     if (!orderId || !razorpayPaymentId) {
       return new Response(
         JSON.stringify({ success: false, message: "Missing required payment parameters" }),
-        { status: 400, headers: { "Content-Type": "application/json" } }
+        { status: 400, headers: { "Content-Type": "application/json" } },
       );
     }
 
@@ -266,7 +313,7 @@ export async function handleVerifyPaymentRequest(
       if (!razorpayOrderId || !razorpaySignature) {
         return new Response(
           JSON.stringify({ success: false, message: "Missing Razorpay order ID or signature" }),
-          { status: 400, headers: { "Content-Type": "application/json" } }
+          { status: 400, headers: { "Content-Type": "application/json" } },
         );
       }
 
@@ -274,13 +321,13 @@ export async function handleVerifyPaymentRequest(
         razorpaySecret,
         razorpayOrderId,
         razorpayPaymentId,
-        razorpaySignature
+        razorpaySignature,
       );
 
       if (!isValid) {
         return new Response(
           JSON.stringify({ success: false, message: "Invalid payment signature" }),
-          { status: 400, headers: { "Content-Type": "application/json" } }
+          { status: 400, headers: { "Content-Type": "application/json" } },
         );
       }
     }
@@ -297,31 +344,39 @@ export async function handleVerifyPaymentRequest(
       .single();
 
     if (orderErr || !order) {
-      return new Response(
-        JSON.stringify({ success: false, message: "Order not found" }),
-        { status: 404, headers: { "Content-Type": "application/json" } }
-      );
+      return new Response(JSON.stringify({ success: false, message: "Order not found" }), {
+        status: 404,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
     if (order.user_id !== userData.user.id) {
       return new Response(
         JSON.stringify({ success: false, message: "Unauthorized to update this order" }),
-        { status: 403, headers: { "Content-Type": "application/json" } }
+        { status: 403, headers: { "Content-Type": "application/json" } },
       );
     }
 
     // Verify order ID tie: if the order previously stored a Razorpay order ID, ensure it matches
-    if (order.payment_id && razorpayOrderId && order.payment_id.startsWith("order_") && order.payment_id !== razorpayOrderId) {
+    if (
+      order.payment_id &&
+      razorpayOrderId &&
+      order.payment_id.startsWith("order_") &&
+      order.payment_id !== razorpayOrderId
+    ) {
       return new Response(
-        JSON.stringify({ success: false, message: "Payment order mismatch: This payment does not belong to this order" }),
-        { status: 400, headers: { "Content-Type": "application/json" } }
+        JSON.stringify({
+          success: false,
+          message: "Payment order mismatch: This payment does not belong to this order",
+        }),
+        { status: 400, headers: { "Content-Type": "application/json" } },
       );
     }
 
     if (order.order_status === "cancelled") {
       return new Response(
         JSON.stringify({ success: false, message: "Cannot confirm payment for a cancelled order" }),
-        { status: 400, headers: { "Content-Type": "application/json" } }
+        { status: 400, headers: { "Content-Type": "application/json" } },
       );
     }
 
@@ -329,12 +384,13 @@ export async function handleVerifyPaymentRequest(
     if (order.payment_status === "paid") {
       return new Response(
         JSON.stringify({ success: true, message: "Order is already marked as paid" }),
-        { status: 200, headers: { "Content-Type": "application/json" } }
+        { status: 200, headers: { "Content-Type": "application/json" } },
       );
     }
 
     // 4. Live Razorpay API cross-validation (Amount & Currency check)
-    const razorpayKeyId = env?.VITE_RAZORPAY_KEY_ID || process.env.VITE_RAZORPAY_KEY_ID;
+    const razorpayKeyId =
+      env?.NEXT_PUBLIC_RAZORPAY_KEY_ID || process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
     if (razorpayKeyId && razorpaySecret && razorpayPaymentId.startsWith("pay_")) {
       try {
         const basicAuth = btoa(`${razorpayKeyId}:${razorpaySecret}`);
@@ -350,7 +406,7 @@ export async function handleVerifyPaymentRequest(
                 success: false,
                 message: `Payment amount mismatch: Expected ₹${(expectedPaise / 100).toFixed(2)}, got ₹${(Number(rzpPayment.amount) / 100).toFixed(2)}`,
               }),
-              { status: 400, headers: { "Content-Type": "application/json" } }
+              { status: 400, headers: { "Content-Type": "application/json" } },
             );
           }
           if (String(rzpPayment.currency) !== "INR") {
@@ -359,20 +415,23 @@ export async function handleVerifyPaymentRequest(
                 success: false,
                 message: `Payment currency mismatch: Expected INR, got ${String(rzpPayment.currency)}`,
               }),
-              { status: 400, headers: { "Content-Type": "application/json" } }
+              { status: 400, headers: { "Content-Type": "application/json" } },
             );
           }
           // Handle payment lifecycle: If authorized, attempt immediate capture
           if (String(rzpPayment.status) === "authorized") {
             try {
-              const captureRes = await fetch(`https://api.razorpay.com/v1/payments/${razorpayPaymentId}/capture`, {
-                method: "POST",
-                headers: {
-                  Authorization: `Basic ${basicAuth}`,
-                  "Content-Type": "application/json",
+              const captureRes = await fetch(
+                `https://api.razorpay.com/v1/payments/${razorpayPaymentId}/capture`,
+                {
+                  method: "POST",
+                  headers: {
+                    Authorization: `Basic ${basicAuth}`,
+                    "Content-Type": "application/json",
+                  },
+                  body: JSON.stringify({ amount: expectedPaise, currency: "INR" }),
                 },
-                body: JSON.stringify({ amount: expectedPaise, currency: "INR" }),
-              });
+              );
               if (captureRes.ok) {
                 const captureData = (await captureRes.json()) as Record<string, unknown>;
                 rzpPayment.status = captureData.status;
@@ -389,12 +448,15 @@ export async function handleVerifyPaymentRequest(
                 success: false,
                 message: `Payment status is '${String(rzpPayment.status)}'. Orders require confirmed captured funds before settlement.`,
               }),
-              { status: 400, headers: { "Content-Type": "application/json" } }
+              { status: 400, headers: { "Content-Type": "application/json" } },
             );
           }
         }
       } catch (crossCheckErr) {
-        console.warn("Could not query Razorpay payments API for amount cross-check; relying on verified HMAC signature:", crossCheckErr);
+        console.warn(
+          "Could not query Razorpay payments API for amount cross-check; relying on verified HMAC signature:",
+          crossCheckErr,
+        );
       }
     }
 
@@ -415,7 +477,7 @@ export async function handleVerifyPaymentRequest(
     if (updateErr) {
       return new Response(
         JSON.stringify({ success: false, message: "Failed to update order payment status" }),
-        { status: 500, headers: { "Content-Type": "application/json" } }
+        { status: 500, headers: { "Content-Type": "application/json" } },
       );
     }
 
@@ -425,20 +487,20 @@ export async function handleVerifyPaymentRequest(
           success: false,
           message: "Cannot confirm payment: Order was concurrently cancelled or does not exist",
         }),
-        { status: 400, headers: { "Content-Type": "application/json" } }
+        { status: 400, headers: { "Content-Type": "application/json" } },
       );
     }
 
     return new Response(
       JSON.stringify({ success: true, message: "Payment verified successfully" }),
-      { status: 200, headers: { "Content-Type": "application/json" } }
+      { status: 200, headers: { "Content-Type": "application/json" } },
     );
   } catch (err: unknown) {
     console.error("Payment verification server error:", err);
     const message = err instanceof Error ? err.message : "Internal server error";
-    return new Response(
-      JSON.stringify({ success: false, message }),
-      { status: 500, headers: { "Content-Type": "application/json" } }
-    );
+    return new Response(JSON.stringify({ success: false, message }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 }

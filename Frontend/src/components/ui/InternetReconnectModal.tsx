@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, useEffect, useCallback } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -153,7 +155,8 @@ export function InternetReconnectModal() {
               Connection Interrupted
             </h3>
             <p className="mt-1.5 text-xs text-muted-foreground leading-relaxed">
-              We couldn't reach Darsh Dental Depot servers. Please verify your WiFi or cellular network.
+              We couldn't reach Darsh Dental Depot servers. Please verify your WiFi or cellular
+              network.
             </p>
 
             {/* Auto-retry counter badge */}

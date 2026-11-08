@@ -1,3 +1,5 @@
+"use client";
+
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { motion } from "framer-motion";
@@ -22,10 +24,7 @@ export function StatCard({
   const up = (change ?? 0) >= 0;
 
   return (
-    <motion.div
-      whileHover={{ y: -4 }}
-      transition={{ type: "spring", stiffness: 350, damping: 25 }}
-    >
+    <motion.div whileHover={{ y: -4 }} transition={{ type: "spring", stiffness: 350, damping: 25 }}>
       <Card className="p-5 relative overflow-hidden glass-card glass-card-hover border border-border/60 dark:border-white/10 rounded-2xl bg-card dark:bg-gradient-to-br dark:from-[#10201C] dark:to-[#0A100F]">
         {/* Subtle background gradient glow */}
         <div className="absolute -right-6 -bottom-6 w-24 h-24 bg-primary/10 dark:bg-[#12A488]/10 rounded-full blur-2xl pointer-events-none" />
@@ -56,10 +55,16 @@ export function StatCard({
                   : "bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20"
               }`}
             >
-              {up ? <ArrowUpRight className="h-3.5 w-3.5" /> : <ArrowDownRight className="h-3.5 w-3.5" />}
+              {up ? (
+                <ArrowUpRight className="h-3.5 w-3.5" />
+              ) : (
+                <ArrowDownRight className="h-3.5 w-3.5" />
+              )}
               {Math.abs(change)}%
             </div>
-            <span className="text-muted-foreground dark:text-[#9DB0A9] text-[11px]">vs previous cycle</span>
+            <span className="text-muted-foreground dark:text-[#9DB0A9] text-[11px]">
+              vs previous cycle
+            </span>
           </div>
         )}
       </Card>
@@ -73,17 +78,29 @@ export function StatusBadge({ status }: { status: string }) {
   let badgeClass = "bg-secondary text-secondary-foreground border-border dark:border-white/10";
   let dotClass = "bg-muted-foreground";
 
-  if (["delivered", "completed", "active", "paid", "in stock", "in_stock", "available"].includes(normalized)) {
-    badgeClass = "bg-emerald-500/10 dark:bg-[#12A488]/15 text-emerald-600 dark:text-[#3FD1B3] border-emerald-500/30 dark:border-[#12A488]/30";
+  if (
+    ["delivered", "completed", "active", "paid", "in stock", "in_stock", "available"].includes(
+      normalized,
+    )
+  ) {
+    badgeClass =
+      "bg-emerald-500/10 dark:bg-[#12A488]/15 text-emerald-600 dark:text-[#3FD1B3] border-emerald-500/30 dark:border-[#12A488]/30";
     dotClass = "bg-emerald-500 dark:bg-[#3FD1B3] animate-pulse";
   } else if (["shipped", "in_transit", "processing"].includes(normalized)) {
-    badgeClass = "bg-sky-500/10 dark:bg-[#12A488]/10 text-sky-600 dark:text-[#3FD1B3] border-sky-500/30 dark:border-[#12A488]/30";
+    badgeClass =
+      "bg-sky-500/10 dark:bg-[#12A488]/10 text-sky-600 dark:text-[#3FD1B3] border-sky-500/30 dark:border-[#12A488]/30";
     dotClass = "bg-sky-500 dark:bg-[#12A488]";
   } else if (["low stock", "low_stock", "pending", "review", "draft"].includes(normalized)) {
-    badgeClass = "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30 dark:border-amber-500/30";
+    badgeClass =
+      "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30 dark:border-amber-500/30";
     dotClass = "bg-amber-500";
-  } else if (["out of stock", "out_of_stock", "cancelled", "suspended", "failed", "rejected"].includes(normalized)) {
-    badgeClass = "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/30 dark:border-rose-500/30";
+  } else if (
+    ["out of stock", "out_of_stock", "cancelled", "suspended", "failed", "rejected"].includes(
+      normalized,
+    )
+  ) {
+    badgeClass =
+      "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/30 dark:border-rose-500/30";
     dotClass = "bg-rose-500";
   }
 
@@ -116,7 +133,9 @@ export function EmptyState({
         </div>
       )}
       <div className="text-base font-bold font-heading text-foreground">{title}</div>
-      <p className="text-sm text-muted-foreground dark:text-[#9DB0A9] mt-1.5 max-w-sm mx-auto">{description}</p>
+      <p className="text-sm text-muted-foreground dark:text-[#9DB0A9] mt-1.5 max-w-sm mx-auto">
+        {description}
+      </p>
       {action && <div className="mt-5">{action}</div>}
     </Card>
   );

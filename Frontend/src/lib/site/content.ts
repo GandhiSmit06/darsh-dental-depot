@@ -1,0 +1,115 @@
+import "server-only";
+
+import { supabaseAnonKey, supabaseUrl } from "@/lib/supabase";
+import {
+  defaultLists,
+  defaultSettings,
+  sampleProducts,
+  type CatalogProduct,
+  type ListName,
+  type SiteSettings,
+} from "./defaults";
+
+export const SITE_CONTENT_TAG = "site-content";
+const REVALIDATE_SECONDS = 300;
+const DEFAULT_LOW_STOCK = Number(process.env.LOW_STOCK_THRESHOLD) || 3;
+
+async function supabaseRest<T>(query: string): Promise<T | null> {
+  try {
+    const res = await fetch(`${supabaseUrl}/rest/v1/${query}`, {
+      headers: { apikey: supabaseAnonKey, Authorization: `Bearer ${supabaseAnonKey}` },
+      next: { revalidate: REVALIDATE_SECONDS, tags: [SITE_CONTENT_TAG] },
+    });
+    if (!res.ok) return null;
+    return (await res.json()) as T;
+  } catch {
+    return null;
+  }
+}
+
+/** All saved overrides as a key -> value map (empty if the table is missing). */
+export async function getContentOverrides(): Promise<Record<string, string>> {
+  const rows = await supabaseRest<{ key: string; value: string }[]>(
+    "site_content?select=key,value",
+  );
+  return Object.fromEntries((rows ?? []).map((r) => [r.key, r.value]));
+}
+
+export function resolveSettings(overrides: Record<string, string>): SiteSettings {
+  const settings = { ...defaultSettings };
+  for (const k of Object.keys(settings) as (keyof SiteSettings)[]) {
+    const v = overrides[`settings.${k}`];
+    if (v?.trim()) settings[k] = v.trim();
+  }
+  return settings;
+}
+
+export function resolveList<N extends ListName>(
+  overrides: Record<string, string>,
+  name: N,
+): (typeof defaultLists)[N] {
+  const raw = overrides[`list.${name}`];
+  if (raw) {
+    try {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) return parsed as (typeof defaultLists)[N];
+    } catch {
+      /* fall back to defaults */
+    }
+  }
+  return defaultLists[name];
+}
+
+type ProductRow = {
+  id: string;
+  name: string;
+  category: string;
+  brand: string | null;
+  manufacturer: string | null;
+  images: string[] | null;
+  stock: number;
+  selling_price: number;
+  discount_price: number | null;
+  status: string;
+  low_stock_threshold: number | null;
+  rating: number | null;
+  review_count: number | null;
+};
+
+export const slugify = (s: string) =>
+  s
+    .toLowerCase()
+    .replace(/&/g, "and")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+
+/** Live products from Supabase in the catalog's shape; sample data if none. */
+export async function getCatalogProducts(): Promise<CatalogProduct[]> {
+  const rows = await supabaseRest<ProductRow[]>(
+    "products?select=id,name,category,brand,manufacturer,images,stock,selling_price,discount_price,status,low_stock_threshold,rating,review_count&status=neq.inactive&order=review_count.desc.nullslast",
+  );
+  if (!rows?.length) return sampleProducts;
+
+  return rows.map((p, i) => {
+    const mrp = Number(p.selling_price) || 0;
+    const discounted = p.discount_price != null && Number(p.discount_price) < mrp;
+    const outOfStock = p.status === "out_of_stock" || p.stock <= 0;
+    return {
+      id: p.id,
+      name: p.name,
+      brand: p.brand || p.manufacturer || "Darsh Dental Depot",
+      cat: slugify(p.category),
+      price: discounted ? Number(p.discount_price) : mrp,
+      mrp,
+      img: p.images?.[0] || "/site/assets/img/p-syringe.png",
+      rating: Number(p.rating) || 4.8,
+      reviews: p.review_count ?? 0,
+      stock: outOfStock
+        ? "out"
+        : p.stock <= (p.low_stock_threshold ?? DEFAULT_LOW_STOCK)
+          ? "low"
+          : "in",
+      featured: i < 8,
+    };
+  });
+}

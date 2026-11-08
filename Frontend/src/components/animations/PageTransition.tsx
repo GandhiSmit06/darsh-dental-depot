@@ -1,6 +1,8 @@
+"use client";
+
 import { type ReactNode } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useRouterState } from "@tanstack/react-router";
+import { usePathname } from "next/navigation";
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
  * PageTransition — Smooth fade+slide transition between routes
@@ -41,9 +43,7 @@ const pageVariants = {
 
 export function PageTransition({ children }: PageTransitionProps) {
   // Use the current route path as the key so AnimatePresence can diff
-  const currentPath = useRouterState({
-    select: (s) => s.location.pathname,
-  });
+  const currentPath = usePathname();
 
   return (
     <AnimatePresence mode="wait" initial={false}>

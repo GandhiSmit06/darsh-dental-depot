@@ -1,8 +1,5 @@
 node_modules
-dist
-.output
-.vinxi
-pnpm-lock.yaml
+.next
+public
 package-lock.json
-bun.lock
-routeTree.gen.ts
+src/lib/site/templates.generated.ts

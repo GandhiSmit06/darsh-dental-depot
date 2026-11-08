@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useRef, useEffect, useState, type FC, type ReactNode } from "react";
 import gsap from "gsap";
 import { vec2 } from "vecteur";
@@ -70,15 +72,7 @@ export const MagneticCursor: FC<MagneticCursorProps> = ({
       lerpAmount,
       hoverPadding,
     };
-  }, [
-    magneticFactor,
-    speedMultiplier,
-    maxScaleX,
-    maxScaleY,
-    cursorSize,
-    lerpAmount,
-    hoverPadding,
-  ]);
+  }, [magneticFactor, speedMultiplier, maxScaleX, maxScaleY, cursorSize, lerpAmount, hoverPadding]);
 
   useEffect(() => {
     setMounted(true);
@@ -125,15 +119,13 @@ export const MagneticCursor: FC<MagneticCursorProps> = ({
       };
     }
 
-    const isDarkMode = () =>
-      document.documentElement.classList.contains("dark");
+    const isDarkMode = () => document.documentElement.classList.contains("dark");
 
     const update = () => {
       const state = cursorStateRef.current;
       if (!state || state.hover.isHovered) return;
 
-      const { speedMultiplier, maxScaleX, maxScaleY, lerpAmount } =
-        configRef.current;
+      const { speedMultiplier, maxScaleX, maxScaleY, lerpAmount } = configRef.current;
       const effectiveLerp = prefersReducedMotion ? 1 : lerpAmount;
 
       state.pos.current.lerp(state.pos.target, effectiveLerp);
@@ -157,8 +149,7 @@ export const MagneticCursor: FC<MagneticCursorProps> = ({
           overwrite: "auto",
         });
       } else {
-        const speed =
-          Math.sqrt(delta.x * delta.x + delta.y * delta.y) * speedMultiplier;
+        const speed = Math.sqrt(delta.x * delta.x + delta.y * delta.y) * speedMultiplier;
         gsap.set(state.ringEl, {
           x: state.pos.current.x,
           y: state.pos.current.y,
@@ -388,9 +379,7 @@ export const MagneticCursor: FC<MagneticCursorProps> = ({
           ? "1.5px solid rgba(63, 209, 179, 0.45)"
           : "1.5px solid rgba(2, 132, 199, 0.40)";
 
-        const restBg = isDark
-          ? "rgba(18, 164, 136, 0.08)"
-          : "rgba(2, 132, 199, 0.06)";
+        const restBg = isDark ? "rgba(18, 164, 136, 0.08)" : "rgba(2, 132, 199, 0.06)";
 
         gsap.killTweensOf(ringEl);
         gsap.to(ringEl, {
@@ -450,9 +439,7 @@ export const MagneticCursor: FC<MagneticCursorProps> = ({
     };
 
     const scanAndBind = () => {
-      const elements = document.querySelectorAll<HTMLElement>(
-        `[${hoverAttribute}]`
-      );
+      const elements = document.querySelectorAll<HTMLElement>(`[${hoverAttribute}]`);
       elements.forEach(bindMagneticElement);
 
       // Clean up stale removed DOM elements

@@ -57,16 +57,14 @@ export function buildDispatchWhatsAppMessage(order: WhatsAppOrderData): string {
     itemsList = order.items
       .map(
         (it, idx) =>
-          `  ${idx + 1}. *${it.name}* (Qty: ${it.quantity}) - ₹${(it.price * it.quantity).toFixed(2)}`
+          `  ${idx + 1}. *${it.name}* (Qty: ${it.quantity}) - ₹${(it.price * it.quantity).toFixed(2)}`,
       )
       .join("\n");
   } else {
     itemsList = "  Dental supplies as per order";
   }
 
-  const address = order.street
-    ? `${order.street}, ${order.city || "Vadodara"}`
-    : "Vadodara Clinic";
+  const address = order.street ? `${order.street}, ${order.city || "Vadodara"}` : "Vadodara Clinic";
 
   return `🦷 *DARSH DENTAL DEPOT — ORDER UPDATE*
 ━━━━━━━━━━━━━━━━━━━━

@@ -8,20 +8,23 @@ export interface ChatMessage {
   sender: "user" | "bot";
   text: string;
   timestamp: string;
-  cardType?: "product_list" | "order_status" | "invoice_prompt" | "whatsapp_prompt" | "low_stock_list";
+  cardType?:
+    | "product_list"
+    | "order_status"
+    | "invoice_prompt"
+    | "whatsapp_prompt"
+    | "low_stock_list";
   cardData?: any;
 }
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api/v1";
-
 /**
- * Executes an AI request via secure Backend proxy with fallback to Local Smart Matcher
+ * Executes an AI request via the /api/chat Gemini proxy with fallback to Local Smart Matcher
  */
 export async function sendChatMessage(
   history: ChatMessage[],
   userPrompt: string,
   context: ChatSessionContext,
-  allProducts: any[] = []
+  allProducts: any[] = [],
 ): Promise<ChatMessage> {
   const prompt = userPrompt.trim();
   const lower = prompt.toLowerCase();
@@ -31,7 +34,7 @@ export async function sendChatMessage(
 
   let replyText = "";
 
-  // Query secure Backend Chat Proxy (hides API keys and enforces server-side rate limits)
+  // Query the server-side Gemini proxy (keeps the API key secret, rate limited)
   try {
     const systemInstruction = buildSystemPrompt(context);
 
@@ -41,7 +44,7 @@ export async function sendChatMessage(
       parts: [{ text: m.text }],
     }));
 
-    const response = await fetch(`${API_URL}/chat/message`, {
+    const response = await fetch("/api/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -83,7 +86,7 @@ export async function sendChatMessage(
 function evaluateInteractiveCard(
   query: string,
   ctx: ChatSessionContext,
-  allProducts: any[]
+  allProducts: any[],
 ): { cardType: ChatMessage["cardType"]; cardData: any } | null {
   // 1. Order Tracking Query
   if (
@@ -137,7 +140,9 @@ function evaluateInteractiveCard(
   // 4. Low Stock Query (Shop Owner)
   if (
     (ctx.role === "shop_owner" || ctx.role === "admin") &&
-    (query.includes("low stock") || query.includes("out of stock") || query.includes("inventory alert"))
+    (query.includes("low stock") ||
+      query.includes("out of stock") ||
+      query.includes("inventory alert"))
   ) {
     const lowStockItems = allProducts.filter((p) => (p.stock || 0) <= 5).slice(0, 4);
     return {
@@ -157,7 +162,22 @@ function evaluateInteractiveCard(
     return terms.some((t) => name.includes(t) || brand.includes(t) || cat.includes(t));
   });
 
-  if (matched.length > 0 && (query.includes("price") || query.includes("find") || query.includes("buy") || query.includes("show") || query.includes("burs") || query.includes("composite") || query.includes("gold label") || query.includes("cement") || query.includes("mani") || query.includes("fuji") || query.includes("progel") || query.includes("tetric") || query.includes("gdc"))) {
+  if (
+    matched.length > 0 &&
+    (query.includes("price") ||
+      query.includes("find") ||
+      query.includes("buy") ||
+      query.includes("show") ||
+      query.includes("burs") ||
+      query.includes("composite") ||
+      query.includes("gold label") ||
+      query.includes("cement") ||
+      query.includes("mani") ||
+      query.includes("fuji") ||
+      query.includes("progel") ||
+      query.includes("tetric") ||
+      query.includes("gdc"))
+  ) {
     return {
       cardType: "product_list",
       cardData: matched.slice(0, 3),
@@ -173,7 +193,7 @@ function evaluateInteractiveCard(
 function generateSmartRuleReply(
   query: string,
   ctx: ChatSessionContext,
-  richCard: { cardType: ChatMessage["cardType"]; cardData: any } | null
+  richCard: { cardType: ChatMessage["cardType"]; cardData: any } | null,
 ): string {
   // Order Tracking
   if (richCard?.cardType === "order_status") {
@@ -202,12 +222,24 @@ function generateSmartRuleReply(
   }
 
   // Depot timings & Location
-  if (query.includes("where") || query.includes("location") || query.includes("address") || query.includes("timing") || query.includes("time")) {
+  if (
+    query.includes("where") ||
+    query.includes("location") ||
+    query.includes("address") ||
+    query.includes("timing") ||
+    query.includes("time")
+  ) {
     return `📍 **Darsh Dental Depot Location & Timings**:\n• **Address**: ${DEPOT_KNOWLEDGE.business.address} (Near Khanderao Market / Vraj Vihar Complex, Siyabaug, Vadodara).\n• **Working Hours**: ${DEPOT_KNOWLEDGE.business.workingHours}.\n• **Express Delivery**: Same-day dispatch across all Vadodara dental clinics!`;
   }
 
   // Payment Options
-  if (query.includes("payment") || query.includes("cod") || query.includes("upi") || query.includes("razorpay") || query.includes("pay")) {
+  if (
+    query.includes("payment") ||
+    query.includes("cod") ||
+    query.includes("upi") ||
+    query.includes("razorpay") ||
+    query.includes("pay")
+  ) {
     return `💳 **Accepted Payment Methods**:\n1. **Pay on Delivery (COD)**: Cash or clinic cheque upon delivery.\n2. **Razorpay Online**: Instant UPI (Google Pay, PhonePe, Paytm), Credit/Debit Cards, and Net Banking.\nEvery order includes a verified GST Tax Invoice.`;
   }
 

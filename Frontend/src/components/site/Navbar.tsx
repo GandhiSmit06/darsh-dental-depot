@@ -1,4 +1,7 @@
-import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
+"use client";
+
+import Link from "next/link";
+import { useRouter, usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import {
@@ -33,10 +36,23 @@ const navLinks = [
 
 export function Logo({ className }: { className?: string }) {
   return (
-    <Link to="/" data-magnetic data-magnetic-shape="rounded" className={`flex items-center gap-2.5 group select-none shrink-0 ${className || ""}`}>
+    <Link
+      href="/"
+      data-magnetic
+      data-magnetic-shape="rounded"
+      className={`flex items-center gap-2.5 group select-none shrink-0 ${className || ""}`}
+    >
       <div className="relative shrink-0">
         <div className="h-9 w-9 rounded-xl overflow-hidden bg-white dark:bg-slate-900 border border-sky-200/80 dark:border-slate-700 shadow-xs flex items-center justify-center p-1 group-hover:border-sky-400 transition-colors">
-          <svg className="w-6 h-6 text-[#0284c7]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg
+            className="w-6 h-6 text-[#0284c7]"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
             <path d="M12 2C8 2 5 4.5 5 8c0 3.5 2 7 3.5 11 .5 1.5 1.5 3 3.5 3s3-1.5 3.5-3C17 15 19 11.5 19 8c0-3.5-3-6-7-6z" />
             <path d="M9 8c0-1.5 1.3-2.5 3-2.5s3 1 3 2.5" />
           </svg>
@@ -55,8 +71,8 @@ export function Logo({ className }: { className?: string }) {
 }
 
 export function Navbar() {
-  const path = useRouterState({ select: (s) => s.location.pathname });
-  const navigate = useNavigate();
+  const path = usePathname();
+  const navigate = useRouter();
   const { theme, setTheme } = useTheme();
   const { user, isAuthenticated, logout } = useAuth();
   const [navSearch, setNavSearch] = useState("");
@@ -86,9 +102,9 @@ export function Navbar() {
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (navSearch.trim()) {
-      navigate({ to: "/products", search: { search: navSearch.trim() } as any });
+      navigate.push(`/products?search=${encodeURIComponent(navSearch.trim())}`);
     } else {
-      navigate({ to: "/products" });
+      navigate.push("/products");
     }
   };
 
@@ -118,7 +134,7 @@ export function Navbar() {
             return (
               <Link
                 key={`${l.label}-${index}`}
-                to={l.to}
+                href={l.to}
                 data-magnetic
                 className={`px-3 py-1.5 text-xs font-semibold rounded-full transition-all duration-200 ${
                   active
@@ -148,7 +164,7 @@ export function Navbar() {
             />
             <button
               type="button"
-              onClick={() => navigate({ to: "/products" })}
+              onClick={() => navigate.push("/products")}
               className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
               title="Filters"
             >
@@ -161,11 +177,15 @@ export function Navbar() {
         <div className="flex items-center gap-2 sm:gap-3 shrink-0">
           {/* Cart Icon with Dynamic Count Badge */}
           <Link
-            to={isAuthenticated && user?.role === "doctor" ? "/doctor" : "/products"}
+            href={isAuthenticated && user?.role === "doctor" ? "/doctor" : "/products"}
             data-magnetic
             data-magnetic-shape="circle"
             className="relative p-2 rounded-full text-slate-700 dark:text-slate-300 hover:text-[#0284c7] hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-            title={cartCount > 0 ? `Clinic Cart (${cartCount} item${cartCount > 1 ? "s" : ""})` : "Clinic Cart (Empty)"}
+            title={
+              cartCount > 0
+                ? `Clinic Cart (${cartCount} item${cartCount > 1 ? "s" : ""})`
+                : "Clinic Cart (Empty)"
+            }
           >
             <ShoppingCart className="h-4 w-4" />
             {cartCount > 0 && (
@@ -198,9 +218,13 @@ export function Navbar() {
                 data-magnetic-shape="pill"
                 className="rounded-full bg-[#0284c7] hover:bg-[#0369a1] text-white font-semibold text-xs px-3.5 h-8.5 shadow-xs"
               >
-                <Link to={getDashboardPath()}>
+                <Link href={getDashboardPath()}>
                   <LayoutDashboard className="h-3.5 w-3.5 mr-1" />
-                  {user.role === "doctor" ? "Doctor Portal" : user.role === "shop_owner" ? "Shop" : "Admin"}
+                  {user.role === "doctor"
+                    ? "Doctor Portal"
+                    : user.role === "shop_owner"
+                      ? "Shop"
+                      : "Admin"}
                 </Link>
               </Button>
               <Button
@@ -216,7 +240,7 @@ export function Navbar() {
           ) : (
             <div className="flex items-center gap-2">
               <Link
-                to="/login"
+                href="/login"
                 data-magnetic
                 data-magnetic-shape="pill"
                 className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:text-[#0284c7] transition-colors"
@@ -224,7 +248,12 @@ export function Navbar() {
                 <User className="h-3.5 w-3.5" />
                 <span>Sign In</span>
               </Link>
-              <Link to="/register" data-magnetic data-magnetic-shape="pill" className="inline-block">
+              <Link
+                href="/register"
+                data-magnetic
+                data-magnetic-shape="pill"
+                className="inline-block"
+              >
                 <InteractiveHoverButton
                   text="Doctor Register"
                   className="h-8.5 min-w-[136px] px-3.5 text-xs font-semibold"
@@ -236,14 +265,21 @@ export function Navbar() {
           {/* Mobile Navigation Menu */}
           <Sheet>
             <SheetTrigger asChild>
-              <Button size="icon" variant="ghost" className="xl:hidden rounded-full h-8 w-8 text-slate-700 dark:text-slate-200">
+              <Button
+                size="icon"
+                variant="ghost"
+                className="xl:hidden rounded-full h-8 w-8 text-slate-700 dark:text-slate-200"
+              >
                 <Menu className="h-4 w-4" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="w-[300px] bg-white dark:bg-[#070B0A] border-l border-slate-200 dark:border-slate-800">
+            <SheetContent
+              side="right"
+              className="w-[300px] bg-white dark:bg-[#070B0A] border-l border-slate-200 dark:border-slate-800"
+            >
               <div className="flex flex-col gap-5 mt-6">
                 <Logo />
-                
+
                 {/* Mobile Search */}
                 <form onSubmit={handleSearchSubmit} className="relative">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
@@ -260,7 +296,7 @@ export function Navbar() {
                   {navLinks.map((l, idx) => (
                     <Link
                       key={`${l.label}-${idx}`}
-                      to={l.to}
+                      href={l.to}
                       className="px-3 py-2 rounded-lg text-sm font-medium hover:bg-sky-50 dark:hover:bg-slate-900 hover:text-[#0284c7] transition-colors"
                     >
                       {l.label}
@@ -269,7 +305,9 @@ export function Navbar() {
                 </div>
 
                 <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800 space-y-1.5">
-                  <div className="text-xs font-bold text-slate-900 dark:text-white">Darsh Dental Depot</div>
+                  <div className="text-xs font-bold text-slate-900 dark:text-white">
+                    Darsh Dental Depot
+                  </div>
                   <div className="text-[11px] text-slate-500 leading-tight">
                     Shiyabaug / Kevdabaug, Vadodara
                   </div>
@@ -286,21 +324,28 @@ export function Navbar() {
                 {isAuthenticated && user ? (
                   <div className="flex flex-col gap-2">
                     <Button asChild className="rounded-xl justify-start bg-[#0284c7] text-white">
-                      <Link to={getDashboardPath()}>
+                      <Link href={getDashboardPath()}>
                         <LayoutDashboard className="h-4 w-4 mr-2" /> Open Dashboard
                       </Link>
                     </Button>
-                    <Button variant="outline" onClick={() => logout()} className="rounded-xl justify-start text-destructive">
+                    <Button
+                      variant="outline"
+                      onClick={() => logout()}
+                      className="rounded-xl justify-start text-destructive"
+                    >
                       <LogOut className="h-4 w-4 mr-2" /> Sign Out
                     </Button>
                   </div>
                 ) : (
                   <div className="flex flex-col gap-2">
                     <Button variant="outline" asChild className="rounded-xl justify-center text-xs">
-                      <Link to="/login">Sign In</Link>
+                      <Link href="/login">Sign In</Link>
                     </Button>
-                    <Button asChild className="rounded-xl justify-center bg-[#0284c7] hover:bg-[#0369a1] text-white text-xs">
-                      <Link to="/register">Doctor Register</Link>
+                    <Button
+                      asChild
+                      className="rounded-xl justify-center bg-[#0284c7] hover:bg-[#0369a1] text-white text-xs"
+                    >
+                      <Link href="/register">Doctor Register</Link>
                     </Button>
                   </div>
                 )}

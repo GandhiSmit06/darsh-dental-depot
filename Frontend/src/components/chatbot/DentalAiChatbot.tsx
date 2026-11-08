@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState, useEffect, useRef } from "react";
 import {
   MessageSquare,
@@ -46,18 +48,18 @@ export function DentalAiChatbot() {
     user?.role === "doctor"
       ? "doctor"
       : user?.role === "shop_owner"
-      ? "shop_owner"
-      : user?.role === "admin"
-      ? "admin"
-      : "visitor";
+        ? "shop_owner"
+        : user?.role === "admin"
+          ? "admin"
+          : "visitor";
 
   // Initial welcome greeting
   const initialGreeting =
     role === "doctor"
       ? `Hello Dr. ${user?.fullName || "Doctor"}! 👋 I am your Darsh Dental Depot AI assistant. I can help you find dental materials, track your active orders, or download your Tally GST Tax Invoices.`
       : role === "shop_owner" || role === "admin"
-      ? `Namaste Hetal Uncle / Smit! 🏪 I am ready to assist with depot operations, pending dispatches, and inventory alerts.`
-      : `Welcome to **Darsh Dental Depot**! 🦷 We supply authentic dental materials with same-day express clinic delivery across Vadodara. How can I help you today?`;
+        ? `Namaste Hetal Uncle / Smit! 🏪 I am ready to assist with depot operations, pending dispatches, and inventory alerts.`
+        : `Welcome to **Darsh Dental Depot**! 🦷 We supply authentic dental materials with same-day express clinic delivery across Vadodara. How can I help you today?`;
 
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
@@ -97,7 +99,8 @@ export function DentalAiChatbot() {
         .then((res) => {
           if (res.data) {
             const pending = res.data.filter(
-              (o) => o.status?.toLowerCase() === "pending" || o.status?.toLowerCase() === "processing"
+              (o) =>
+                o.status?.toLowerCase() === "pending" || o.status?.toLowerCase() === "processing",
             );
             setPendingOrdersCount(pending.length);
           }
@@ -218,17 +221,20 @@ export function DentalAiChatbot() {
           pincode: "390001",
         },
       },
-      items: items.length > 0 ? items : [
-        {
-          name: "Dental Clinic Supplies",
-          brand: "Darsh Dental Depot",
-          hsn: "90184900",
-          gstRate: 5,
-          quantity: 1,
-          sellingPrice: Number(orderToUse.total || 500),
-          unit: "PCS",
-        }
-      ],
+      items:
+        items.length > 0
+          ? items
+          : [
+              {
+                name: "Dental Clinic Supplies",
+                brand: "Darsh Dental Depot",
+                hsn: "90184900",
+                gstRate: 5,
+                quantity: 1,
+                sellingPrice: Number(orderToUse.total || 500),
+                unit: "PCS",
+              },
+            ],
     };
 
     setSelectedInvoiceOrder(invoiceData);
@@ -266,7 +272,9 @@ export function DentalAiChatbot() {
             </div>
             <div className="text-left leading-tight hidden sm:block">
               <div className="text-xs font-black tracking-wide">Darsh AI Assistant</div>
-              <div className="text-[10px] text-white/80 dark:text-[#04110E]/80 font-medium">Dental & Orders Help</div>
+              <div className="text-[10px] text-white/80 dark:text-[#04110E]/80 font-medium">
+                Dental & Orders Help
+              </div>
             </div>
           </button>
         )}
@@ -283,7 +291,10 @@ export function DentalAiChatbot() {
                 <div>
                   <div className="text-sm font-extrabold flex items-center gap-1.5 leading-tight">
                     Darsh Dental AI
-                    <Badge variant="secondary" className="bg-white/20 dark:bg-[#12A488]/25 text-white dark:text-[#3FD1B3] text-[9px] px-1.5 py-0 h-4 border-0">
+                    <Badge
+                      variant="secondary"
+                      className="bg-white/20 dark:bg-[#12A488]/25 text-white dark:text-[#3FD1B3] text-[9px] px-1.5 py-0 h-4 border-0"
+                    >
                       ⚡ Gemini 2.5
                     </Badge>
                   </div>
@@ -291,10 +302,10 @@ export function DentalAiChatbot() {
                     {role === "doctor"
                       ? `Doctor Assistant • Dr. ${user?.fullName || "Clinic"}`
                       : role === "shop_owner"
-                      ? "Depot Operations • Shop Owner"
-                      : role === "admin"
-                      ? "Administrator Console"
-                      : "Darsh Dental Depot • Vadodara"}
+                        ? "Depot Operations • Shop Owner"
+                        : role === "admin"
+                          ? "Administrator Console"
+                          : "Darsh Dental Depot • Vadodara"}
                   </div>
                 </div>
               </div>
@@ -343,10 +354,14 @@ export function DentalAiChatbot() {
                             : "bg-primary dark:bg-[#12A488] text-primary-foreground dark:text-[#04110E] rounded-tr-xs shadow-xs font-semibold"
                         }`}
                       >
-                        <div className="whitespace-pre-line break-words text-[11.5px]">{m.text}</div>
+                        <div className="whitespace-pre-line break-words text-[11.5px]">
+                          {m.text}
+                        </div>
                         <div
                           className={`text-[9px] mt-1 text-right ${
-                            isBot ? "text-muted-foreground dark:text-[#9DB0A9]" : "text-primary-foreground/70 dark:text-[#04110E]/70"
+                            isBot
+                              ? "text-muted-foreground dark:text-[#9DB0A9]"
+                              : "text-primary-foreground/70 dark:text-[#04110E]/70"
                           }`}
                         >
                           {m.timestamp}
@@ -364,7 +379,10 @@ export function DentalAiChatbot() {
 
                       {m.cardType === "order_status" && m.cardData && (
                         <div className="pt-1 w-full">
-                          <ChatOrderCard order={m.cardData} onOpenInvoice={handleOpenTallyInvoice} />
+                          <ChatOrderCard
+                            order={m.cardData}
+                            onOpenInvoice={handleOpenTallyInvoice}
+                          />
                         </div>
                       )}
 
@@ -385,7 +403,9 @@ export function DentalAiChatbot() {
                         <div className="pt-1">
                           <Button
                             size="sm"
-                            onClick={() => openDoctorSupportWhatsApp("Urgent Inquiry", user?.fullName)}
+                            onClick={() =>
+                              openDoctorSupportWhatsApp("Urgent Inquiry", user?.fullName)
+                            }
                             className="text-xs h-8 font-bold bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl gap-1.5 shadow-xs"
                           >
                             <Phone className="h-3.5 w-3.5" />
@@ -397,7 +417,11 @@ export function DentalAiChatbot() {
 
                     {!isBot && (
                       <div className="h-7 w-7 rounded-xl bg-primary dark:bg-[#12A488] text-white dark:text-[#04110E] grid place-items-center shrink-0 mt-0.5 font-bold text-[10px]">
-                        {user?.fullName ? user.fullName[0].toUpperCase() : <UserIcon className="h-3.5 w-3.5" />}
+                        {user?.fullName ? (
+                          user.fullName[0].toUpperCase()
+                        ) : (
+                          <UserIcon className="h-3.5 w-3.5" />
+                        )}
                       </div>
                     )}
                   </div>
@@ -439,8 +463,8 @@ export function DentalAiChatbot() {
                   role === "doctor"
                     ? "Ask about burs, composites, active order..."
                     : role === "shop_owner"
-                    ? "Ask about low stock, dispatches..."
-                    : "Ask about dental materials, clinic registration..."
+                      ? "Ask about low stock, dispatches..."
+                      : "Ask about dental materials, clinic registration..."
                 }
                 className="h-10 text-xs rounded-xl bg-muted/50 dark:bg-[#0B1210] dark:border-white/10 dark:text-[#F2F6F4] dark:placeholder-[#9DB0A9]/60 focus-visible:ring-1"
                 disabled={loading}
@@ -451,7 +475,11 @@ export function DentalAiChatbot() {
                 disabled={!input.trim() || loading}
                 className="h-10 w-10 p-0 rounded-xl bg-primary hover:bg-primary/90 dark:bg-[#12A488] dark:hover:bg-[#3FD1B3] text-white dark:text-[#04110E] shrink-0 shadow-xs"
               >
-                {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                {loading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Send className="h-4 w-4" />
+                )}
               </Button>
             </form>
           </div>

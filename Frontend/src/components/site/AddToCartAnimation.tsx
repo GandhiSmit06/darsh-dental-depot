@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useId, useState } from "react";
 import { ShoppingCart, Check } from "lucide-react";
 
@@ -71,10 +73,7 @@ export function AddToCartAnimation({
             </clipPath>
 
             <filter id={`${uid}-i16`}>
-              <feColorMatrix
-                values="0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 1 0"
-                type="matrix"
-              />
+              <feColorMatrix values="0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 1 0" type="matrix" />
             </filter>
 
             <mask
@@ -103,14 +102,8 @@ export function AddToCartAnimation({
                       fill="freeze"
                     />
                     <g transform="translate(-1,-12.5)">
-                      <g
-                        transform="matrix(1.008,0,0,1.008,-0.008,-0.098)"
-                        id={`${uid}-i18`}
-                      >
-                        <g
-                          id={`${uid}-i19`}
-                          transform="matrix(1,0,0,1,1,12.5)"
-                        >
+                      <g transform="matrix(1.008,0,0,1.008,-0.008,-0.098)" id={`${uid}-i18`}>
+                        <g id={`${uid}-i19`} transform="matrix(1,0,0,1,1,12.5)">
                           <rect
                             ry="209"
                             rx="209"
@@ -274,10 +267,7 @@ export function AddToCartAnimation({
                             />
 
                             {/* Drop package animation */}
-                            <g
-                              transform="matrix(1.936,0,0,1.936,-461.643,1.793)"
-                              display="none"
-                            >
+                            <g transform="matrix(1.936,0,0,1.936,-461.643,1.793)" display="none">
                               <animate
                                 repeatCount="indefinite"
                                 begin="0s"
@@ -329,5 +319,3 @@ export function AddToCartAnimation({
     </button>
   );
 }
-
-export default AddToCartAnimation;

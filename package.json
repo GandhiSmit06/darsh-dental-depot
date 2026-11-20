@@ -6,6 +6,9 @@
   "scripts": {
     "dev": "npm --workspace Frontend run dev",
     "build": "npm --workspace Frontend run build",
+    "build:worker": "npm --workspace Frontend run build:worker",
+    "preview:worker": "npm --workspace Frontend run preview:worker --",
+    "deploy:worker": "npm --workspace Frontend run deploy:worker",
     "start": "npm --workspace Frontend run start",
     "lint": "npm --workspace Frontend run lint",
     "typecheck": "npm --workspace @darsh/backend run typecheck",

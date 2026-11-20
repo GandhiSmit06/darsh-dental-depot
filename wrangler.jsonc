@@ -1,0 +1,12 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "darsh-dental-depot",
+  "main": "Frontend/.open-next/worker.js",
+  "compatibility_date": "2026-10-23",
+  "compatibility_flags": ["nodejs_compat"],
+  "keep_vars": true,
+  "assets": {
+    "directory": "Frontend/.open-next/assets",
+    "binding": "ASSETS"
+  }
+}

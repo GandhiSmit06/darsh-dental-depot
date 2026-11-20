@@ -7,6 +7,9 @@
     "dev": "next dev -p 8080",
     "prebuild": "npm run site:templates",
     "build": "next build",
+    "build:worker": "opennextjs-cloudflare build --config ../wrangler.jsonc",
+    "preview:worker": "opennextjs-cloudflare preview --config ../wrangler.jsonc",
+    "deploy:worker": "opennextjs-cloudflare deploy --config ../wrangler.jsonc",
     "start": "next start -p 8080",
     "lint": "eslint .",
     "format": "prettier --write . ../Backend",
@@ -47,6 +50,7 @@
     "zod": "^3.24.2"
   },
   "devDependencies": {
+    "@opennextjs/cloudflare": "1.20.18",
     "@tailwindcss/postcss": "^4.3.5",
     "@types/node": "^22.16.5",
     "@types/react": "^19.2.0",
@@ -57,6 +61,7 @@
     "eslint-plugin-prettier": "^5.2.6",
     "postcss": "^8.5.32",
     "prettier": "^3.7.3",
-    "typescript": "^5.8.3"
+    "typescript": "^5.8.3",
+    "wrangler": "4.166.0"
   }
 }

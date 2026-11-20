@@ -22,11 +22,10 @@
 ## 2. Pre-Deployment Verification Checklist
 
 Before starting the deployment, verify the local tree and test suite:
-- [x] Local Git tree matches `origin/main` at commit `77bbbd9` without uncommitted drift.
-- [x] TypeScript type checking passes: `npm --prefix Frontend exec -- tsc --noEmit` (**0 errors**).
-- [x] Automated test suite passes: `npm --prefix Frontend test` (**31/31 tests passing**).
-- [x] Production build passes: `npm --prefix Frontend run build` (Client and SSR bundles created cleanly).
-- [x] No secrets, private `.env` files, or build artifacts staged in Git.
+- [ ] Build from the intended commit with Node.js 24 and run `npm ci` from the repository root.
+- [ ] Run `npm run typecheck`, `npm test`, and `npm run build:worker` from the repository root.
+- [ ] Run `npm run preview:worker` and check the homepage, `/products`, `/site-data.js`, and `/login` in the Workers runtime.
+- [ ] Check that staged files contain no secrets, private `.env` files, or build artifacts.
 
 ---
 
@@ -65,10 +64,10 @@ Run the following commands in PowerShell from the repository root:
 
 ```powershell
 # 1. Set Razorpay Key Secret (Server-Side Only for HMAC-SHA256 signature verification & API cross-validation)
-npm --prefix Frontend exec -- wrangler secret put RAZORPAY_KEY_SECRET
+npm exec -- wrangler secret put RAZORPAY_KEY_SECRET
 
 # 2. Set Supabase Service Role Key (Server-Side Only for privileged order payment updates)
-npm --prefix Frontend exec -- wrangler secret put SUPABASE_SERVICE_ROLE_KEY
+npm exec -- wrangler secret put SUPABASE_SERVICE_ROLE_KEY
 ```
 
 > [!NOTE]
@@ -78,7 +77,7 @@ npm --prefix Frontend exec -- wrangler secret put SUPABASE_SERVICE_ROLE_KEY
 
 ### Step 3: Apply Database Security Migration
 Open the [Supabase SQL Editor](https://supabase.com/dashboard/project/wzkqjeejgrolkdkywovp/sql/new) and paste the exact contents of:
-[`Frontend/harden_orders_and_roles.sql`](file:///c:/Users/Smit%20Gandhi/Desktop/SMIT/DDD/darsh-dental-glow/Frontend/harden_orders_and_roles.sql)
+[`Backend/supabase/02_harden_orders_and_roles.sql`](../Backend/supabase/02_harden_orders_and_roles.sql), if it is pending. The editable website content needs [`Backend/supabase/04_site_content.sql`](../Backend/supabase/04_site_content.sql) after migrations 01–03.
 
 Click **Run** to execute the transactional block (`BEGIN; ... COMMIT;`).
 
@@ -124,12 +123,18 @@ WHERE c.relname = 'profiles' AND tr.tgname = 'trg_protect_profile_fields_trigger
 ---
 
 ### Step 5: Deploy Frontend Worker
-From the terminal:
-```powershell
-# Build and deploy to Cloudflare Workers
-npm --prefix Frontend run build
-npm --prefix Frontend exec -- wrangler deploy
+
+Use the existing `darsh-dental-depot` Worker and GitHub connection. In the Worker's build settings, configure the production branch as `main`, the root directory as `/`, the build command as `npm run build:worker`, and the deploy command as `npm run deploy:worker`. Set the build variable `NODE_VERSION` to `24`. Review build watch paths so changes under `Frontend/` and `Backend/` and to root files can trigger a deployment.
+
+For a manual deployment from the repository root with Cloudflare authentication:
+
+```sh
+npm ci
+npm run build:worker
+npm run deploy:worker
 ```
+
+The build compiles the application into `Frontend/.open-next/`. Check the deployed commit and open the public homepage, catalog, and login page after Cloudflare activates the version.
 
 ---
 
@@ -169,7 +174,7 @@ To restore standard legacy policies, re-run the policy section from `Frontend/su
 ### Scenario C: Cloudflare Worker Regression
 To instantly roll back the Cloudflare Worker to the previously active version:
 ```powershell
-npm --prefix Frontend exec -- wrangler rollback
+npm exec -- wrangler rollback
 ```
 This restores the previous production worker deployment without recompiling.
 

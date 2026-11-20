@@ -31,20 +31,23 @@
     emptyState.querySelector('h3').textContent = message;
     emptyState.querySelector('p').textContent = 'Contact the depot for stock and pricing.';
     emptyState.style.display = '';
+    document.querySelector('.filters').hidden = true;
+    document.getElementById('filterOpen').hidden = true;
+    searchInput.disabled = sortSelect.disabled = true;
     return;
   }
 
   // Build category checkboxes (multi-select; empty = All)
   catFilters.innerHTML = DDD.categories.map(c => {
     const n = DDD.byCategory(c.id).length;
-    return `<label class="f-check"><input type="checkbox" value="${c.id}" data-fcat> ${c.name}<span class="cnt">${n}</span></label>`;
+    return `<label class="f-check"><input type="checkbox" value="${escapeCardText(c.id)}" data-fcat> ${escapeCardText(c.name)}<span class="cnt">${n}</span></label>`;
   }).join('');
 
   // Brand list present in catalog
   const catalogBrands = [...new Set(DDD.products.map(p => p.brand))];
   brandFilters.innerHTML = catalogBrands.map(b => {
     const n = DDD.products.filter(p => p.brand === b).length;
-    return `<label class="f-check"><input type="checkbox" value="${b}" data-fbrand> ${b}<span class="cnt">${n}</span></label>`;
+    return `<label class="f-check"><input type="checkbox" value="${escapeCardText(b)}" data-fbrand> ${escapeCardText(b)}<span class="cnt">${n}</span></label>`;
   }).join('');
 
   // URL params (?cat=restorative, ?highlight=filtek, ?q=...)
@@ -98,9 +101,8 @@
       emptyState.style.display = 'none';
       grid.innerHTML = list.map(p => productCard(p)).join('');
       grid.querySelectorAll('.reveal').forEach(el => el.classList.add('in'));
-      bindCardWaLinks();
       if (hl) {
-        const el = grid.querySelector(`[data-add="${hl}"]`);
+        const el = grid.querySelector(`[data-add="${CSS.escape(hl)}"]`);
         if (el) setTimeout(() => el.closest('.p-card').scrollIntoView({ behavior: 'smooth', block: 'center' }), 300);
       }
     }
@@ -129,18 +131,29 @@
   // Mobile filters
   const mf = document.getElementById('mobileFilters');
   const body = document.getElementById('mobileFilterBody');
-  document.getElementById('filterOpen').addEventListener('click', () => { body.innerHTML = ''; body.append(catFilters.cloneNode(true), brandFilters.cloneNode(true), priceRange.closest('.f-group').cloneNode(true), stockOnly.closest('.f-group').cloneNode(true)); mf.classList.add('open'); document.body.style.overflow = 'hidden'; });
-  const closeMF = () => { mf.classList.remove('open'); document.body.style.overflow = ''; };
-  document.getElementById('filterClose').addEventListener('click', closeMF);
-  document.getElementById('filterApply').addEventListener('click', () => {
-    const mCats = [...body.querySelectorAll('[data-fcat]')], mBrands = [...body.querySelectorAll('[data-fbrand]')];
-    state.cats = new Set(mCats.filter(c => c.checked).map(c => c.value));
-    state.brands = new Set(mBrands.filter(c => c.checked).map(c => c.value));
-    const r = body.querySelector('.price-slider'); if (r) state.maxPrice = +r.value;
-    const s = body.querySelector('#stockOnly'); if (s) state.stockOnly = s.checked;
-    syncFilterUI(); apply(); closeMF();
+  const sidebar = document.querySelector('.filters');
+  const trigger = document.getElementById('filterOpen');
+  const close = document.getElementById('filterClose');
+  function closeFilters() {
+    if (!mf.classList.contains('open')) return;
+    sidebar.append(...body.children);
+    mf.classList.remove('open');
+    trigger.setAttribute('aria-expanded', 'false');
+    document.body.style.overflow = '';
+    trigger.focus();
+  }
+  trigger.addEventListener('click', () => {
+    body.append(...sidebar.children);
+    mf.classList.add('open');
+    trigger.setAttribute('aria-expanded', 'true');
+    document.body.style.overflow = 'hidden';
+    close.focus();
   });
-  mf.addEventListener('click', e => { if (e.target === mf) closeMF(); });
+  close.addEventListener('click', closeFilters);
+  document.getElementById('filterApply').addEventListener('click', closeFilters);
+  mf.addEventListener('click', e => { if (e.target === mf) closeFilters(); });
+  mf.addEventListener('keydown', e => { if (e.key === 'Escape') closeFilters(); });
+  matchMedia('(max-width:1020px)').addEventListener('change', e => { if (!e.matches) closeFilters(); });
 
   syncFilterUI();
   apply();

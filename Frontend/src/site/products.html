@@ -43,8 +43,8 @@
             <div class="f-group">
               <h4 data-cms="products.t5">Max Price</h4>
               <div class="price-wrap">
-                <input type="range" class="price-slider" id="priceRange" min="500" max="15000" step="50" value="15000">
-                <div class="price-labels"><span>₹500</span><span id="priceOut">₹15,000</span></div>
+                <input type="range" class="price-slider" id="priceRange" aria-label="Maximum price in rupees" min="0" max="15000" step="50" value="15000">
+                <div class="price-labels"><span>₹0</span><span id="priceOut">₹15,000</span></div>
               </div>
             </div>
             <div class="f-group">
@@ -69,7 +69,7 @@
                 <option value="price-desc">Sort · Price: High to Low</option>
                 <option value="rating">Sort · Top Rated</option>
               </select>
-              <button class="btn btn-outline btn-sm filter-toggle" id="filterOpen">
+              <button class="btn btn-outline btn-sm filter-toggle" id="filterOpen" aria-controls="mobileFilters" aria-expanded="false">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="15" height="15"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
                 Filters
               </button>
@@ -122,7 +122,7 @@
 
   <!-- Mobile filters drawer -->
   <div class="mobile-filters" id="mobileFilters">
-    <div class="mf-panel">
+    <div class="mf-panel" role="dialog" aria-label="Catalog filters">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
         <h3 style="font-size:20px">Filters</h3>
         <button class="icon-btn" id="filterClose" aria-label="Close filters"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>

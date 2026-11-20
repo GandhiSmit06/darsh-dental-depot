@@ -5,8 +5,8 @@
 
 @theme inline {
   --font-sans:
-    "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --font-heading: "Outfit", "Plus Jakarta Sans", sans-serif;
+    "Manrope", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-heading: "Jost", "Manrope", sans-serif;
 
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
@@ -57,44 +57,44 @@
 :root {
   --radius: 1rem;
   /* Ultra-clean light theme with subtle slate tint */
-  --background: #f8fafc;
-  --foreground: #0f172a;
+  --background: #F7F5F0;
+  --foreground: #152A2C;
   --card: rgba(255, 255, 255, 0.85);
-  --card-foreground: #0f172a;
+  --card-foreground: #152A2C;
   --popover: rgba(255, 255, 255, 0.95);
-  --popover-foreground: #0f172a;
+  --popover-foreground: #152A2C;
 
   /* Electric Indigo / Cyan Primary */
-  --primary: #0284c7;
+  --primary: #23494a;
   --primary-foreground: #ffffff;
-  --secondary: #f1f5f9;
-  --secondary-foreground: #0f172a;
-  --muted: #f1f5f9;
+  --secondary: #ECF3F1;
+  --secondary-foreground: #152A2C;
+  --muted: #ECF3F1;
   --muted-foreground: #64748b;
-  --accent: #e0f2fe;
+  --accent: #D9E7E5;
   --accent-foreground: #0369a1;
   --destructive: #ef4444;
   --destructive-foreground: #ffffff;
   --success: #10b981;
   --success-foreground: #ffffff;
   --warning: #f59e0b;
-  --warning-foreground: #0f172a;
+  --warning-foreground: #152A2C;
   --border: rgba(226, 232, 240, 0.8);
   --input: rgba(226, 232, 240, 0.9);
-  --ring: #0284c7;
-  --chart-1: #0284c7;
+  --ring: #23494a;
+  --chart-1: #23494a;
   --chart-2: #10b981;
   --chart-3: #f59e0b;
   --chart-4: #8b5cf6;
   --chart-5: #ec4899;
   --sidebar: rgba(255, 255, 255, 0.9);
-  --sidebar-foreground: #0f172a;
-  --sidebar-primary: #0284c7;
+  --sidebar-foreground: #152A2C;
+  --sidebar-primary: #23494a;
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #f1f5f9;
-  --sidebar-accent-foreground: #0f172a;
+  --sidebar-accent: #ECF3F1;
+  --sidebar-accent-foreground: #152A2C;
   --sidebar-border: rgba(226, 232, 240, 0.8);
-  --sidebar-ring: #0284c7;
+  --sidebar-ring: #23494a;
 }
 
 .dark {
@@ -251,7 +251,7 @@ h6 {
 
 /* Gradients & Text effects */
 .text-gradient {
-  background: linear-gradient(135deg, #0284c7 0%, #38bdf8 50%, #6366f1 100%);
+  background: linear-gradient(135deg, #23494a 0%, #38bdf8 50%, #6366f1 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -290,7 +290,7 @@ h6 {
 }
 
 .alt-section {
-  background-color: #f1f5f9;
+  background-color: #ECF3F1;
 }
 
 .dark .alt-section {
@@ -422,21 +422,6 @@ h6 {
   left: 140%;
 }
 
-/* Critical Pre-Hydration & Frame-0 Loading Gate */
-/* By default, hide app content until initial loading completes and auth confirms readiness */
-html:not(.ddd-app-ready) #app-root-content {
-  visibility: hidden !important;
-  opacity: 0 !important;
-  pointer-events: none !important;
-}
-
-html.ddd-app-ready #app-root-content {
-  visibility: visible !important;
-  opacity: 1 !important;
-  pointer-events: auto !important;
-  transition: opacity 0.35s cubic-bezier(0.25, 0.1, 0.25, 1);
-}
-
 /* Force initial loader visible immediately before React hydrates */
 html:not(.ddd-seen) .neoleaf-loader-overlay {
   display: flex !important;
@@ -465,7 +450,7 @@ html.ddd-seen .neoleaf-loader-overlay {
 }
 
 :root:not(.dark) .neoleaf-loader-overlay {
-  background-color: #f8fafc;
+  background-color: #F7F5F0;
 }
 
 /* Staged Exit: Background fade out */
@@ -503,7 +488,7 @@ html.ddd-seen .neoleaf-loader-overlay {
   position: fixed;
   bottom: clamp(28px, 5vh, 60px);
   right: clamp(28px, 5vw, 80px);
-  font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+  font-family: "Manrope", system-ui, sans-serif;
   font-size: clamp(12px, 1.2vw, 16px);
   font-weight: 500;
   color: rgba(255, 255, 255, 0.5);
@@ -537,7 +522,7 @@ html.ddd-seen .neoleaf-loader-overlay {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+  font-family: "Manrope", system-ui, sans-serif;
   font-size: 0.8125rem;
   color: rgba(255, 255, 255, 0.75);
   background: rgba(18, 164, 136, 0.15);
@@ -671,4 +656,54 @@ html.ddd-seen .neoleaf-loader-overlay {
   margin-left: auto;
   margin-right: auto;
   max-width: 1280px;
+}
+
+.depot-announcement { padding: .5rem 1rem; text-align: center; background: #152a2c; color: #edf3f0; font-size: .8rem; }
+.portal-entry { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1.05fr); min-height: calc(100svh - 4rem); }
+.portal-visual { position: relative; isolation: isolate; display: grid; align-items: center; overflow: hidden; background: #152a2c; color: #edf3f0; padding: clamp(2rem,6vw,7rem); }
+.portal-visual > img { position: absolute; inset: 0; z-index: -1; width: 100%; height: 100%; object-fit: cover; opacity: .23; }
+.portal-story > p, .portal-kicker { font-size: .74rem; letter-spacing: .15em; text-transform: uppercase; font-weight: 700; }
+.portal-story h2 { max-width: 12ch; font: 600 clamp(2.5rem,4.8vw,5rem)/1.04 var(--font-heading); letter-spacing: -.04em; margin: 1rem 0 2rem; }
+.portal-story em { color: #afcccd; }
+.portal-story li { display: flex; align-items: center; gap: .75rem; margin: .85rem 0; }
+.portal-story li svg { color: #afcccd; }
+.portal-form { display: grid; place-items: center; padding: clamp(2rem,5vw,5rem) clamp(1.25rem,5vw,5rem); }
+.portal-form > div { width: min(100%,30rem); min-width: 0; }
+.portal-title { font-size: clamp(2rem,3vw,2.65rem); line-height: 1.15; margin: .65rem 0; }
+.portal-lead { margin-bottom: 1.75rem; color: var(--muted-foreground); }
+.portal-form button[type=submit] { background: var(--primary); color: var(--primary-foreground); border-radius: 999px; box-shadow: none; }
+.portal-form input:not([type=checkbox]) { background-color: var(--card); border-color: var(--border); }
+@media (max-width: 900px) { .portal-entry { display: block; } .portal-visual { display: none; } }
+.shelf-code { color: transparent; -webkit-text-stroke: 2px var(--foreground); font: 600 clamp(7rem,22vw,15rem)/1 var(--font-heading); }
+.depot-side { background: #152a2c; color: #edf3f0; --foreground: #edf3f0; --muted-foreground: #afcccd; --secondary: #284246; --primary: #afcccd; --border: #42575a; }
+.depot-workspace h1 { font: 600 clamp(1.65rem, 3vw, 2.45rem)/1.15 var(--font-heading); letter-spacing: -.03em; }
+.depot-header { position: sticky; top: 0; z-index: 40; border-bottom: 1px solid var(--border); background: var(--background); }
+.depot-header-row { width: min(100%,1440px); min-height: 72px; margin-inline: auto; padding: 8px clamp(12px,4vw,64px); display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.depot-logo, .depot-actions, .depot-nav, .depot-footer nav { display: flex; align-items: center; }
+.depot-logo { gap: .65rem; line-height: 1; }
+.depot-logo strong { display: block; font: 600 1.5rem/1 var(--font-heading); }
+.depot-logo small { display: block; margin-top: .3rem; font-size: .58rem; text-transform: uppercase; letter-spacing: .12em; }
+.depot-actions { gap: .45rem; }
+.depot-action, .depot-tool { border-radius: 999px; font-weight: 600; }
+.depot-action { background: var(--foreground); color: var(--background); padding: .7rem 1rem; white-space: nowrap; font-size: .82rem; }
+.depot-tool { width: 40px; height: 40px; display: grid; place-items: center; border: 1px solid var(--border); }
+.depot-nav { gap: clamp(.85rem,1.6vw,1.6rem); font-size: .9rem; }
+.depot-nav a:hover, .depot-nav [aria-current], .depot-footer a:hover { text-decoration: underline; text-underline-offset: .35em; }
+.depot-menu-button, .depot-menu { display: none; }
+.depot-footer { display: flex; justify-content: space-between; flex-wrap: wrap; align-items: center; padding: 2.5rem 5vw; gap: 1.5rem; background: #152a2c; color: #edf3f0; }
+.depot-footer nav { flex-wrap: wrap; gap: 1.25rem; font-size: .9rem; }
+@media (max-width: 960px) {
+  .depot-nav,.depot-signin { display: none; }
+  .depot-menu-button { display: grid; }
+  .depot-menu { position: absolute; inset: 100% 0 auto; max-height: calc(100svh - 72px); overflow: auto; display: grid; padding: 1rem 5vw; background: var(--background); box-shadow: 0 12px 20px #152a2c1a; }
+  .depot-menu a, .depot-menu form { padding: .75rem 0; border-bottom: 1px solid var(--border); }
+  .depot-menu form { display: flex; justify-content: space-between; }
+}
+@media (max-width: 480px) {
+  .depot-header-row { gap: 6px; }
+  .depot-actions { gap: 4px; }
+  .depot-tool { width: 34px; height: 36px; }
+  .depot-action { padding: .65rem .75rem; }
+  .depot-logo img { width: 32px; height: 32px; }
+  .depot-logo small { white-space: nowrap; letter-spacing: .06em; line-height: 1.2; }
 }

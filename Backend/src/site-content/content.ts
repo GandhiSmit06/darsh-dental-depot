@@ -114,7 +114,7 @@ export async function getCatalogProducts(): Promise<CatalogProduct[] | null> {
       cat: slugify(p.category),
       price: discountPrice > 0 && discountPrice < mrp ? discountPrice : mrp,
       mrp,
-      img: p.images?.[0] || "/site/assets/img/p-syringe.png",
+      img: p.images?.[0] || "/site/assets/img/brand/logo-mark-512.png",
       rating: Number(p.rating) || 0,
       reviews: p.review_count ?? 0,
       stock: outOfStock

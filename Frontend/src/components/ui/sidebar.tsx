@@ -120,7 +120,7 @@ export const DesktopSidebar = ({
   return (
     <motion.div
       className={cn(
-        "h-screen sticky top-0 py-4 hidden md:flex md:flex-col bg-card/90 dark:bg-[#070B0A] border-r border-border/50 dark:border-white/10 backdrop-blur-xl flex-shrink-0 z-40 transition-colors duration-200 overflow-hidden",
+        "depot-side h-screen sticky top-0 py-4 hidden md:flex md:flex-col bg-card/90 dark:bg-[#070B0A] border-r border-border/50 dark:border-white/10 backdrop-blur-xl flex-shrink-0 z-40 transition-colors duration-200 overflow-hidden",
         open ? "px-3 w-[260px]" : "px-2 w-[72px]",
         className,
       )}
@@ -151,7 +151,7 @@ export const MobileSidebar = ({ className, children, ...props }: React.Component
         <Link href="/" className="flex items-center gap-2.5 select-none">
           <div className="h-8 w-8 rounded-xl overflow-hidden bg-white/95 dark:bg-[#10201C] border border-white/60 dark:border-white/10 shadow-xs flex items-center justify-center p-0.5">
             <img
-              src="/logo.jpg"
+              src="/site/assets/img/brand/logo-mark-64.png"
               alt="Darsh Dental"
               className="w-full h-full object-cover rounded-[inherit]"
             />
@@ -181,16 +181,18 @@ export const MobileSidebar = ({ className, children, ...props }: React.Component
                 ease: "easeInOut",
               }}
               className={cn(
-                "fixed h-full w-full inset-0 bg-background/98 dark:bg-[#070B0A]/98 backdrop-blur-2xl p-6 z-[100] flex flex-col justify-between overflow-y-auto",
+                "depot-side fixed h-dvh w-full inset-0 bg-background/98 dark:bg-[#070B0A]/98 backdrop-blur-2xl p-6 z-[100] flex flex-col justify-between overflow-y-auto",
                 className,
               )}
             >
-              <div
+              <button
+                type="button"
+                aria-label="Close portal navigation"
                 className="absolute right-6 top-6 z-50 p-2 rounded-xl border border-border/60 dark:border-white/10 hover:bg-secondary dark:hover:bg-[#10201C] text-foreground cursor-pointer transition-colors"
                 onClick={() => setOpenMobile(false)}
               >
                 <X className="h-5 w-5" />
-              </div>
+              </button>
               <div className="flex-1 flex flex-col pt-2">{children}</div>
             </motion.div>
           )}
@@ -201,7 +203,8 @@ export const MobileSidebar = ({ className, children, ...props }: React.Component
 };
 
 export const SidebarLink = ({ link, className }: { link: SidebarLinkItem; className?: string }) => {
-  const { open, animate, setOpenMobile } = useSidebar();
+  const { open: desktopOpen, openMobile, animate, setOpenMobile } = useSidebar();
+  const open = desktopOpen || openMobile;
   const isActive = link.active;
 
   const content = (
@@ -251,8 +254,8 @@ export const SidebarLink = ({ link, className }: { link: SidebarLinkItem; classN
       ? "gap-3 px-3 py-2.5 rounded-xl w-full text-left"
       : "w-10 h-10 mx-auto justify-center rounded-xl",
     isActive
-      ? "bg-primary text-primary-foreground dark:bg-[#12A488] dark:text-[#04110E] font-bold shadow-sm"
-      : "text-muted-foreground dark:text-[#9DB0A9] hover:text-foreground dark:hover:text-[#F2F6F4] hover:bg-secondary/70 dark:hover:bg-[#10201C]",
+      ? "bg-[#afcccd] text-[#152a2c] font-bold"
+      : "text-[#d9e7e5] hover:bg-white/10 hover:text-white",
     className,
     link.className,
   );

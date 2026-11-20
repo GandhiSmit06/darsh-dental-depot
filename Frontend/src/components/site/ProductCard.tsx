@@ -40,15 +40,18 @@ export function ProductCard({ product, onAdd, onWishlist }: ProductCardProps) {
   const [isAdding, setIsAdding] = useState(false);
   const [isAdded, setIsAdded] = useState(false);
   const inStock = (product.stock ?? 1) > 0;
-  const price = product.price ?? product.sellingPrice ?? 0;
-  const originalPrice = product.purchasePrice ? Math.round(price * 1.25) : Math.round(price * 1.2);
-  const discountPercent = Math.round(((originalPrice - price) / originalPrice) * 100);
+  const originalPrice = product.sellingPrice ?? product.price ?? 0;
+  const price =
+    product.discountPrice > 0 && product.discountPrice < originalPrice
+      ? product.discountPrice
+      : originalPrice;
+  const discountPercent = originalPrice ? Math.round((1 - price / originalPrice) * 100) : 0;
 
   const imageUrl =
     product.imageUrl ||
     product.image ||
     (product.images && product.images[0]) ||
-    "/products/filtek-z350.jpg";
+    "/site/assets/img/brand/logo-mark-512.png";
 
   const productId = product._id || product.id;
 
@@ -151,7 +154,7 @@ export function ProductCard({ product, onAdd, onWishlist }: ProductCardProps) {
               loading="lazy"
               className="h-full w-full object-cover object-center group-hover:scale-108 transition-transform duration-700 ease-out"
               onError={(e) => {
-                (e.target as HTMLImageElement).src = "/products/filtek-z350.jpg";
+                (e.target as HTMLImageElement).src = "/site/assets/img/brand/logo-mark-512.png";
               }}
             />
           </Link>
@@ -206,10 +209,7 @@ export function ProductCard({ product, onAdd, onWishlist }: ProductCardProps) {
           <div className="flex items-center justify-between gap-1 text-[11px] font-bold text-primary dark:text-[#3FD1B3] uppercase tracking-wider">
             <span className="flex items-center gap-1">
               <CheckCircle className="h-3 w-3" />
-              {product.brand || "Darsh Certified"}
-            </span>
-            <span className="text-[10px] font-normal text-muted-foreground/80 dark:text-[#9DB0A9]/80 font-mono">
-              Lot Verified
+              {product.brand || "Darsh Dental Depot"}
             </span>
           </div>
 
@@ -226,20 +226,22 @@ export function ProductCard({ product, onAdd, onWishlist }: ProductCardProps) {
             <div className="flex items-center text-amber-500">
               <Star className="h-3.5 w-3.5 fill-current text-amber-400" />
               <span className="font-bold ml-1 text-foreground text-xs">
-                {(product.rating ?? 4.8).toFixed(1)}
+                {product.reviewCount ? Number(product.rating || 0).toFixed(1) : "Unrated"}
               </span>
             </div>
             <span className="text-[11px] text-muted-foreground">
-              ({product.reviewCount ?? 28} reviews)
+              ({product.reviewCount ?? 0} reviews)
             </span>
           </div>
 
           {/* Price and Add to Cart / Manage */}
           <div className="mt-auto pt-3 border-t border-border/40 flex items-center justify-between gap-2">
             <div>
-              <div className="text-[10px] text-muted-foreground line-through">
-                ₹{originalPrice.toLocaleString("en-IN")}
-              </div>
+              {discountPercent > 0 && (
+                <div className="text-[10px] text-muted-foreground line-through">
+                  ₹{originalPrice.toLocaleString("en-IN")}
+                </div>
+              )}
               <div className="font-extrabold text-base text-foreground dark:text-[#3FD1B3] font-heading">
                 ₹{price.toLocaleString("en-IN")}
               </div>

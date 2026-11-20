@@ -23,6 +23,8 @@ const config = [
   {
     ignores: [
       ".next/**",
+      ".open-next/**",
+      ".wrangler/**",
       "node_modules/**",
       "public/**",
       "next-env.d.ts",

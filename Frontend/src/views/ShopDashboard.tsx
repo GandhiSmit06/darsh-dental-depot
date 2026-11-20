@@ -1,5 +1,6 @@
 "use client";
 
+import { ProfileSettings } from "@/components/dashboard/ProfileSettings";
 import { RedirectTo } from "@/components/RedirectTo";
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { AccessDenied } from "@/components/dashboard/AccessDenied";
@@ -264,7 +265,7 @@ export default function ShopDashboard() {
       {active === "analytics" && <AnalyticsSection />}
       {active === "notifications" && <NotificationsSection onNavigate={setActive} />}
       {active === "website" && <WebsiteContentEditor />}
-      {active === "settings" && <SettingsSection />}
+      {active === "settings" && <ProfileSettings openWebsite={() => setActive("website")} />}
     </DashboardLayout>
   );
 }
@@ -293,9 +294,8 @@ function DashboardSection() {
         stats.data && (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <StatCard
-              label="Total Sales"
+              label="Non-cancelled orders"
               value={stats.data.totalSales.toLocaleString()}
-              prefix="₹"
               change={stats.data.weeklyChanges.sales}
               icon={DollarSign}
             />
@@ -312,12 +312,7 @@ function DashboardSection() {
               change={stats.data.weeklyChanges.orders}
               icon={ShoppingBag}
             />
-            <StatCard
-              label="Customers"
-              value={String(stats.data.customers)}
-              change={stats.data.weeklyChanges.customers}
-              icon={Users}
-            />
+            <StatCard label="Customers" value={String(stats.data.customers)} icon={Users} />
           </div>
         )
       )}
@@ -1126,8 +1121,8 @@ function buildInvoiceDataFromShopOrder(o: ShopOrder): InvoiceOrderData {
     quantity: Number(it.quantity || 1),
     sellingPrice: Number(it.price || 0),
     unit: "Unit",
-    batchNumber: "V" + Math.floor(1000 + Math.random() * 9000),
-    expiryDate: "31-Oct-30",
+    batchNumber: it.batchNumber || it.batch_number,
+    expiryDate: it.expiryDate || it.expiry_date,
   }));
 
   return {
@@ -2201,38 +2196,3 @@ function NotificationsSection({ onNavigate }: { onNavigate: (tab: string) => voi
 }
 
 // ─── Settings ───────────────────────────────────────────────────────────────
-
-function SettingsSection() {
-  return (
-    <div className="space-y-5 max-w-2xl">
-      <h1 className="text-2xl font-bold">Shop Settings</h1>
-      <Card className="p-6 space-y-4">
-        <div>
-          <Label className="mb-1.5">Shop Name</Label>
-          <Input defaultValue="Darsh Dental Depot" />
-        </div>
-        <div>
-          <Label className="mb-1.5">Direct Helpline / WhatsApp</Label>
-          <Input defaultValue="+91 97270 76119" />
-        </div>
-        <div>
-          <Label className="mb-1.5">Support Email</Label>
-          <Input defaultValue="support@darshdental.com" />
-        </div>
-        <div>
-          <Label className="mb-1.5">Store Location</Label>
-          <Input defaultValue="FF-10/11, Vraj Vihar Complex, Shiyabaug, Vadodara, Gujarat 390001" />
-        </div>
-        <div className="flex items-center justify-between pt-2 border-t">
-          <span className="text-sm">Real-time Order Alerts</span>
-          <Switch defaultChecked />
-        </div>
-        <div className="flex items-center justify-between">
-          <span className="text-sm">Low-Stock SMS / WhatsApp Alerts</span>
-          <Switch defaultChecked />
-        </div>
-        <Button onClick={() => toast.success("Settings saved successfully")}>Save Changes</Button>
-      </Card>
-    </div>
-  );
-}

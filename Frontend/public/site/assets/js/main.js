@@ -231,7 +231,7 @@ function renderCart() {
     <div class="cart-item">
       <img src="${p.img}" alt="${p.name}">
       <div class="ci-info">
-        <span class="ci-brand">${p.brand}</span>
+        <span class="ci-brand">${escapeCardText(p.brand)}</span>
         <div class="ci-name">${p.name}</div>
         <div class="ci-price">${DDD.money(p.price)}</div>
       </div>
@@ -307,6 +307,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Cart events
   document.getElementById('cartBtn')?.addEventListener('click', openCart);
+  if (new URLSearchParams(location.search).get('order') === 'open') openCart();
   document.getElementById('cartClose')?.addEventListener('click', closeCart);
   document.getElementById('cartOverlay')?.addEventListener('click', closeCart);
   document.addEventListener('click', e => {
@@ -369,37 +370,37 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 /* ---------- Shared render helpers ---------- */
+function escapeCardText(value) {
+  return String(value ?? '').replace(/[&<>"']/g, c => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  })[c]);
+}
+
 function productCard(p, { compact = false } = {}) {
   const stockLabel = { in: '<span class="pc-stock in"><span class="dot"></span>In Stock</span>', low: '<span class="pc-stock low"><span class="dot"></span>Low Stock</span>', out: '<span class="pc-stock out"><span class="dot"></span>On Order</span>' }[p.stock];
   const stars = '★★★★★'.slice(0, Math.round(p.rating));
+  const name = escapeCardText(p.name);
+  const detail = '/products/' + encodeURIComponent(p.id);
+  const order = escapeCardText(DDD.wa('Hello Darsh Dental Depot! I would like to order: ' + p.name + '. Is it in stock?'));
   const out = p.stock === 'out';
   return `
   <article class="p-card reveal">
-    <a class="pc-media" href="/products?highlight=${p.id}" aria-label="${p.name}">
-      <img src="${p.img}" alt="${p.name}" loading="lazy">
+    <div class="pc-media">
+      <a class="pc-detail-link" href="${detail}" aria-label="${name}">
+      <img src="${escapeCardText(p.img)}" alt="" loading="lazy">
+      </a>
       ${p.mrp > p.price ? `<span class="pc-off">${DDD.off(p)}% OFF</span>` : ''}
       ${stockLabel}
-      <span class="pc-wa" title="Order this item on WhatsApp">${ICONS.wa}</span>
-    </a>
+      <a class="pc-wa" href="${order}" target="_blank" rel="noopener noreferrer" aria-label="Enquire about ${name} on WhatsApp">${ICONS.wa}</a>
+    </div>
     <div class="pc-body">
-      <span class="pc-brand">${p.brand}</span>
-      <h3>${p.name}</h3>
-      <div class="pc-rating"><span class="stars">${stars}</span> ${p.rating} (${p.reviews})</div>
+      <span class="pc-brand">${escapeCardText(p.brand)}</span>
+      <h3><a href="${detail}">${name}</a></h3>
+      <div class="pc-rating">${p.reviews ? `<span class="stars" aria-hidden="true">${stars}</span> ${p.rating} (${p.reviews})` : 'No reviews yet'}</div>
       <div class="pc-foot">
         <div class="pc-price"><span class="now">${DDD.money(p.price)}</span>${p.mrp > p.price ? `<span class="was">${DDD.money(p.mrp)}</span>` : ''}</div>
-        ${compact ? '' : `<button class="add-btn" data-add="${p.id}" ${out ? 'disabled' : ''}>${out ? 'Enquire' : ICONS.plus + ' Add'}</button>`}
+        ${compact ? '' : `<button class="add-btn" data-add="${escapeCardText(p.id)}" ${out ? 'disabled' : ''}>${out ? 'Enquire' : ICONS.plus + ' Add'}</button>`}
       </div>
     </div>
   </article>`;
-}
-
-function bindCardWaLinks() {
-  document.querySelectorAll('.pc-wa').forEach(el => {
-    const card = el.closest('.p-card');
-    const name = card?.querySelector('h3')?.textContent || 'a product';
-    el.closest('a')?.addEventListener('click', e => {
-      e.preventDefault(); e.stopPropagation();
-      window.open(DDD.wa(`Hello Darsh Dental Depot! I would like to order: ${name}. Is it in stock?`), '_blank');
-    });
-  });
 }

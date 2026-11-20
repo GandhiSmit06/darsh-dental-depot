@@ -18,6 +18,7 @@ interface AuthContextValue {
   login: (data: LoginPayload) => Promise<AuthUser>;
   register: (data: RegisterPayload) => Promise<string>;
   logout: () => Promise<void>;
+  refreshProfile: () => Promise<void>;
   setSession: (user: AuthUser, accessToken: string, refreshToken?: string) => void;
 }
 
@@ -29,81 +30,40 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Restore session & listen for Supabase auth state changes
   useEffect(() => {
-    let isMounted = true;
-
-    const restore = async () => {
-      try {
-        const { data: sessionData } = await supabase.auth.getSession();
-        if (sessionData?.session?.user) {
-          const me = await authApi.getMe();
-          if (isMounted) {
-            setUser(me.data);
-            if (typeof window !== "undefined") {
-              localStorage.setItem(
-                "ddd_current_user_id",
-                me.data._id || me.data.id || me.data.email,
-              );
-            }
-          }
-        } else {
-          // Check if valid token exists in storage (e.g. OTP session or persisted token)
-          try {
-            const me = await authApi.getMe();
-            if (isMounted) {
-              setUser(me.data);
-              if (typeof window !== "undefined") {
-                localStorage.setItem(
-                  "ddd_current_user_id",
-                  me.data._id || me.data.id || me.data.email,
-                );
-              }
-              return;
-            }
-          } catch {
-            if (isMounted) {
-              clearTokens();
-              setUser(null);
-            }
-          }
-          if (isMounted) setUser(null);
-        }
-      } catch {
-        if (isMounted) setUser(null);
-      } finally {
-        if (isMounted) setIsLoading(false);
+    let revision = 0;
+    let timer: ReturnType<typeof setTimeout>;
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!session?.user && event !== "INITIAL_SESSION" && event !== "SIGNED_OUT") return;
+      const current = ++revision;
+      clearTimeout(timer);
+      if (event === "SIGNED_OUT") {
+        clearTokens();
+        setUser(null);
+        setIsLoading(false);
+        return;
       }
-    };
 
-    restore();
-
-    // Realtime auth listener
-    const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (session?.user) {
+      // Supabase holds its auth lock while dispatching this callback.
+      // Fetch the profile after the callback releases the lock.
+      timer = setTimeout(async () => {
         try {
           const me = await authApi.getMe();
-          if (isMounted) {
-            setUser(me.data);
-            if (typeof window !== "undefined") {
-              localStorage.setItem(
-                "ddd_current_user_id",
-                me.data._id || me.data.id || me.data.email,
-              );
-            }
-          }
+          if (revision !== current) return;
+          setUser(me.data);
+          localStorage.setItem("ddd_current_user_id", me.data._id || me.data.id || me.data.email);
         } catch {
-          if (isMounted) setUser(null);
-        }
-      } else if (event === "SIGNED_OUT") {
-        if (isMounted) {
+          if (revision !== current) return;
+          if (!session?.user) clearTokens();
           setUser(null);
-          clearTokens();
+        } finally {
+          if (revision === current) setIsLoading(false);
         }
-      }
-      if (isMounted) setIsLoading(false);
+      }, 0);
     });
 
     return () => {
-      isMounted = false;
+      ++revision;
+      clearTimeout(timer);
       authListener.subscription.unsubscribe();
     };
   }, []);
@@ -151,6 +111,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         login,
         register,
         logout,
+        refreshProfile: async () => {
+          const me = await authApi.getMe();
+          setUser(me.data);
+        },
         setSession,
       }}
     >

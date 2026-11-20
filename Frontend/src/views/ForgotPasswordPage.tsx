@@ -2,8 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { PublicLayout } from "@/components/site/PublicLayout";
-import { Card } from "@/components/ui/card";
+import { PortalEntry } from "@/components/site/PortalEntry";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -111,217 +110,211 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <PublicLayout>
-      <div className="container mx-auto px-4 py-16 max-w-md relative">
-        {/* Glow behind card */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-primary/15 rounded-full blur-3xl -z-10 pointer-events-none" />
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-        >
-          <Card className="p-8 sm:p-10 glass-card border border-border/70 rounded-3xl shadow-xl backdrop-blur-xl">
-            {isSuccess ? (
-              <div className="text-center space-y-4">
-                <div className="mx-auto w-16 h-16 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 grid place-items-center mb-4 shadow-sm">
-                  <CheckCircle2 className="h-8 w-8" />
+    <PortalEntry>
+      {isSuccess ? (
+        <div className="text-center space-y-4">
+          <div className="mx-auto w-16 h-16 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 grid place-items-center mb-4 shadow-sm">
+            <CheckCircle2 className="h-8 w-8" />
+          </div>
+          <h1 className="text-2xl font-bold font-heading text-foreground">Password Reset!</h1>
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            Your password has been successfully updated. You can now log in to your Doctor Portal
+            with your new password.
+          </p>
+          <div className="pt-4">
+            <Button
+              className="w-full rounded-2xl h-12 text-sm font-bold bg-[#12A488] hover:bg-[#3FD1B3] text-[#04110E] shadow-lg shadow-[#12A488]/20 btn-shine cursor-pointer"
+              onClick={() => nav.push("/login")}
+            >
+              Sign In to Doctor Portal
+            </Button>
+          </div>
+        </div>
+      ) : (
+        <AnimatePresence mode="wait">
+          {step === "send_otp" ? (
+            <motion.div
+              key="step-send"
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 10 }}
+              transition={{ duration: 0.2 }}
+            >
+              {/* Header */}
+              <div className="text-center mb-6 space-y-1.5">
+                <div className="mx-auto h-12 w-12 rounded-2xl bg-[#12A488] text-[#04110E] grid place-items-center mb-3 shadow-md">
+                  <KeyRound className="h-6 w-6" />
                 </div>
-                <h1 className="text-2xl font-bold font-heading text-foreground">Password Reset!</h1>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  Your password has been successfully updated. You can now log in to your Doctor
-                  Portal with your new password.
+                <h1 className="text-2xl sm:text-3xl font-extrabold font-heading tracking-tight text-foreground">
+                  Forgot Password?
+                </h1>
+                <p className="text-xs text-muted-foreground">
+                  Enter your registered email or mobile number to receive a reset OTP code.
                 </p>
-                <div className="pt-4">
-                  <Button
-                    className="w-full rounded-2xl h-12 text-sm font-bold bg-[#12A488] hover:bg-[#3FD1B3] text-[#04110E] shadow-lg shadow-[#12A488]/20 btn-shine cursor-pointer"
-                    onClick={() => nav.push("/login")}
-                  >
-                    Sign In to Doctor Portal
-                  </Button>
-                </div>
               </div>
-            ) : (
-              <AnimatePresence mode="wait">
-                {step === "send_otp" ? (
-                  <motion.div
-                    key="step-send"
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: 10 }}
-                    transition={{ duration: 0.2 }}
+
+              <form onSubmit={handleSendOtp} className="space-y-4">
+                <div>
+                  <Label
+                    htmlFor="recovery-identifier"
+                    className="text-xs font-semibold mb-1.5 block"
                   >
-                    {/* Header */}
-                    <div className="text-center mb-6 space-y-1.5">
-                      <div className="mx-auto h-12 w-12 rounded-2xl bg-[#12A488] text-[#04110E] grid place-items-center mb-3 shadow-md">
-                        <KeyRound className="h-6 w-6" />
-                      </div>
-                      <h1 className="text-2xl sm:text-3xl font-extrabold font-heading tracking-tight text-foreground">
-                        Forgot Password?
-                      </h1>
-                      <p className="text-xs text-muted-foreground">
-                        Enter your registered email or mobile number to receive a reset OTP code.
-                      </p>
-                    </div>
+                    Registered Gmail or 10-Digit Mobile *
+                  </Label>
+                  <div className="relative">
+                    <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      id="recovery-identifier"
+                      placeholder="dr.patel@gmail.com or 9876543210"
+                      className="pl-10 rounded-xl bg-background/80 border-border/60 text-sm h-11 focus:border-primary"
+                      value={identifier}
+                      onChange={(e) => setIdentifier(e.target.value)}
+                      autoFocus
+                      required
+                    />
+                  </div>
+                  <div id="recaptcha-container"></div>
+                </div>
 
-                    <form onSubmit={handleSendOtp} className="space-y-4">
-                      <div>
-                        <Label className="text-xs font-semibold mb-1.5 block">
-                          Registered Gmail or 10-Digit Mobile *
-                        </Label>
-                        <div className="relative">
-                          <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                          <Input
-                            placeholder="dr.patel@gmail.com or 9876543210"
-                            className="pl-10 rounded-xl bg-background/80 border-border/60 text-sm h-11 focus:border-primary"
-                            value={identifier}
-                            onChange={(e) => setIdentifier(e.target.value)}
-                            autoFocus
-                            required
-                          />
-                        </div>
-                        <div id="recaptcha-container"></div>
-                      </div>
+                <Button
+                  type="submit"
+                  disabled={isSending}
+                  className="w-full rounded-2xl h-12 text-sm font-bold bg-[#12A488] hover:bg-[#3FD1B3] text-[#04110E] shadow-lg shadow-[#12A488]/20 btn-shine mt-2 cursor-pointer"
+                >
+                  {isSending ? "Sending OTP Code..." : "Send Reset OTP Code"}
+                </Button>
+              </form>
 
-                      <Button
-                        type="submit"
-                        disabled={isSending}
-                        className="w-full rounded-2xl h-12 text-sm font-bold bg-[#12A488] hover:bg-[#3FD1B3] text-[#04110E] shadow-lg shadow-[#12A488]/20 btn-shine mt-2 cursor-pointer"
-                      >
-                        {isSending ? "Sending OTP Code..." : "Send Reset OTP Code"}
-                      </Button>
-                    </form>
+              <div className="mt-6 text-center">
+                <Link
+                  href="/login"
+                  className="text-xs font-semibold text-muted-foreground hover:text-primary inline-flex items-center gap-1.5 transition-colors"
+                >
+                  <ArrowLeft className="h-3.5 w-3.5" /> Back to Sign in
+                </Link>
+              </div>
+            </motion.div>
+          ) : (
+            <motion.div
+              key="step-verify"
+              initial={{ opacity: 0, x: 10 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -10 }}
+              transition={{ duration: 0.2 }}
+            >
+              {/* Header */}
+              <div className="text-center mb-6 space-y-1.5">
+                <div className="mx-auto h-12 w-12 rounded-2xl bg-[#12A488]/20 text-[#3FD1B3] border border-[#12A488]/30 grid place-items-center mb-3 shadow-sm">
+                  <Lock className="h-6 w-6" />
+                </div>
+                <h1 className="text-2xl font-bold font-heading text-foreground">
+                  Enter OTP & Set Password
+                </h1>
+                <p className="text-xs text-muted-foreground">
+                  6-digit reset code sent to:{" "}
+                  <span className="font-semibold text-foreground">{targetEmail || identifier}</span>
+                </p>
+              </div>
 
-                    <div className="mt-6 text-center">
-                      <Link
-                        href="/login"
-                        className="text-xs font-semibold text-muted-foreground hover:text-primary inline-flex items-center gap-1.5 transition-colors"
-                      >
-                        <ArrowLeft className="h-3.5 w-3.5" /> Back to Sign in
-                      </Link>
-                    </div>
-                  </motion.div>
-                ) : (
-                  <motion.div
-                    key="step-verify"
-                    initial={{ opacity: 0, x: 10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -10 }}
-                    transition={{ duration: 0.2 }}
+              <form onSubmit={handleResetSubmit} className="space-y-4">
+                {/* OTP Input */}
+                <div>
+                  <Label htmlFor="recovery-code" className="text-xs font-semibold mb-1.5 block">
+                    OTP Verification Code *
+                  </Label>
+                  <Input
+                    id="recovery-code"
+                    type="text"
+                    inputMode="numeric"
+                    maxLength={8}
+                    placeholder="••••••••"
+                    value={otp}
+                    onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 8))}
+                    className="rounded-xl bg-background/80 border-border/60 text-center text-lg font-mono tracking-[0.5em] h-12 focus:border-primary font-bold"
+                    autoFocus
+                    required
+                  />
+                </div>
+
+                {/* New Password */}
+                <div>
+                  <Label htmlFor="new-password" className="text-xs font-semibold mb-1.5 block">
+                    New Password *
+                  </Label>
+                  <div className="relative">
+                    <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      id="new-password"
+                      type="password"
+                      placeholder="Enter new password (min 6 characters)"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="pl-10 rounded-xl bg-background/80 border-border/60 text-sm h-11 focus:border-primary"
+                      required
+                    />
+                  </div>
+                </div>
+
+                {/* Confirm New Password */}
+                <div>
+                  <Label htmlFor="confirm-password" className="text-xs font-semibold mb-1.5 block">
+                    Confirm New Password *
+                  </Label>
+                  <div className="relative">
+                    <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      id="confirm-password"
+                      type="password"
+                      placeholder="Re-enter new password"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      className="pl-10 rounded-xl bg-background/80 border-border/60 text-sm h-11 focus:border-primary"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <Button
+                  type="submit"
+                  disabled={isResetting}
+                  className="w-full rounded-2xl h-12 text-sm font-bold bg-[#12A488] hover:bg-[#3FD1B3] text-[#04110E] shadow-lg shadow-[#12A488]/20 btn-shine mt-2 cursor-pointer"
+                >
+                  {isResetting ? "Updating Password..." : "Reset & Save Password"}
+                </Button>
+
+                {/* Resend & Change Target */}
+                <div className="flex items-center justify-between text-xs text-muted-foreground pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setStep("send_otp")}
+                    className="hover:text-primary font-medium hover:underline"
                   >
-                    {/* Header */}
-                    <div className="text-center mb-6 space-y-1.5">
-                      <div className="mx-auto h-12 w-12 rounded-2xl bg-[#12A488]/20 text-[#3FD1B3] border border-[#12A488]/30 grid place-items-center mb-3 shadow-sm">
-                        <Lock className="h-6 w-6" />
-                      </div>
-                      <h1 className="text-2xl font-bold font-heading text-foreground">
-                        Enter OTP & Set Password
-                      </h1>
-                      <p className="text-xs text-muted-foreground">
-                        6-digit reset code sent to:{" "}
-                        <span className="font-semibold text-foreground">
-                          {targetEmail || identifier}
-                        </span>
-                      </p>
-                    </div>
+                    Change Email/Mobile
+                  </button>
+                  <button
+                    type="button"
+                    disabled={countdown > 0 || isSending}
+                    onClick={handleResendOtp}
+                    className="text-primary font-semibold hover:underline disabled:opacity-40 disabled:no-underline flex items-center gap-1"
+                  >
+                    <RotateCcw className="h-3 w-3" />
+                    {countdown > 0 ? `Resend in ${countdown}s` : "Resend OTP Code"}
+                  </button>
+                </div>
+              </form>
 
-                    <form onSubmit={handleResetSubmit} className="space-y-4">
-                      {/* OTP Input */}
-                      <div>
-                        <Label className="text-xs font-semibold mb-1.5 block">
-                          OTP Verification Code *
-                        </Label>
-                        <Input
-                          type="text"
-                          inputMode="numeric"
-                          maxLength={8}
-                          placeholder="••••••••"
-                          value={otp}
-                          onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 8))}
-                          className="rounded-xl bg-background/80 border-border/60 text-center text-lg font-mono tracking-[0.5em] h-12 focus:border-primary font-bold"
-                          autoFocus
-                          required
-                        />
-                      </div>
-
-                      {/* New Password */}
-                      <div>
-                        <Label className="text-xs font-semibold mb-1.5 block">New Password *</Label>
-                        <div className="relative">
-                          <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                          <Input
-                            type="password"
-                            placeholder="Enter new password (min 6 characters)"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            className="pl-10 rounded-xl bg-background/80 border-border/60 text-sm h-11 focus:border-primary"
-                            required
-                          />
-                        </div>
-                      </div>
-
-                      {/* Confirm New Password */}
-                      <div>
-                        <Label className="text-xs font-semibold mb-1.5 block">
-                          Confirm New Password *
-                        </Label>
-                        <div className="relative">
-                          <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                          <Input
-                            type="password"
-                            placeholder="Re-enter new password"
-                            value={confirmPassword}
-                            onChange={(e) => setConfirmPassword(e.target.value)}
-                            className="pl-10 rounded-xl bg-background/80 border-border/60 text-sm h-11 focus:border-primary"
-                            required
-                          />
-                        </div>
-                      </div>
-
-                      <Button
-                        type="submit"
-                        disabled={isResetting}
-                        className="w-full rounded-2xl h-12 text-sm font-bold bg-[#12A488] hover:bg-[#3FD1B3] text-[#04110E] shadow-lg shadow-[#12A488]/20 btn-shine mt-2 cursor-pointer"
-                      >
-                        {isResetting ? "Updating Password..." : "Reset & Save Password"}
-                      </Button>
-
-                      {/* Resend & Change Target */}
-                      <div className="flex items-center justify-between text-xs text-muted-foreground pt-2">
-                        <button
-                          type="button"
-                          onClick={() => setStep("send_otp")}
-                          className="hover:text-primary font-medium hover:underline"
-                        >
-                          Change Email/Mobile
-                        </button>
-                        <button
-                          type="button"
-                          disabled={countdown > 0 || isSending}
-                          onClick={handleResendOtp}
-                          className="text-primary font-semibold hover:underline disabled:opacity-40 disabled:no-underline flex items-center gap-1"
-                        >
-                          <RotateCcw className="h-3 w-3" />
-                          {countdown > 0 ? `Resend in ${countdown}s` : "Resend OTP Code"}
-                        </button>
-                      </div>
-                    </form>
-
-                    <div className="mt-6 text-center">
-                      <Link
-                        href="/login"
-                        className="text-xs font-semibold text-muted-foreground hover:text-primary inline-flex items-center gap-1.5 transition-colors"
-                      >
-                        <ArrowLeft className="h-3.5 w-3.5" /> Back to Sign in
-                      </Link>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            )}
-          </Card>
-        </motion.div>
-      </div>
-    </PublicLayout>
+              <div className="mt-6 text-center">
+                <Link
+                  href="/login"
+                  className="text-xs font-semibold text-muted-foreground hover:text-primary inline-flex items-center gap-1.5 transition-colors"
+                >
+                  <ArrowLeft className="h-3.5 w-3.5" /> Back to Sign in
+                </Link>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      )}
+    </PortalEntry>
   );
 }

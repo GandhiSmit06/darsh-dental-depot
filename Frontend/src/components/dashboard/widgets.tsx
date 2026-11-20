@@ -25,10 +25,7 @@ export function StatCard({
 
   return (
     <motion.div whileHover={{ y: -4 }} transition={{ type: "spring", stiffness: 350, damping: 25 }}>
-      <Card className="p-5 relative overflow-hidden glass-card glass-card-hover border border-border/60 dark:border-white/10 rounded-2xl bg-card dark:bg-gradient-to-br dark:from-[#10201C] dark:to-[#0A100F]">
-        {/* Subtle background gradient glow */}
-        <div className="absolute -right-6 -bottom-6 w-24 h-24 bg-primary/10 dark:bg-[#12A488]/10 rounded-full blur-2xl pointer-events-none" />
-
+      <Card className="border border-border bg-card p-5 rounded-2xl shadow-sm">
         <div className="flex items-start justify-between">
           <div>
             <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground dark:text-[#9DB0A9]">
@@ -41,7 +38,7 @@ export function StatCard({
             </div>
           </div>
 
-          <div className="h-11 w-11 rounded-2xl bg-gradient-to-br from-primary/15 to-sky-500/10 dark:from-[#12A488]/20 dark:to-[#3FD1B3]/10 text-primary dark:text-[#3FD1B3] grid place-items-center border border-primary/20 dark:border-[#12A488]/30 shadow-sm shrink-0">
+          <div className="h-10 w-10 rounded-xl bg-accent text-accent-foreground grid place-items-center shrink-0">
             <Icon className="h-5 w-5" />
           </div>
         </div>

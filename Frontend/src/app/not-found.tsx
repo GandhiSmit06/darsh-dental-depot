@@ -1,23 +1,32 @@
-import Link from "next/link";
+/* eslint-disable @next/next/no-html-link-for-pages -- The storefront route handlers serve standalone HTML documents. */
+import { PublicLayout } from "@/components/site/PublicLayout";
 
 export default function NotFound() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <div className="max-w-md text-center">
-        <h1 className="text-7xl font-bold text-foreground">404</h1>
-        <h2 className="mt-4 text-xl font-semibold">Page not found</h2>
-        <p className="mt-2 text-sm text-muted-foreground">
-          The page you&apos;re looking for doesn&apos;t exist or has been moved.
-        </p>
-        <div className="mt-6">
-          <Link
-            href="/"
-            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90"
-          >
-            Go home
-          </Link>
+    <PublicLayout>
+      <div className="grid min-h-[65svh] place-items-center px-5 py-12 text-center">
+        <div>
+          <p className="shelf-code">404</p>
+          <h1 className="mt-3 text-4xl font-semibold">This shelf is empty.</h1>
+          <p className="my-5 text-muted-foreground">
+            We couldn’t find that page. Try the catalog or return to the depot homepage.
+          </p>
+          <div className="flex flex-wrap justify-center gap-3">
+            <a
+              className="rounded-full bg-primary px-6 py-3 font-semibold text-primary-foreground"
+              href="/"
+            >
+              Back to home
+            </a>
+            <a
+              className="rounded-full border border-foreground px-6 py-3 font-semibold"
+              href="/products"
+            >
+              Browse catalog
+            </a>
+          </div>
         </div>
       </div>
-    </div>
+    </PublicLayout>
   );
 }

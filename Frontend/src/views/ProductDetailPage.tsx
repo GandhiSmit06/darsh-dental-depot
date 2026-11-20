@@ -66,11 +66,7 @@ export default function ProductDetail() {
     return (
       <PublicLayout>
         <div className="flex flex-col min-h-[60vh] items-center justify-center">
-          <ClinicalLoader
-            size="lg"
-            text="Loading Clinical Specifications..."
-            subtext="Retrieving batch certifications & parameters"
-          />
+          <ClinicalLoader size="lg" text="Loading product…" subtext="Checking depot inventory" />
         </div>
       </PublicLayout>
     );
@@ -93,16 +89,20 @@ export default function ProductDetail() {
     );
   }
 
-  const defaultImage = "/products/filtek-z350.jpg";
+  const defaultImage = "/site/assets/img/brand/logo-mark-512.png";
   const gallery = product.images?.length ? product.images : [defaultImage];
   const related = (relatedResponse?.data || [])
     .filter((p: any) => p.category === product.category && p._id !== product._id)
     .slice(0, 4);
 
-  const price = product.sellingPrice ?? product.price ?? 0;
-  const originalPrice = Math.round(price * 1.25);
-  const discountPercent = Math.round(((originalPrice - price) / originalPrice) * 100);
-  const inStock = (product.stock ?? 1) > 0;
+  const originalPrice = product.sellingPrice ?? product.price ?? 0;
+  const price =
+    product.discountPrice && product.discountPrice > 0 && product.discountPrice < originalPrice
+      ? product.discountPrice
+      : originalPrice;
+  const discountPercent =
+    originalPrice > 0 ? Math.round(((originalPrice - price) / originalPrice) * 100) : 0;
+  const inStock = product.stock > 0 && product.status === "active";
 
   const handleAddToCart = async () => {
     // Require authentication before adding to cart / purchasing
@@ -204,10 +204,12 @@ export default function ProductDetail() {
                 className="w-full h-full object-cover object-center transition-all duration-300"
               />
               <div className="absolute top-4 left-4 flex flex-col gap-2">
-                <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 dark:bg-[#12A488]/20 dark:text-[#3FD1B3] dark:border dark:border-[#12A488]/30 text-white font-bold text-xs px-2.5 py-1 shadow-md border-0">
-                  <Zap className="h-3.5 w-3.5 mr-1 fill-current" /> {discountPercent}% Clinic
-                  Savings
-                </Badge>
+                {discountPercent > 0 && (
+                  <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 dark:bg-[#12A488]/20 dark:text-[#3FD1B3] dark:border dark:border-[#12A488]/30 text-white font-bold text-xs px-2.5 py-1 shadow-md border-0">
+                    <Zap className="h-3.5 w-3.5 mr-1 fill-current" /> {discountPercent}% Clinic
+                    Savings
+                  </Badge>
+                )}
               </div>
             </Card>
 
@@ -216,6 +218,7 @@ export default function ProductDetail() {
                 {gallery.map((g: string, i: number) => (
                   <button
                     key={i}
+                    aria-label={`View product image ${i + 1}`}
                     onClick={() => setActiveImg(i)}
                     className={`h-20 w-20 rounded-2xl overflow-hidden border-2 shrink-0 transition-all ${
                       activeImg === i
@@ -238,7 +241,7 @@ export default function ProductDetail() {
                   variant="outline"
                   className="text-primary dark:text-[#3FD1B3] font-bold text-xs border-primary/30 dark:border-[#12A488]/30 dark:bg-[#12A488]/10 uppercase tracking-wider"
                 >
-                  {product.brand || "Darsh Certified"}
+                  {product.brand || "Darsh Dental Depot"}
                 </Badge>
                 <div className="text-xs text-muted-foreground dark:text-[#9DB0A9] font-mono">
                   SKU: {product.sku || product.SKU || `DEN-${product._id?.slice(-6).toUpperCase()}`}
@@ -254,10 +257,10 @@ export default function ProductDetail() {
                 <div className="flex items-center text-amber-500">
                   <Star className="h-4 w-4 fill-current text-amber-400" />
                   <span className="font-bold ml-1.5 text-foreground text-sm">
-                    {(product.rating || 4.9).toFixed(1)}
+                    {product.reviewCount ? product.rating.toFixed(1) : "Unrated"}
                   </span>
                   <span className="text-xs text-muted-foreground dark:text-[#9DB0A9] ml-1">
-                    ({product.reviewCount || 34} clinic reviews)
+                    ({product.reviewCount || 0} clinic reviews)
                   </span>
                 </div>
                 <span>•</span>
@@ -273,9 +276,11 @@ export default function ProductDetail() {
             {/* Price Box */}
             <div className="p-5 rounded-2xl bg-secondary/50 dark:bg-gradient-to-br dark:from-[#10201C] dark:to-[#0A100F] border border-border/60 dark:border-white/10 flex items-center justify-between">
               <div>
-                <div className="text-xs text-muted-foreground dark:text-[#9DB0A9] line-through">
-                  MRP: ₹{originalPrice.toLocaleString("en-IN")}
-                </div>
+                {discountPercent > 0 && (
+                  <div className="text-xs text-muted-foreground dark:text-[#9DB0A9] line-through">
+                    ₹{originalPrice.toLocaleString("en-IN")}
+                  </div>
+                )}
                 <div className="text-3xl font-extrabold font-heading text-primary dark:text-[#3FD1B3]">
                   ₹{price.toLocaleString("en-IN")}{" "}
                   <span className="text-xs font-medium text-muted-foreground dark:text-[#9DB0A9]">
@@ -333,6 +338,7 @@ export default function ProductDetail() {
                     <div className="flex items-center border border-border/70 dark:border-white/10 rounded-2xl bg-background dark:bg-[#0B1210] p-1 shadow-sm">
                       <button
                         className="p-2 text-muted-foreground dark:text-[#9DB0A9] hover:text-foreground dark:hover:text-[#F2F6F4] hover:bg-secondary dark:hover:bg-[#10201C] rounded-xl transition-colors disabled:opacity-40"
+                        aria-label="Decrease quantity"
                         onClick={() => setQty((q) => Math.max(1, q - 1))}
                         disabled={qty <= 1}
                       >
@@ -343,6 +349,7 @@ export default function ProductDetail() {
                       </span>
                       <button
                         className="p-2 text-muted-foreground dark:text-[#9DB0A9] hover:text-foreground dark:hover:text-[#F2F6F4] hover:bg-secondary dark:hover:bg-[#10201C] rounded-xl transition-colors disabled:opacity-40"
+                        aria-label="Increase quantity"
                         onClick={() => setQty((q) => Math.min(product.stock ?? 1, q + 1))}
                         disabled={qty >= (product.stock ?? 1)}
                         title={
@@ -370,6 +377,7 @@ export default function ProductDetail() {
                     <Button
                       variant="outline"
                       size="icon"
+                      aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
                       onClick={handleWishlistToggle}
                       className={`h-12 w-12 rounded-2xl border-border/70 dark:border-white/10 dark:bg-[#0B1210] ${
                         isWishlisted
@@ -411,30 +419,8 @@ export default function ProductDetail() {
                   </div>
                 </div>
                 <Badge className="bg-emerald-500/20 text-emerald-600 dark:text-[#3FD1B3] border-emerald-500/30 text-[10px] font-mono uppercase">
-                  Available
+                  {inStock ? "In stock" : "Enquire"}
                 </Badge>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div className="p-3.5 rounded-2xl bg-card dark:bg-gradient-to-br dark:from-[#10201C] dark:to-[#0A100F] border border-border/40 dark:border-white/10 flex items-center gap-3">
-                  <Truck className="h-5 w-5 text-primary dark:text-[#3FD1B3] shrink-0" />
-                  <div className="text-xs">
-                    <div className="font-bold text-foreground">Priority Transit</div>
-                    <div className="text-muted-foreground dark:text-[#9DB0A9] text-[11px]">
-                      24–48h Across India
-                    </div>
-                  </div>
-                </div>
-
-                <div className="p-3.5 rounded-2xl bg-card dark:bg-gradient-to-br dark:from-[#10201C] dark:to-[#0A100F] border border-border/40 dark:border-white/10 flex items-center gap-3">
-                  <ShieldCheck className="h-5 w-5 text-emerald-500 dark:text-[#3FD1B3] shrink-0" />
-                  <div className="text-xs">
-                    <div className="font-bold text-foreground">100% Genuine Lot</div>
-                    <div className="text-muted-foreground dark:text-[#9DB0A9] text-[11px]">
-                      Manufacturer Batch Sealed
-                    </div>
-                  </div>
-                </div>
               </div>
 
               {/* Direct Doctor Rep WhatsApp Procurement */}
@@ -450,82 +436,46 @@ export default function ProductDetail() {
                   className="flex items-center justify-center gap-2"
                 >
                   <MessageSquare className="h-4 w-4 text-emerald-500" />
-                  <span>Direct Clinic WhatsApp Procurement (+91 97270 76119)</span>
+                  <span>Ask the depot on WhatsApp</span>
                 </a>
               </Button>
             </div>
           </ScrollReveal>
         </div>
 
-        {/* Clinical Specifications & Batch Standards (Plate 1 & 3 Reference) */}
-        <ScrollReveal className="mt-16 pt-10 border-t border-border/50 dark:border-white/10">
-          <div className="max-w-4xl">
-            <span className="text-[10px] font-mono uppercase tracking-widest text-primary dark:text-[#3FD1B3]">
-              02 / TECHNICAL DATA SHEET
-            </span>
-            <h2 className="text-2xl font-bold font-heading text-foreground mt-1">
-              Clinical Specifications & Storage Standards
-            </h2>
-            <p className="text-xs text-muted-foreground mt-1">
-              Verified physical parameters and manufacturer batch handling criteria.
+        <section className="mt-12 border-t pt-8">
+          <h2 className="text-2xl font-semibold">Product details</h2>
+          {product.description && (
+            <p className="mt-3 max-w-3xl whitespace-pre-line text-muted-foreground">
+              {product.description}
             </p>
-          </div>
-
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
-            <Card className="p-4 rounded-2xl border border-border/60 dark:border-white/10 glass-card bg-card/60 dark:bg-[#0B1513]">
-              <div className="flex items-center gap-2 text-xs font-bold text-primary dark:text-[#3FD1B3] uppercase tracking-wider mb-2">
-                <ThermometerSnowflake className="h-4 w-4" /> Thermal Control
-              </div>
-              <div className="text-sm font-semibold text-foreground">2°C – 25°C (Cold-Chain)</div>
-              <div className="text-[11px] text-muted-foreground mt-1">
-                Store away from direct light and operatory heat sources.
-              </div>
-            </Card>
-
-            <Card className="p-4 rounded-2xl border border-border/60 dark:border-white/10 glass-card bg-card/60 dark:bg-[#0B1513]">
-              <div className="flex items-center gap-2 text-xs font-bold text-primary dark:text-[#3FD1B3] uppercase tracking-wider mb-2">
-                <Award className="h-4 w-4" /> Quality Standard
-              </div>
-              <div className="text-sm font-semibold text-foreground">ISO 13485 / CE Certified</div>
-              <div className="text-[11px] text-muted-foreground mt-1">
-                Complies with medical device safety and sterility regulations.
-              </div>
-            </Card>
-
-            <Card className="p-4 rounded-2xl border border-border/60 dark:border-white/10 glass-card bg-card/60 dark:bg-[#0B1513]">
-              <div className="flex items-center gap-2 text-xs font-bold text-primary dark:text-[#3FD1B3] uppercase tracking-wider mb-2">
-                <FileText className="h-4 w-4" /> Batch Traceability
-              </div>
-              <div className="text-sm font-semibold text-foreground">
-                Lot {product.batchNumber || "2024-LOT-441B"}
-              </div>
-              <div className="text-[11px] text-muted-foreground mt-1">
-                Guaranteed shelf-life through {product.expiryDate || "2027+"}.
-              </div>
-            </Card>
-
-            <Card className="p-4 rounded-2xl border border-border/60 dark:border-white/10 glass-card bg-card/60 dark:bg-[#0B1513]">
-              <div className="flex items-center gap-2 text-xs font-bold text-primary dark:text-[#3FD1B3] uppercase tracking-wider mb-2">
-                <ShieldCheck className="h-4 w-4" /> Dispensation
-              </div>
-              <div className="text-sm font-semibold text-foreground">Operatory Grade</div>
-              <div className="text-[11px] text-muted-foreground mt-1">
-                Sealed factory packaging with tamper-evident seal.
-              </div>
-            </Card>
-          </div>
-        </ScrollReveal>
-
+          )}
+          <dl className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {[
+              ["Category", product.category],
+              ["Manufacturer", product.manufacturer],
+              ["Batch number", product.batchNumber],
+              ["Expiry date", product.expiryDate],
+            ]
+              .filter(([, value]) => value)
+              .map(([label, value]) => (
+                <div key={label} className="rounded-2xl border bg-card p-4">
+                  <dt className="text-xs text-muted-foreground">{label}</dt>
+                  <dd className="mt-1 font-semibold break-words">{value}</dd>
+                </div>
+              ))}
+          </dl>
+        </section>
         {/* Related Products */}
         {related.length > 0 && (
           <ScrollReveal className="mt-20 pt-10 border-t border-border/50">
             <div className="flex items-center justify-between mb-8">
               <div>
                 <h2 className="text-2xl sm:text-3xl font-bold font-heading">
-                  Frequently Paired Supplies
+                  More in this category
                 </h2>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Recommended for this clinical procedure.
+                  Other supplies listed under {product.category}.
                 </p>
               </div>
               <Button variant="outline" size="sm" asChild className="rounded-full">

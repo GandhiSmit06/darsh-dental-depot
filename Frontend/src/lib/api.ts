@@ -442,12 +442,16 @@ function mapProduct(p: any): ProductResponse {
     purchasePrice: Number(p.purchase_price || 0),
     discountPrice: p.discount_price ? Number(p.discount_price) : undefined,
     stock: Number(p.stock || 0),
-    rating: Number(p.rating || 4.8),
+    rating: Number(p.rating || 0),
     reviewCount: Number(p.review_count || 0),
     images:
-      Array.isArray(p.images) && p.images.length > 0 ? p.images : ["/products/filtek-z350.jpg"],
+      Array.isArray(p.images) && p.images.length > 0
+        ? p.images
+        : ["/site/assets/img/brand/logo-mark-512.png"],
     imageUrl:
-      Array.isArray(p.images) && p.images.length > 0 ? p.images[0] : "/products/filtek-z350.jpg",
+      Array.isArray(p.images) && p.images.length > 0
+        ? p.images[0]
+        : "/site/assets/img/brand/logo-mark-512.png",
     SKU: p.sku || `DDD-${p.id.slice(0, 6).toUpperCase()}`,
     sku: p.sku || `DDD-${p.id.slice(0, 6).toUpperCase()}`,
     description: p.description || "",
@@ -1187,7 +1191,7 @@ export const doctorApi = {
     const { data: userData } = await supabase.auth.getUser();
     if (!userData.user) throw new ApiError(401, "Not logged in");
 
-    await supabase
+    const { error } = await supabase
       .from("profiles")
       .update({
         full_name: data.name,
@@ -1195,7 +1199,10 @@ export const doctorApi = {
         phone: data.phone,
         address: data.address,
       })
-      .eq("id", userData.user.id);
+      .eq("id", userData.user.id)
+      .select("id")
+      .single();
+    if (error) throw new ApiError(400, "Profile update failed");
 
     return { success: true as const, message: "Profile updated" };
   },

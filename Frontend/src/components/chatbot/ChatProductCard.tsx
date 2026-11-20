@@ -31,7 +31,7 @@ export function ChatProductCard({ product }: ChatProductCardProps) {
   const price = product.sellingPrice || product.price || 0;
   const productId = product._id || product.id || "prod-sample";
   const inStock = (product.stock ?? 1) > 0;
-  const imageUrl = product.imageUrl || product.image || "/products/filtek-z350.jpg";
+  const imageUrl = product.imageUrl || product.image || "/site/assets/img/brand/logo-mark-512.png";
 
   const handleAddToCart = async () => {
     if (!user) {

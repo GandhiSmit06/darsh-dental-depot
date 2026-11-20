@@ -361,6 +361,8 @@ h2.title em{font-style:normal;color:var(--slate)}
 }
 .p-card:hover{transform:translateY(-6px);box-shadow:var(--shadow-md)}
 .p-card .pc-media{position:relative;aspect-ratio:1/1;background:var(--mint-3);overflow:hidden}
+.p-card .pc-detail-link{display:block;width:100%;height:100%}
+.p-card .pc-stock,.p-card .pc-off{pointer-events:none}
 .p-card .pc-media img{width:100%;height:100%;object-fit:cover;transition:transform .8s var(--ease)}
 .p-card:hover .pc-media img{transform:scale(1.07)}
 .p-card .pc-off{
@@ -384,7 +386,7 @@ h2.title em{font-style:normal;color:var(--slate)}
 }
 .p-card .pc-wa svg{width:18px;height:18px;color:var(--wa)}
 .p-card .pc-wa:hover{color:var(--wa-dark)}
-.p-card:hover .pc-wa{opacity:1;transform:translateY(0)}
+.p-card:focus-within .pc-wa,.p-card:hover .pc-wa{opacity:1;transform:translateY(0)}
 .p-card .pc-body{padding:18px 18px 20px;display:flex;flex-direction:column;gap:8px;flex:1}
 .p-card .pc-brand{font-family:var(--font-display);font-size:10.5px;font-weight:600;letter-spacing:.22em;text-transform:uppercase;color:var(--slate)}
 .p-card h3{font-size:16px;line-height:1.4;font-weight:500;min-height:2.8em}
@@ -1069,3 +1071,7 @@ h2.title em{font-style:normal;color:var(--slate)}
   .brand-card .bc-logo{font-size:18px}
   .form-panel{padding:24px 18px}
 }
+
+@media (hover:none){.p-card .pc-wa{opacity:1;transform:none}}
+
+.filter-toggle[hidden],.filters[hidden]{display:none}

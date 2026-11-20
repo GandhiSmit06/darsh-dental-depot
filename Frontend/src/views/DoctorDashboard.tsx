@@ -1,5 +1,6 @@
 "use client";
 
+import { ProfileSettings } from "@/components/dashboard/ProfileSettings";
 import { RedirectTo } from "@/components/RedirectTo";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { AccessDenied } from "@/components/dashboard/AccessDenied";
@@ -156,6 +157,9 @@ function useApiData<T>(fetcher: () => Promise<{ data: T } | { products: T }>) {
 
 export default function DoctorDashboard() {
   const [active, setActive] = useState("dashboard");
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get("tab") === "cart") setActive("cart");
+  }, []);
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
 
   if (authLoading) {
@@ -186,13 +190,13 @@ export default function DoctorDashboard() {
       active={active}
       onChange={setActive}
     >
-      {active === "dashboard" && <Overview />}
+      {active === "dashboard" && <Overview onNavigate={setActive} />}
       {active === "browse" && <Browse />}
       {active === "cart" && <CartSection onNavigateToOrders={() => setActive("orders")} />}
       {active === "wishlist" && <Wishlist />}
       {active === "orders" && <OrdersSection />}
       {active === "notifications" && <NotificationsSection onNavigate={setActive} />}
-      {active === "settings" && <SettingsSection />}
+      {active === "settings" && <ProfileSettings />}
     </DashboardLayout>
   );
 }
@@ -206,6 +210,7 @@ function mapToProductCardProps(p: ProductResponse | DoctorWishlistItem) {
     brand: p.brand,
     category: "category" in p ? p.category : "",
     price: "sellingPrice" in p ? p.sellingPrice : p.price,
+    discountPrice: "discountPrice" in p ? p.discountPrice : undefined,
     stock: p.stock,
     rating: p.rating,
     reviewCount: p.reviewCount,
@@ -216,7 +221,8 @@ function mapToProductCardProps(p: ProductResponse | DoctorWishlistItem) {
 
 // ─── PAGE 1: Dashboard ──────────────────────────────────────────────────────
 
-function Overview() {
+function Overview({ onNavigate }: { onNavigate: (tab: string) => void }) {
+  const orders = useApiData<DoctorOrderHistoryItem[]>(doctorApi.getOrderHistory);
   const profile = useApiData<DoctorProfile>(doctorApi.getProfile);
   const stats = useApiData<DoctorStats>(doctorApi.getStats);
   const recommended = useApiData<ProductResponse[]>(() => productsApi.getProducts(true));
@@ -265,6 +271,52 @@ function Overview() {
           </div>
         )
       )}
+
+      <div className="grid gap-4 lg:grid-cols-[1.6fr_1fr]">
+        <Card className="p-5">
+          <div className="flex items-center justify-between gap-3">
+            <h2 className="text-xl font-semibold">Recent orders</h2>
+            <Button variant="outline" size="sm" onClick={() => onNavigate("orders")}>
+              View all
+            </Button>
+          </div>
+          {orders.loading ? (
+            <LoadingSpinner />
+          ) : orders.error ? (
+            <ErrorBanner onRetry={orders.retry} />
+          ) : orders.data?.length ? (
+            <ul className="mt-4 divide-y divide-border">
+              {orders.data.slice(0, 3).map((order) => (
+                <li
+                  key={order.orderId}
+                  className="flex flex-wrap items-center justify-between gap-2 py-3"
+                >
+                  <div>
+                    <strong>{order.orderId}</strong>
+                    <p className="text-xs text-muted-foreground">{order.date}</p>
+                  </div>
+                  <StatusBadge status={order.status} />
+                  <span>₹{order.total.toLocaleString("en-IN")}</span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <EmptyBanner label="Your recent orders will appear here." />
+          )}
+        </Card>
+        <Card className="p-5">
+          <h2 className="text-xl font-semibold">Clinic shortcuts</h2>
+          <div className="mt-4 grid gap-2">
+            <Button onClick={() => onNavigate("browse")}>Browse materials</Button>
+            <Button variant="outline" onClick={() => onNavigate("orders")}>
+              Orders and invoices
+            </Button>
+            <Button variant="outline" onClick={() => onNavigate("settings")}>
+              Clinic profile
+            </Button>
+          </div>
+        </Card>
+      </div>
 
       <Card className="p-6 dark:bg-gradient-to-br dark:from-[#10201C] dark:to-[#0A100F] dark:border-white/10">
         <h3 className="font-semibold mb-4 text-foreground">Recommended for you</h3>
@@ -911,8 +963,8 @@ function buildInvoiceDataFromDoctorOrder(o: any, user: any): InvoiceOrderData {
     quantity: Number(it.quantity || 1),
     sellingPrice: Number(it.price || 0),
     unit: "Unit",
-    batchNumber: "V" + Math.floor(1000 + Math.random() * 9000),
-    expiryDate: "31-Oct-30",
+    batchNumber: it.batchNumber || it.batch_number,
+    expiryDate: it.expiryDate || it.expiry_date,
   }));
 
   return {
@@ -1530,7 +1582,7 @@ function NotificationsSection({ onNavigate }: { onNavigate: (tab: string) => voi
       </div>
 
       {/* Filter Tabs */}
-      <div className="flex items-center gap-2 border-b border-border/50 dark:border-white/10 pb-3">
+      <div className="flex flex-wrap items-center gap-2 border-b border-border/50 dark:border-white/10 pb-3">
         <Button
           variant={filter === "all" ? "default" : "ghost"}
           size="sm"
@@ -1657,39 +1709,3 @@ function NotificationsSection({ onNavigate }: { onNavigate: (tab: string) => voi
 }
 
 // ─── Settings ───────────────────────────────────────────────────────────────
-
-function SettingsSection() {
-  const { data: profile } = useApiData<DoctorProfile>(doctorApi.getProfile);
-
-  return (
-    <div className="space-y-5 max-w-2xl">
-      <h1 className="text-2xl font-bold font-heading text-foreground">Settings</h1>
-      <Card className="p-6 space-y-4 dark:bg-gradient-to-br dark:from-[#10201C] dark:to-[#0A100F] dark:border-white/10">
-        <div>
-          <Label className="mb-1.5 text-muted-foreground dark:text-[#9DB0A9]">Full name</Label>
-          <Input
-            defaultValue={profile?.name || ""}
-            className="dark:bg-[#0B1210] dark:border-white/10 dark:text-[#F2F6F4]"
-          />
-        </div>
-        <div>
-          <Label className="mb-1.5 text-muted-foreground dark:text-[#9DB0A9]">Clinic</Label>
-          <Input
-            defaultValue={profile?.clinicName || ""}
-            className="dark:bg-[#0B1210] dark:border-white/10 dark:text-[#F2F6F4]"
-          />
-        </div>
-        <div className="flex items-center justify-between">
-          <span className="text-sm text-foreground">Order updates via email</span>
-          <Switch defaultChecked />
-        </div>
-        <Button
-          onClick={() => toast.success("Saved")}
-          className="bg-[#12A488] hover:bg-[#3FD1B3] text-[#04110E] font-bold transition-colors"
-        >
-          Save
-        </Button>
-      </Card>
-    </div>
-  );
-}

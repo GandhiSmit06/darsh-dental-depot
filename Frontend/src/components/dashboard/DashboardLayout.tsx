@@ -137,9 +137,11 @@ export function DashboardLayout({
         />
 
         <div className="flex-1 flex flex-col min-w-0">
-          <header className="h-16 border-b border-border/50 dark:border-white/10 bg-card/60 dark:bg-[#070B0A]/80 backdrop-blur-xl sticky top-0 z-30 flex items-center gap-3 px-4 sm:px-6 justify-between">
+          <header className="h-16 border-b border-border/50 dark:border-white/10 bg-card dark:bg-[#070B0A] sticky top-0 z-30 flex items-center gap-3 px-4 sm:px-6 justify-between">
             <div className="flex items-center gap-3 min-w-0">
-              <SidebarTrigger />
+              <div className="hidden md:block">
+                <SidebarTrigger />
+              </div>
               <nav className="flex items-center text-xs font-semibold text-muted-foreground gap-1.5 min-w-0">
                 <span className="text-muted-foreground dark:text-[#9DB0A9] truncate">{title}</span>
                 <ChevronRight className="h-3.5 w-3.5 shrink-0 opacity-50" />
@@ -187,7 +189,7 @@ export function DashboardLayout({
             </div>
           </header>
 
-          <main className="p-4 sm:p-6 lg:p-8 flex-1 max-w-7xl w-full mx-auto">
+          <main className="depot-workspace p-4 sm:p-6 lg:p-8 flex-1 max-w-7xl w-full mx-auto">
             <AnimatePresence mode="wait">
               <motion.div
                 key={active}
@@ -248,7 +250,7 @@ function DashboardSidebarContent({
           <div className="relative shrink-0">
             <div className="h-9 w-9 rounded-xl overflow-hidden bg-white/95 dark:bg-[#10201C] border border-white/60 dark:border-white/10 shadow-xs flex items-center justify-center p-0.5">
               <img
-                src="/logo.jpg"
+                src="/site/assets/img/brand/logo-mark-64.png"
                 alt="Darsh Dental"
                 className="w-full h-full object-cover rounded-[inherit]"
               />

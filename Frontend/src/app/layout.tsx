@@ -7,7 +7,10 @@ export const metadata: Metadata = {
   title: "Darsh Dental Depot — Premium Dental Materials Supplier",
   description:
     "Trusted supplier of premium dental materials, instruments and supplies for clinics and professionals across India.",
-  icons: { icon: "/favicon.png", apple: "/favicon.png" },
+  icons: {
+    icon: "/site/assets/img/brand/logo-mark-192.png",
+    apple: "/site/assets/img/brand/logo-mark-192.png",
+  },
 };
 
 export const viewport: Viewport = {
@@ -15,9 +18,8 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
-// Applies the saved theme and skips the intro loader for returning visitors
-// before first paint, so there is no flash of the wrong theme.
-const bootScript = `(function(){try{var d=document.documentElement,t=localStorage.getItem('theme'),dark=t==='dark'||(!t&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);d.classList.toggle('dark',dark);d.style.colorScheme=dark?'dark':'light';}catch(e){}try{if(sessionStorage.getItem('ddd_initial_seen')==='true'){document.documentElement.classList.add('ddd-app-ready','ddd-seen');}}catch(e){}})();`;
+// Apply the saved theme before first paint.
+const bootScript = `(function(){try{var d=document.documentElement,t=localStorage.getItem('theme'),dark=t==='dark'||(!t&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);d.classList.toggle('dark',dark);d.style.colorScheme=dark?'dark':'light';}catch(e){}})();`;
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -29,7 +31,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {/* eslint-disable-next-line @next/next/no-page-custom-font */}
         <link
           rel="stylesheet"
-          href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600;700;800;900&family=Manrope:wght@300;400;500;600;700;800&display=swap"
         />
       </head>
       <body>

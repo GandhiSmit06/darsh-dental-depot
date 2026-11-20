@@ -165,29 +165,7 @@ export const defaultLists = {
       cats: "Endo Motors, Scalers, Devices",
     },
   ] as Brand[],
-  testimonials: [
-    {
-      quote:
-        "Ordered ProTaper Gold at 4 PM — files reached my Manjalpur clinic before evening OPD. Batch numbers verified on delivery, every single time.",
-      name: "Dr. Rajan Patel",
-      role: "MDS — Endodontist, Manjalpur",
-      initials: "RP",
-    },
-    {
-      quote:
-        "The only depot in Vadodara that I trust for original stock. Depot pricing saves my clinic nearly 15–18% every month on composites.",
-      name: "Dr. Nisha Shah",
-      role: "BDS — Smile Care Dental, Alkapuri",
-      initials: "NS",
-    },
-    {
-      quote:
-        "Sunday emergency, needed anaesthetic cartridges urgently. One WhatsApp message and it was at my clinic in under two hours. Unmatched.",
-      name: "Dr. Amey Trivedi",
-      role: "MDS — Oral Surgeon, Gotri",
-      initials: "AT",
-    },
-  ] as Testimonial[],
+  testimonials: [] as Testimonial[],
   faqs: [
     {
       q: "Do you deliver to my clinic, and how fast?",

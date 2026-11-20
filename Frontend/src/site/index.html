@@ -248,13 +248,14 @@
     }
 
     // Testimonials
+    document.getElementById('testiGrid').closest('section').hidden = !DDD.testimonials.length;
     document.getElementById('testiGrid').innerHTML = DDD.testimonials.map((t, i) => `
       <article class="t-card reveal d${i}">
         <div class="t-quote">“</div>
-        <blockquote>${t.quote}</blockquote>
+        <blockquote>${escapeCardText(t.quote)}</blockquote>
         <div class="t-who">
-          <span class="t-ava">${t.initials}</span>
-          <div><div class="t-name">${t.name}</div><div class="t-role">${t.role}</div></div>
+          <span class="t-ava">${escapeCardText(t.initials)}</span>
+          <div><div class="t-name">${escapeCardText(t.name)}</div><div class="t-role">${escapeCardText(t.role)}</div></div>
         </div>
       </article>`).join('');
 
@@ -265,7 +266,6 @@
         <div class="faq-a"><p>${f.a}</p></div>
       </div>`).join('');
 
-    bindCardWaLinks();
   </script>
 </body>
 </html>

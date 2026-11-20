@@ -1,5 +1,6 @@
 "use client";
 
+import { ProfileSettings } from "@/components/dashboard/ProfileSettings";
 import { RedirectTo } from "@/components/RedirectTo";
 import { useState, useEffect } from "react";
 import { AccessDenied } from "@/components/dashboard/AccessDenied";
@@ -262,27 +263,19 @@ export default function AdminDashboard() {
           <h1 className="text-2xl font-bold">Platform overview</h1>
           <p className="text-muted-foreground text-sm">Real-time health of the platform.</p>
         </div>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <StatCard
             label="Total Revenue"
             value={stats.totalRevenue.toLocaleString()}
             prefix="₹"
-            change={9.4}
             icon={DollarSign}
           />
+          <StatCard label="Total Users" value={stats.totalUsers.toLocaleString()} icon={Users} />
           <StatCard
-            label="Active Users"
-            value={stats.totalUsers.toLocaleString()}
-            change={3.1}
-            icon={Users}
-          />
-          <StatCard
-            label="Orders Today"
+            label="Total Orders"
             value={stats.totalOrders.toLocaleString()}
-            change={11.7}
             icon={ShoppingBag}
           />
-          <StatCard label="Growth" value="18.2%" change={2.4} icon={TrendingUp} />
         </div>
         <div className="grid gap-4 lg:grid-cols-2">
           <Card className="p-5 lg:col-span-2 border-border/70 dark:border-white/10 dark:bg-card/40 backdrop-blur-xs">
@@ -639,8 +632,8 @@ export default function AdminDashboard() {
       quantity: Number(it.quantity || 1),
       sellingPrice: Number(it.price || 0),
       unit: "Unit",
-      batchNumber: "V" + Math.floor(1000 + Math.random() * 9000),
-      expiryDate: "31-Oct-30",
+      batchNumber: it.batchNumber || it.batch_number,
+      expiryDate: it.expiryDate || it.expiry_date,
     }));
 
     return {
@@ -1229,61 +1222,58 @@ export default function AdminDashboard() {
   }
 
   function ReportsSection() {
-    const reports = [
-      { name: "Sales Q3 2025", date: "Oct 1, 2025", size: "1.2 MB" },
-      { name: "Inventory Audit", date: "Sep 14, 2025", size: "640 KB" },
-      { name: "User Growth Report", date: "Aug 30, 2025", size: "2.1 MB" },
-      { name: "Compliance Report", date: "Aug 1, 2025", size: "880 KB" },
-    ];
-    return (
-      <div className="space-y-5">
-        <h1 className="text-2xl font-bold">Reports</h1>
-        <div className="grid sm:grid-cols-2 gap-4">
-          {reports.map((r) => (
-            <Card key={r.name} className="p-5 flex items-center gap-4">
-              <div className="h-11 w-11 rounded-lg bg-primary/10 text-primary grid place-items-center">
-                <FileText className="h-5 w-5" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="font-semibold truncate">{r.name}</div>
-                <div className="text-xs text-muted-foreground">
-                  {r.date} · {r.size}
-                </div>
-              </div>
-              <Button variant="outline" size="sm" onClick={() => toast.success("Downloading")}>
-                <Download className="h-3.5 w-3.5 mr-1" /> Download
-              </Button>
-            </Card>
-          ))}
-        </div>
-      </div>
+    const rows = dashboardData?.monthlySales || [];
+    const csv = ["Month,Revenue (INR)", ...rows.map((row) => `${row.day},${row.revenue}`)].join(
+      "\r\n",
     );
-  }
-
-  function SettingsSection() {
     return (
-      <div className="space-y-5 max-w-2xl">
-        <h1 className="text-2xl font-bold">Platform settings</h1>
-        <Card className="p-6 space-y-4">
-          <div>
-            <Label className="mb-1.5">Platform name</Label>
-            <Input defaultValue="Darsh Dental Depot" />
-          </div>
-          <div>
-            <Label className="mb-1.5">Admin email</Label>
-            <Input defaultValue="admin@darshdental.com" />
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="text-sm">Maintenance mode</span>
-            <Switch />
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="text-sm">Allow new registrations</span>
-            <Switch defaultChecked />
-          </div>
-          <Button onClick={() => toast.success("Settings saved")}>Save</Button>
+      <section className="space-y-5">
+        <h1>Sales report</h1>
+        <Card className="max-w-2xl space-y-4 p-5">
+          {dashboardError ? (
+            <p role="alert">
+              {dashboardError}{" "}
+              <Button variant="outline" onClick={fetchDashboardData}>
+                Retry
+              </Button>
+            </p>
+          ) : dashboardLoading ? (
+            <p>Loading sales…</p>
+          ) : rows.length ? (
+            <>
+              <table className="w-full text-left text-sm">
+                <caption className="pb-4 text-left font-semibold">Monthly sales</caption>
+                <thead>
+                  <tr>
+                    <th scope="col">Month</th>
+                    <th scope="col" className="text-right">
+                      Revenue
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {rows.map((row) => (
+                    <tr key={row.day} className="border-t">
+                      <td className="py-2">{row.day}</td>
+                      <td className="text-right">₹{row.revenue.toLocaleString("en-IN")}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <Button asChild variant="outline">
+                <a
+                  download="depot-monthly-sales.csv"
+                  href={`data:text/csv;charset=utf-8,${encodeURIComponent(csv)}`}
+                >
+                  <Download /> Download CSV
+                </a>
+              </Button>
+            </>
+          ) : (
+            <p>No sales data is available yet.</p>
+          )}
         </Card>
-      </div>
+      </section>
     );
   }
 
@@ -1461,7 +1451,7 @@ export default function AdminDashboard() {
       {active === "reports" && <ReportsSection />}
       {active === "notifications" && <NotificationsSection />}
       {active === "website" && <WebsiteContentEditor />}
-      {active === "settings" && <SettingsSection />}
+      {active === "settings" && <ProfileSettings openWebsite={() => setActive("website")} />}
     </DashboardLayout>
   );
 }

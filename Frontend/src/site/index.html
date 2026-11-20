@@ -120,6 +120,7 @@
           <a class="link-arrow reveal d1" href="/products">All products <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></a>
         </div>
         <div class="prod-grid" id="featuredGrid"></div>
+        <p id="featuredStatus" role="status" hidden></p>
       </div>
     </section>
 
@@ -240,6 +241,11 @@
 
     // Featured products
     document.getElementById('featuredGrid').innerHTML = DDD.featured().map(p => productCard(p)).join('');
+    if (!DDD.products.length) {
+      const status = document.getElementById('featuredStatus');
+      status.textContent = DDD.catalogAvailable ? 'No products are listed yet.' : 'The catalog is temporarily unavailable.';
+      status.hidden = false;
+    }
 
     // Testimonials
     document.getElementById('testiGrid').innerHTML = DDD.testimonials.map((t, i) => `

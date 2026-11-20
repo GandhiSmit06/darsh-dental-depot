@@ -4,7 +4,6 @@ import { supabaseAnonKey, supabaseUrl } from "../config";
 import {
   defaultLists,
   defaultSettings,
-  sampleProducts,
   type CatalogProduct,
   type ListName,
   type SiteSettings,
@@ -15,21 +14,28 @@ const REVALIDATE_SECONDS = 300;
 const DEFAULT_LOW_STOCK = Number(process.env.LOW_STOCK_THRESHOLD) || 3;
 
 async function supabaseRest<T>(query: string): Promise<T | null> {
+  const resource = query.split("?", 1)[0];
+  const headers = new Headers({ apikey: supabaseAnonKey });
+  // Legacy anon keys are JWTs. Publishable keys belong only in the apikey header.
+  if (!supabaseAnonKey.startsWith("sb_publishable_")) {
+    headers.set("Authorization", `Bearer ${supabaseAnonKey}`);
+  }
   try {
     const init: RequestInit & {
       next?: { revalidate?: number; tags?: string[] };
     } = {
-      headers: {
-        apikey: supabaseAnonKey,
-        Authorization: `Bearer ${supabaseAnonKey}`,
-      },
+      headers,
       // Next.js data cache: refreshed every 5 minutes or when the dashboard saves.
       next: { revalidate: REVALIDATE_SECONDS, tags: [SITE_CONTENT_TAG] },
     };
     const res = await fetch(`${supabaseUrl}/rest/v1/${query}`, init);
-    if (!res.ok) return null;
+    if (!res.ok) {
+      console.warn(`Supabase ${resource} request failed (${res.status})`);
+      return null;
+    }
     return (await res.json()) as T;
   } catch {
+    console.warn(`Could not read Supabase ${resource}`);
     return null;
   }
 }
@@ -90,26 +96,26 @@ export const slugify = (s: string) =>
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-|-$/g, "");
 
-/** Live products from Supabase in the catalog's shape; sample data if none. */
-export async function getCatalogProducts(): Promise<CatalogProduct[]> {
+/** Live products in the catalog's shape. Null indicates an upstream error. */
+export async function getCatalogProducts(): Promise<CatalogProduct[] | null> {
   const rows = await supabaseRest<ProductRow[]>(
     "products?select=id,name,category,brand,manufacturer,images,stock,selling_price,discount_price,status,low_stock_threshold,rating,review_count&status=neq.inactive&order=review_count.desc.nullslast",
   );
-  if (!rows?.length) return sampleProducts;
+  if (rows === null) return null;
 
   return rows.map((p, i) => {
     const mrp = Number(p.selling_price) || 0;
-    const discounted = p.discount_price != null && Number(p.discount_price) < mrp;
+    const discountPrice = Number(p.discount_price);
     const outOfStock = p.status === "out_of_stock" || p.stock <= 0;
     return {
       id: p.id,
       name: p.name,
       brand: p.brand || p.manufacturer || "Darsh Dental Depot",
       cat: slugify(p.category),
-      price: discounted ? Number(p.discount_price) : mrp,
+      price: discountPrice > 0 && discountPrice < mrp ? discountPrice : mrp,
       mrp,
       img: p.images?.[0] || "/site/assets/img/p-syringe.png",
-      rating: Number(p.rating) || 4.8,
+      rating: Number(p.rating) || 0,
       reviews: p.review_count ?? 0,
       stock: outOfStock
         ? "out"

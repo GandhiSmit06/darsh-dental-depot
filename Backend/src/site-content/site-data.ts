@@ -11,7 +11,8 @@ import type { Category } from "./defaults";
 
 /** Builds the `window.DDD` script consumed by the marketing pages. */
 export async function buildSiteDataScript(): Promise<string> {
-  const [overrides, products] = await Promise.all([getContentOverrides(), getCatalogProducts()]);
+  const [overrides, catalog] = await Promise.all([getContentOverrides(), getCatalogProducts()]);
+  const products = catalog ?? [];
   const configured = resolveList(overrides, "categories");
 
   // Show every category that has products; configured cards supply the
@@ -37,6 +38,7 @@ export async function buildSiteDataScript(): Promise<string> {
     brands: resolveList(overrides, "brands"),
     testimonials: resolveList(overrides, "testimonials"),
     faqs: resolveList(overrides, "faqs"),
+    catalogAvailable: catalog !== null,
     products,
   };
 

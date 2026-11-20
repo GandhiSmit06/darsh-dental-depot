@@ -12,15 +12,27 @@
   const stockOnly = document.getElementById('stockOnly');
   const catFilters = document.getElementById('catFilters');
   const brandFilters = document.getElementById('brandFilters');
+  const priceLimit = DDD.products.reduce((max, p) => Math.max(max, p.price), 15000);
+  priceRange.max = Math.ceil(priceLimit / 50) * 50;
+  priceRange.min = 0;
 
   const state = {
     cats: new Set(),
     brands: new Set(),
-    maxPrice: 15000,
+    maxPrice: Number(priceRange.max),
     stockOnly: false,
     q: '',
     sort: 'featured',
   };
+
+  if (!DDD.products.length) {
+    const message = DDD.catalogAvailable ? 'No products are listed yet.' : 'The catalog is temporarily unavailable.';
+    resultCount.textContent = message;
+    emptyState.querySelector('h3').textContent = message;
+    emptyState.querySelector('p').textContent = 'Contact the depot for stock and pricing.';
+    emptyState.style.display = '';
+    return;
+  }
 
   // Build category checkboxes (multi-select; empty = All)
   catFilters.innerHTML = DDD.categories.map(c => {
@@ -110,7 +122,7 @@
   searchInput.addEventListener('input', () => { state.q = searchInput.value.toLowerCase().trim(); apply(); });
   sortSelect.addEventListener('change', () => { state.sort = sortSelect.value; apply(); });
   document.getElementById('clearFilters').addEventListener('click', () => {
-    state.cats.clear(); state.brands.clear(); state.maxPrice = 15000; state.stockOnly = false; state.q = '';
+    state.cats.clear(); state.brands.clear(); state.maxPrice = Number(priceRange.max); state.stockOnly = false; state.q = '';
     searchInput.value = ''; syncFilterUI(); apply();
   });
 

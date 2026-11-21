@@ -750,7 +750,7 @@ html.ddd-seen .neoleaf-loader-overlay {
 
 .depot-portal-user { min-width: 0; padding: 1rem 0 1.35rem; margin-bottom: .8rem; display: flex; align-items: center; justify-content: center; gap: .75rem; border-bottom: 1px solid #ffffff26; }
 .depot-portal-user:has(strong) { justify-content: flex-start; padding-inline: .6rem; }
-.depot-portal-user [data-slot="avatar-fallback"] { background: #afcccd; color: #152a2c; font-family: var(--font-heading); font-weight: 600; }
+.depot-portal-user .depot-portal-initials { background: #afcccd; color: #152a2c; font-family: var(--font-heading); font-weight: 600; }
 .depot-portal-user strong { font-family: var(--font-heading); font-weight: 600; }
 .depot-portal-user small { color: #afcccd; }
 .depot-dash-heading,.depot-panel-heading { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: .5rem 1rem; }

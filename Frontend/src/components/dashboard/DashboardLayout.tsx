@@ -243,12 +243,12 @@ function DashboardSidebarContent({
     : "DD";
 
   return (
-    <SidebarBody className="justify-between gap-4 h-full">
+    <SidebarBody className="justify-between gap-4">
       <div className="flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
         {/* Brand / Logo */}
         <div className="depot-portal-user">
           <Avatar className="size-10 shrink-0">
-            <AvatarFallback>{initials}</AvatarFallback>
+            <AvatarFallback className="depot-portal-initials">{initials}</AvatarFallback>
           </Avatar>
           {open && (
             <div className="min-w-0">

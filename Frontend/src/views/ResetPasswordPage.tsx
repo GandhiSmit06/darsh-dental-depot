@@ -43,7 +43,7 @@ export default function ResetPasswordPage() {
   };
 
   return (
-    <PortalEntry>
+    <PortalEntry recovery>
       {isSuccess ? (
         <div className="text-center space-y-4">
           <div className="mx-auto w-16 h-16 rounded-full bg-green-100 dark:bg-[#12A488]/20 grid place-items-center">

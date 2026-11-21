@@ -51,7 +51,7 @@ export default function LoginPage() {
   const { user, isAuthenticated, login, setSession } = useAuth();
 
   // Mode: "otp" (default like Dentalkart) | "password"
-  const [mode, setMode] = useState<"otp" | "password">("otp");
+  const [mode, setMode] = useState<"otp" | "password">("password");
 
   // Input Type for OTP: "mobile" | "email"
   const [inputType, setInputType] = useState<"mobile" | "email">("mobile");
@@ -59,7 +59,7 @@ export default function LoginPage() {
   // Password Login state
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // OTP Login state
+  // Use a code state
   const [otpIdentifier, setOtpIdentifier] = useState("");
   const [targetDisplay, setTargetDisplay] = useState("");
   const [otpStep, setOtpStep] = useState<"enter_id" | "enter_otp">("enter_id");
@@ -126,7 +126,7 @@ export default function LoginPage() {
     }
   };
 
-  // 2. OTP Login: Send OTP Code (Delivered to registered email, never exposed in client)
+  // 2. Use a code: Send OTP Code (Delivered to registered email, never exposed in client)
   const handleSendOtp = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     const cleanId = otpIdentifier.trim();
@@ -158,7 +158,7 @@ export default function LoginPage() {
     }
   };
 
-  // 3. OTP Login: Verify OTP Code & Auto-Login
+  // 3. Use a code: Verify OTP Code & Auto-Login
   const handleVerifyOtp = async (e?: React.FormEvent, customOtp?: string) => {
     if (e) e.preventDefault();
     const code = (customOtp || otpCode).trim();
@@ -205,9 +205,12 @@ export default function LoginPage() {
 
   return (
     <PortalEntry>
-      <p className="portal-kicker">Sign in</p>
+      <p className="portal-kicker">Sign in · Registered clinics</p>
       <h1 className="portal-title">Welcome back, doctor.</h1>
-      <p className="portal-lead">Sign in to track orders and manage your clinic account.</p>
+      <p className="portal-lead">
+        Sign in to your clinic’s portal to reorder materials, download invoices and track
+        deliveries.
+      </p>
       {/* Sub-Tabs / Mode Switches */}
       <div className="flex items-center justify-between pb-4 mb-2 text-xs font-semibold border-b border-slate-100 dark:border-white/5">
         <div className="flex gap-2">
@@ -223,7 +226,7 @@ export default function LoginPage() {
                 : "text-slate-500 hover:text-slate-800 dark:text-slate-400"
             }`}
           >
-            OTP Login
+            Use a code
           </button>
           <button
             type="button"
@@ -234,7 +237,7 @@ export default function LoginPage() {
                 : "text-slate-500 hover:text-slate-800 dark:text-slate-400"
             }`}
           >
-            Use Password
+            Use password
           </button>
         </div>
 
@@ -254,7 +257,7 @@ export default function LoginPage() {
 
       <AnimatePresence mode="wait">
         {mode === "otp" ? (
-          /* ── Mode 1: OTP Login (Dentalkart Style) ── */
+          /* ── Mode 1: Use a code (Dentalkart Style) ── */
           <motion.div
             key="otp-step-view"
             initial={{ opacity: 0, y: 6 }}
@@ -458,7 +461,7 @@ export default function LoginPage() {
               className="w-full rounded-xl h-11 text-sm font-bold bg-[#0284c7] hover:bg-[#0369a1] dark:bg-[#12A488] dark:hover:bg-[#3FD1B3] text-white dark:text-[#04110E] shadow-md transition-all flex items-center justify-center gap-2"
               disabled={isSubmitting}
             >
-              {isSubmitting ? "Signing In..." : "Sign In with Password"}
+              {isSubmitting ? "Signing In..." : "Sign in to portal"}
               <ArrowRight className="h-4 w-4" />
             </Button>
           </motion.form>

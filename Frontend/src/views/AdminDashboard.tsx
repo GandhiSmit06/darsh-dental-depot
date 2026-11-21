@@ -69,7 +69,7 @@ import type { InvoiceOrderData } from "@/components/invoice/TallyGstInvoice";
 import { buildDispatchWhatsAppMessage, openWhatsApp } from "@/lib/whatsapp";
 
 const items: NavItem[] = [
-  { key: "dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { key: "dashboard", label: "Overview", icon: LayoutDashboard },
   { key: "users", label: "Users", icon: Users },
   { key: "products", label: "Products", icon: Package },
   { key: "orders", label: "Orders", icon: ShoppingBag },
@@ -259,10 +259,12 @@ export default function AdminDashboard() {
 
     return (
       <div className="space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold">Platform overview</h1>
-          <p className="text-muted-foreground text-sm">Real-time health of the platform.</p>
-        </div>
+        <header className="depot-dash-heading">
+          <div>
+            <h1>Platform overview</h1>
+            <p>Orders, revenue and clinic registrations.</p>
+          </div>
+        </header>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <StatCard
             label="Total Revenue"
@@ -278,7 +280,7 @@ export default function AdminDashboard() {
           />
         </div>
         <div className="grid gap-4 lg:grid-cols-2">
-          <Card className="p-5 lg:col-span-2 border-border/70 dark:border-white/10 dark:bg-card/40 backdrop-blur-xs">
+          <Card className="depot-panel lg:col-span-2 shadow-none">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
               <div>
                 <h3 className="font-semibold text-foreground">Revenue Trend</h3>

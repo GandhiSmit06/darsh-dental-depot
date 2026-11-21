@@ -692,13 +692,6 @@ html.ddd-seen .neoleaf-loader-overlay {
 .depot-menu-button, .depot-menu { display: none; }
 .depot-footer { display: flex; justify-content: space-between; flex-wrap: wrap; align-items: center; padding: 2.5rem 5vw; gap: 1.5rem; background: #152a2c; color: #edf3f0; }
 .depot-footer nav { flex-wrap: wrap; gap: 1.25rem; font-size: .9rem; }
-@media (max-width: 960px) {
-  .depot-nav,.depot-signin { display: none; }
-  .depot-menu-button { display: grid; }
-  .depot-menu { position: absolute; inset: 100% 0 auto; max-height: calc(100svh - 72px); overflow: auto; display: grid; padding: 1rem 5vw; background: var(--background); box-shadow: 0 12px 20px #152a2c1a; }
-  .depot-menu a, .depot-menu form { padding: .75rem 0; border-bottom: 1px solid var(--border); }
-  .depot-menu form { display: flex; justify-content: space-between; }
-}
 @media (max-width: 480px) {
   .depot-header-row { gap: 6px; }
   .depot-actions { gap: 4px; }
@@ -706,4 +699,91 @@ html.ddd-seen .neoleaf-loader-overlay {
   .depot-action { padding: .65rem .75rem; }
   .depot-logo img { width: 32px; height: 32px; }
   .depot-logo small { white-space: nowrap; letter-spacing: .06em; line-height: 1.2; }
+}
+
+/* Shared storefront and clinic portal surfaces. */
+.depot-announcement { padding: 0; font-size: .76rem; letter-spacing: .04em; }
+.depot-announcement > div { display: flex; min-height: 36px; width: min(1320px,94vw); margin: auto; align-items: center; justify-content: space-between; gap: 12px; }
+.depot-announcement span { display: inline-flex; align-items: center; gap: 7px; }
+.depot-announcement a { white-space: nowrap; }
+.depot-header-row { width: min(1320px,94vw); min-height: 72px; padding: 8px 0; }
+.depot-logo { flex-shrink: 0; }
+.depot-logo strong { letter-spacing: -.03em; }
+.depot-logo img { border-radius: 12px; }
+.depot-nav { font-family: var(--font-heading); font-weight: 500; }
+.depot-action { font-family: var(--font-heading); font-weight: 500; letter-spacing: .03em; }
+.depot-footer { display: block; padding: 2.75rem max(3vw,calc((100vw - 1320px) / 2)); }
+.depot-footer-cta,.depot-footer-main { display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; }
+.depot-footer-cta { padding-bottom: 1.75rem; margin-bottom: 1.75rem; border-bottom: 1px solid #ffffff30; }
+.depot-footer-cta h2 { font: 500 1.5rem var(--font-heading); margin-right: auto; }
+.depot-footer-cta a { border: 1px solid #ffffff45; border-radius: 999px; padding: .6rem 1rem; font-size: .86rem; }
+.depot-footer-main { justify-content: space-between; align-items: flex-start; }
+.portal-entry { grid-template-columns: repeat(2,minmax(0,1fr)); min-height: calc(100svh - 109px); }
+.portal-visual { display: flex; align-items: flex-end; padding: clamp(2rem,4vw,3.5rem); }
+.portal-watermark { position: absolute; left: -6%; top: 8%; pointer-events: none; color: transparent; -webkit-text-stroke: 1px #ecf3f126; font: 600 clamp(5rem,15vw,14rem)/1 var(--font-heading); }
+.portal-story { position: relative; padding-top: 8rem; }
+.portal-story h2 { max-width: 14ch; font: 500 clamp(2rem,3.4vw,3rem)/1.06 var(--font-heading); margin: 18px 0 22px; letter-spacing: -.02em; }
+.portal-story em { font-style: normal; }
+.portal-story li { font-size: .9rem; }
+.portal-story svg { flex-shrink: 0; }
+.portal-kicker,.portal-story > p { display: flex; gap: 12px; align-items: center; font-family: var(--font-heading); letter-spacing: .17em; }
+.portal-kicker::before,.portal-story > p::before { content: ""; width: 32px; height: 1px; background: currentColor; opacity: .42; flex-shrink: 0; }
+.portal-form > div { width: min(100%,430px); }
+.portal-form-register > div { width: min(100%,500px); }
+.portal-title { font: 500 clamp(1.9rem,3vw,2.5rem)/1.12 var(--font-heading); margin: .9rem 0 .7rem; }
+.portal-lead { font-size: .94rem; line-height: 1.65; }
+.portal-form label { color: var(--foreground); }
+.portal-form button[type="submit"] { min-height: 46px; font-family: var(--font-heading); letter-spacing: .035em; }
+
+.depot-product { width: min(1320px,94vw); margin-inline: auto; padding-block: clamp(1.75rem,5vw,4rem); }
+.depot-product-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); align-items: start; gap: clamp(1.5rem,5vw,4.5rem); }
+.depot-product-photo { position: relative; display: grid; place-items: center; aspect-ratio: 1; border: 1px solid var(--border); border-radius: 20px; background: var(--card); overflow: hidden; }
+.depot-product-photo img { width: 100%; height: 100%; object-fit: contain; }
+.depot-product-discount { position: absolute; top: 1rem; left: 1rem; padding: .35rem .65rem; background: var(--foreground); color: var(--background); border-radius: 999px; font-size: .8rem; }
+.depot-product-info { display: grid; gap: 1.2rem; min-width: 0; }
+.depot-product-info h1 { font: 500 clamp(2rem,3.6vw,3.4rem)/1.06 var(--font-heading); letter-spacing: -.025em; overflow-wrap: anywhere; }
+.depot-product-price { display: flex; align-items: baseline; flex-wrap: wrap; gap: .3rem .8rem; padding: 1rem 0; border-block: 1px solid var(--border); }
+.depot-product-price strong { font: 600 1.85rem/1.1 var(--font-heading); }
+.depot-product-price s,.depot-product-price small { color: var(--muted-foreground); }
+.depot-product-price small { flex-basis: 100%; }
+.depot-text-link { display: inline-flex; align-items: center; gap: .4rem; width: fit-content; text-decoration: underline; text-underline-offset: .28em; font-family: var(--font-heading); font-size: .93rem; }
+
+.depot-portal-user { min-width: 0; padding: 1rem 0 1.35rem; margin-bottom: .8rem; display: flex; align-items: center; justify-content: center; gap: .75rem; border-bottom: 1px solid #ffffff26; }
+.depot-portal-user:has(strong) { justify-content: flex-start; padding-inline: .6rem; }
+.depot-portal-user [data-slot="avatar-fallback"] { background: #afcccd; color: #152a2c; font-family: var(--font-heading); font-weight: 600; }
+.depot-portal-user strong { font-family: var(--font-heading); font-weight: 600; }
+.depot-portal-user small { color: #afcccd; }
+.depot-dash-heading,.depot-panel-heading { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: .5rem 1rem; }
+.depot-dash-heading p,.depot-dash-heading > span { margin-top: .35rem; font-size: .9rem; color: var(--muted-foreground); }
+.depot-dash-stats { display: grid; gap: 1rem; grid-template-columns: repeat(4,minmax(0,1fr)); }
+.depot-dash-overview { display: grid; gap: 1rem; align-items: start; grid-template-columns: minmax(0,1.55fr) minmax(0,.95fr); }
+.depot-panel { min-width: 0; border: 1px solid var(--border); border-radius: 16px; background: var(--card); padding: clamp(1rem,2vw,1.5rem); }
+.depot-panel-heading { margin-bottom: 1rem; }
+.depot-panel-heading h2 { font: 600 1.16rem var(--font-heading); }
+.depot-tracker { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); align-items: start; gap: .4rem; }
+.depot-tracker li { display: grid; justify-items: center; text-align: center; gap: .5rem; font-size: .76rem; color: var(--muted-foreground); }
+.depot-tracker li span { display: grid; place-items: center; width: 29px; height: 29px; border: 1px solid var(--border); border-radius: 999px; }
+.depot-tracker li[data-reached="true"] span { background: #afcccd; color: #152a2c; border-color: #afcccd; }
+.depot-tracker li[aria-current="step"] { color: var(--foreground); font-weight: 700; }
+@media (max-width: 1150px) {
+  .depot-dash-stats { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .depot-dash-overview { grid-template-columns: minmax(0,1fr); }
+}
+@media (max-width: 1080px) {
+  .depot-nav,.depot-signin { display: none; }
+  .depot-menu-button { display: grid; }
+  .depot-menu { position: absolute; inset: 100% 0 auto; max-height: calc(100svh - 72px); overflow: auto; display: grid; padding: 1rem 5vw; background: var(--background); box-shadow: 0 12px 20px #152a2c1a; }
+  .depot-menu a,.depot-menu form { padding: .75rem 0; border-bottom: 1px solid var(--border); }
+  .depot-menu form { display: flex; justify-content: space-between; }
+}
+@media (max-width: 900px) { .portal-entry { display: block; } .portal-visual { display: none; } }
+@media (max-width: 640px) {
+  .depot-announcement .depot-hours { display: none; }
+  .depot-product-grid { grid-template-columns: minmax(0,1fr); }
+  .depot-announcement > div { font-size: .68rem; }
+}
+@media (max-width: 360px) {
+  .depot-logo { gap: .4rem; }
+  .depot-header .depot-action { padding-inline: .55rem; }
+  .depot-header .depot-tool { width: 30px; }
 }

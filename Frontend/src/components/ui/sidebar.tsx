@@ -121,11 +121,11 @@ export const DesktopSidebar = ({
     <motion.div
       className={cn(
         "depot-side h-screen sticky top-0 py-4 hidden md:flex md:flex-col bg-card/90 dark:bg-[#070B0A] border-r border-border/50 dark:border-white/10 backdrop-blur-xl flex-shrink-0 z-40 transition-colors duration-200 overflow-hidden",
-        open ? "px-3 w-[260px]" : "px-2 w-[72px]",
+        open ? "px-3 w-[248px]" : "px-2 w-[72px]",
         className,
       )}
       animate={{
-        width: animate ? (open ? "260px" : "72px") : "260px",
+        width: animate ? (open ? "248px" : "72px") : "248px",
       }}
       transition={{
         duration: 0.24,
@@ -164,6 +164,7 @@ export const MobileSidebar = ({ className, children, ...props }: React.Component
           <button
             type="button"
             aria-label="Toggle navigation drawer"
+            aria-expanded={openMobile}
             className="p-2 rounded-xl border border-border/50 dark:border-white/10 hover:bg-secondary/80 dark:hover:bg-[#10201C] text-foreground cursor-pointer transition-colors"
             onClick={() => setOpenMobile(!openMobile)}
           >
@@ -181,7 +182,7 @@ export const MobileSidebar = ({ className, children, ...props }: React.Component
                 ease: "easeInOut",
               }}
               className={cn(
-                "depot-side fixed h-dvh w-full inset-0 bg-background/98 dark:bg-[#070B0A]/98 backdrop-blur-2xl p-6 z-[100] flex flex-col justify-between overflow-y-auto",
+                "depot-side fixed h-dvh w-full max-w-[360px] inset-y-0 left-0 shadow-2xl bg-background/98 dark:bg-[#070B0A]/98 backdrop-blur-2xl p-6 z-[100] flex flex-col justify-between overflow-y-auto",
                 className,
               )}
             >
@@ -265,6 +266,7 @@ export const SidebarLink = ({ link, className }: { link: SidebarLinkItem; classN
     return (
       <Link
         href={target}
+        aria-current={isActive ? "page" : undefined}
         title={!open ? link.label : undefined}
         onClick={() => setOpenMobile(false)}
         className={baseClasses}
@@ -277,6 +279,8 @@ export const SidebarLink = ({ link, className }: { link: SidebarLinkItem; classN
   return (
     <button
       type="button"
+      aria-label={link.label}
+      aria-current={isActive ? "page" : undefined}
       title={!open ? link.label : undefined}
       onClick={() => {
         link.onClick?.();

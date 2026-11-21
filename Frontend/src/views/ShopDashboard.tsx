@@ -137,7 +137,7 @@ const formBrands = [
 ];
 
 const items: NavItem[] = [
-  { key: "dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { key: "dashboard", label: "Overview", icon: LayoutDashboard },
   { key: "products", label: "Products", icon: Package },
   { key: "inventory", label: "Inventory", icon: Warehouse },
   { key: "orders", label: "Orders", icon: ShoppingBag },
@@ -280,10 +280,12 @@ function DashboardSection() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">Welcome back</h1>
-        <p className="text-muted-foreground text-sm">Here's how your shop is performing today.</p>
-      </div>
+      <header className="depot-dash-heading">
+        <div>
+          <h1>Shop overview</h1>
+          <p>Depot orders, sales and stock at a glance.</p>
+        </div>
+      </header>
 
       {/* Stat Cards */}
       {stats.loading ? (
@@ -292,7 +294,7 @@ function DashboardSection() {
         <ErrorBanner onRetry={stats.retry} />
       ) : (
         stats.data && (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="depot-dash-stats">
             <StatCard
               label="Non-cancelled orders"
               value={stats.data.totalSales.toLocaleString()}
@@ -319,7 +321,7 @@ function DashboardSection() {
 
       {/* Charts row */}
       <div className="grid gap-4 lg:grid-cols-3">
-        <Card className="p-5 lg:col-span-2">
+        <Card className="depot-panel lg:col-span-2 shadow-none">
           <h3 className="font-semibold mb-4">Weekly sales</h3>
           {weekly.loading ? (
             <LoadingSpinner />

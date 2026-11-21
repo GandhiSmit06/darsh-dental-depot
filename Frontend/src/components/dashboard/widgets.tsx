@@ -25,21 +25,18 @@ export function StatCard({
 
   return (
     <motion.div whileHover={{ y: -4 }} transition={{ type: "spring", stiffness: 350, damping: 25 }}>
-      <Card className="border border-border bg-card p-5 rounded-2xl shadow-sm">
-        <div className="flex items-start justify-between">
-          <div>
-            <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground dark:text-[#9DB0A9]">
-              {label}
-            </span>
-            <div className="mt-2 text-2xl lg:text-3xl font-extrabold font-heading text-foreground tracking-tight">
+      <Card className="gap-3 rounded-2xl border bg-card p-5 shadow-none">
+        <div className="grid gap-3">
+          <div className="grid size-10 place-items-center rounded-xl bg-accent text-foreground">
+            <Icon className="size-[18px]" />
+          </div>
+          <div className="grid gap-1">
+            <div className="break-words font-heading text-[1.65rem] leading-none font-semibold">
               {prefix}
               {typeof value === "number" ? value.toLocaleString("en-IN") : value}
               {suffix}
             </div>
-          </div>
-
-          <div className="h-10 w-10 rounded-xl bg-accent text-accent-foreground grid place-items-center shrink-0">
-            <Icon className="h-5 w-5" />
+            <span className="text-[.82rem] text-muted-foreground">{label}</span>
           </div>
         </div>
 

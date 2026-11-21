@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-html-link-for-pages -- The catalog is a standalone HTML route. */
 "use client";
 
 import Link from "next/link";
@@ -6,38 +7,23 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { PublicLayout } from "@/components/site/PublicLayout";
 import { ProductCard } from "@/components/site/ProductCard";
-import { AddToCartAnimation } from "@/components/site/AddToCartAnimation";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Card } from "@/components/ui/card";
 import { productsApi, doctorApi } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
 import {
-  ShoppingCart,
+  ArrowLeft,
   Heart,
-  Star,
+  MessageSquare,
   Minus,
   Plus,
-  Truck,
-  ShieldCheck,
-  Loader2,
-  CheckCircle2,
-  CheckCircle,
-  Sparkles,
-  Zap,
-  ArrowLeft,
   Share2,
-  Package,
-  Settings,
-  Clock,
-  MessageSquare,
-  ThermometerSnowflake,
-  Award,
-  FileText,
+  ShoppingCart,
+  Star,
+  Truck,
 } from "lucide-react";
+import { defaultSettings } from "@darsh/backend/site-content/defaults";
+import { StatusBadge } from "@/components/dashboard/widgets";
 import { toast } from "sonner";
-import { motion } from "framer-motion";
-import { ScrollReveal, StaggerContainer, StaggerItem } from "@/components/animations/ScrollReveal";
 import { ClinicalLoader } from "@/components/ui/ClinicalLoader";
 
 export default function ProductDetail() {
@@ -170,281 +156,143 @@ export default function ProductDetail() {
 
   return (
     <PublicLayout>
-      <div className="container mx-auto px-4 py-8 md:py-12">
-        {/* Breadcrumb Navigation */}
-        <div className="flex items-center justify-between mb-6">
-          <Button
-            variant="ghost"
-            size="sm"
-            asChild
-            className="rounded-full text-xs font-semibold gap-1.5 -ml-2 text-muted-foreground hover:text-foreground"
-          >
-            <Link href="/products">
-              <ArrowLeft className="h-4 w-4" /> All Products
-            </Link>
+      <div className="depot-product">
+        <nav
+          className="mb-6 flex items-center justify-between gap-4"
+          aria-label="Product navigation"
+        >
+          <a href="/products" className="depot-text-link">
+            <ArrowLeft size={16} /> Back to catalog
+          </a>
+          <Button variant="outline" size="sm" className="rounded-full" onClick={handleShare}>
+            <Share2 size={15} /> Share
           </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleShare}
-            className="rounded-full text-xs gap-1.5 dark:border-white/10 dark:bg-[#0B1210]"
-          >
-            <Share2 className="h-3.5 w-3.5" /> Share Material
-          </Button>
-        </div>
+        </nav>
 
-        {/* Main Product Layout */}
-        <div className="grid lg:grid-cols-12 gap-8 lg:gap-12 items-start">
-          {/* Left Column: Visual Gallery */}
-          <ScrollReveal direction="left" className="lg:col-span-6 space-y-4">
-            <Card className="p-4 rounded-3xl border border-border/60 dark:border-white/10 glass-card dark:bg-gradient-to-br dark:from-[#10201C] dark:to-[#0A100F] overflow-hidden aspect-square flex items-center justify-center relative shadow-sm">
-              <img
-                src={gallery[activeImg]}
-                alt={product.name}
-                className="w-full h-full object-cover object-center transition-all duration-300"
-              />
-              <div className="absolute top-4 left-4 flex flex-col gap-2">
-                {discountPercent > 0 && (
-                  <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 dark:bg-[#12A488]/20 dark:text-[#3FD1B3] dark:border dark:border-[#12A488]/30 text-white font-bold text-xs px-2.5 py-1 shadow-md border-0">
-                    <Zap className="h-3.5 w-3.5 mr-1 fill-current" /> {discountPercent}% Clinic
-                    Savings
-                  </Badge>
-                )}
-              </div>
-            </Card>
-
+        <div className="depot-product-grid">
+          <section aria-label="Product images" className="min-w-0">
+            <div className="depot-product-photo">
+              <img src={gallery[activeImg]} alt={product.name} />
+              {discountPercent > 0 && (
+                <span className="depot-product-discount">{discountPercent}% off</span>
+              )}
+            </div>
             {gallery.length > 1 && (
-              <div className="flex gap-3 overflow-x-auto pb-2">
-                {gallery.map((g: string, i: number) => (
+              <div className="mt-3 flex gap-3 overflow-x-auto pb-1">
+                {gallery.map((image, index) => (
                   <button
-                    key={i}
-                    aria-label={`View product image ${i + 1}`}
-                    onClick={() => setActiveImg(i)}
-                    className={`h-20 w-20 rounded-2xl overflow-hidden border-2 shrink-0 transition-all ${
-                      activeImg === i
-                        ? "border-primary dark:border-[#12A488] shadow-md scale-105"
-                        : "border-border/60 dark:border-white/10 hover:border-primary/50 dark:hover:border-[#3FD1B3]/50 opacity-70"
-                    }`}
+                    key={`${image}-${index}`}
+                    type="button"
+                    aria-label={`View product image ${index + 1}`}
+                    aria-pressed={index === activeImg}
+                    onClick={() => setActiveImg(index)}
+                    className="size-16 shrink-0 overflow-hidden rounded-xl border aria-pressed:border-foreground"
                   >
-                    <img src={g} alt="" className="w-full h-full object-cover" />
+                    <img className="size-full object-cover" src={image} alt="" />
                   </button>
                 ))}
               </div>
             )}
-          </ScrollReveal>
+          </section>
 
-          {/* Right Column: Information & Actions */}
-          <ScrollReveal direction="right" delay={0.1} className="lg:col-span-6 space-y-6">
-            <div>
-              <div className="flex items-center justify-between gap-2">
-                <Badge
-                  variant="outline"
-                  className="text-primary dark:text-[#3FD1B3] font-bold text-xs border-primary/30 dark:border-[#12A488]/30 dark:bg-[#12A488]/10 uppercase tracking-wider"
-                >
-                  {product.brand || "Darsh Dental Depot"}
-                </Badge>
-                <div className="text-xs text-muted-foreground dark:text-[#9DB0A9] font-mono">
-                  SKU: {product.sku || product.SKU || `DEN-${product._id?.slice(-6).toUpperCase()}`}
-                </div>
-              </div>
-
-              <h1 className="text-2xl sm:text-4xl font-extrabold font-heading text-foreground mt-2.5 leading-tight">
-                {product.name}
-              </h1>
-
-              {/* Rating & Stock */}
-              <div className="flex items-center gap-3 mt-3">
-                <div className="flex items-center text-amber-500">
-                  <Star className="h-4 w-4 fill-current text-amber-400" />
-                  <span className="font-bold ml-1.5 text-foreground text-sm">
-                    {product.reviewCount ? product.rating.toFixed(1) : "Unrated"}
-                  </span>
-                  <span className="text-xs text-muted-foreground dark:text-[#9DB0A9] ml-1">
-                    ({product.reviewCount || 0} clinic reviews)
-                  </span>
-                </div>
-                <span>•</span>
-                <Badge
-                  variant={inStock ? "secondary" : "destructive"}
-                  className="rounded-full text-xs font-semibold px-2.5 py-0.5 dark:bg-[#12A488]/15 dark:text-[#3FD1B3] dark:border-[#12A488]/30"
-                >
-                  {inStock ? "In Stock & Ready to Ship" : "Currently Out of Stock"}
-                </Badge>
-              </div>
+          <article className="depot-product-info">
+            <p className="portal-kicker">
+              {product.brand} {product.category && <> · {product.category}</>}
+            </p>
+            <h1>{product.name}</h1>
+            <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
+              <StatusBadge status={inStock ? "In stock" : "Out of stock"} />
+              {product.reviewCount > 0 && (
+                <span>
+                  <Star className="mr-1 inline size-4 fill-current text-amber-600" />{" "}
+                  {product.rating.toFixed(1)} ({product.reviewCount})
+                </span>
+              )}
+              <span>SKU {product.sku || product._id}</span>
+            </div>
+            <div className="depot-product-price">
+              <strong>₹{price.toLocaleString("en-IN")}</strong>
+              {discountPercent > 0 && <s>₹{originalPrice.toLocaleString("en-IN")}</s>}
+              <small>Per unit · Inclusive of GST</small>
             </div>
 
-            {/* Price Box */}
-            <div className="p-5 rounded-2xl bg-secondary/50 dark:bg-gradient-to-br dark:from-[#10201C] dark:to-[#0A100F] border border-border/60 dark:border-white/10 flex items-center justify-between">
-              <div>
-                {discountPercent > 0 && (
-                  <div className="text-xs text-muted-foreground dark:text-[#9DB0A9] line-through">
-                    ₹{originalPrice.toLocaleString("en-IN")}
-                  </div>
-                )}
-                <div className="text-3xl font-extrabold font-heading text-primary dark:text-[#3FD1B3]">
-                  ₹{price.toLocaleString("en-IN")}{" "}
-                  <span className="text-xs font-medium text-muted-foreground dark:text-[#9DB0A9]">
-                    / unit (Incl. GST)
-                  </span>
-                </div>
-              </div>
-              <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-[#3FD1B3] border-emerald-500/20 dark:border-[#12A488]/30 font-bold">
-                Wholesale Tier
-              </Badge>
-            </div>
-
-            {/* Quantity and Actions */}
-            <div className="space-y-4 pt-2">
-              {user?.role === "shop_owner" ? (
-                <div className="p-4 rounded-2xl bg-primary/10 dark:bg-[#10201C] border border-primary/20 dark:border-white/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                  <div>
-                    <div className="font-bold text-sm text-foreground flex items-center gap-1.5">
-                      <Package className="h-4 w-4 text-primary dark:text-[#3FD1B3]" /> Store
-                      Inventory Item
-                    </div>
-                    <div className="text-xs text-muted-foreground dark:text-[#9DB0A9] mt-0.5">
-                      You are logged in as the Shop Owner. Manage pricing, batches & stock in your
-                      portal.
-                    </div>
-                  </div>
-                  <Button
-                    asChild
-                    className="rounded-xl font-bold bg-primary dark:bg-[#12A488] hover:dark:bg-[#3FD1B3] text-white dark:text-[#04110E] text-xs h-9 shadow-sm"
-                  >
-                    <Link href="/shop">Open Shop Inventory</Link>
-                  </Button>
-                </div>
-              ) : user?.role === "admin" ? (
-                <div className="p-4 rounded-2xl bg-primary/10 dark:bg-[#10201C] border border-primary/20 dark:border-white/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                  <div>
-                    <div className="font-bold text-sm text-foreground flex items-center gap-1.5">
-                      <Settings className="h-4 w-4 text-primary dark:text-[#3FD1B3]" /> Admin
-                      Control
-                    </div>
-                    <div className="text-xs text-muted-foreground dark:text-[#9DB0A9] mt-0.5">
-                      You are logged in as Admin. Manage all catalog items in Admin Hub.
-                    </div>
-                  </div>
-                  <Button
-                    asChild
-                    className="rounded-xl font-bold bg-primary dark:bg-[#12A488] hover:dark:bg-[#3FD1B3] text-white dark:text-[#04110E] text-xs h-9 shadow-sm"
-                  >
-                    <Link href="/admin">Open Admin Hub</Link>
-                  </Button>
-                </div>
-              ) : (
-                <div className="flex flex-col gap-3">
-                  <div className="flex flex-wrap items-center gap-3">
-                    <div className="flex items-center border border-border/70 dark:border-white/10 rounded-2xl bg-background dark:bg-[#0B1210] p-1 shadow-sm">
-                      <button
-                        className="p-2 text-muted-foreground dark:text-[#9DB0A9] hover:text-foreground dark:hover:text-[#F2F6F4] hover:bg-secondary dark:hover:bg-[#10201C] rounded-xl transition-colors disabled:opacity-40"
-                        aria-label="Decrease quantity"
-                        onClick={() => setQty((q) => Math.max(1, q - 1))}
-                        disabled={qty <= 1}
-                      >
-                        <Minus className="h-4 w-4" />
-                      </button>
-                      <span className="w-12 text-center font-bold font-heading text-sm text-foreground">
-                        {qty}
-                      </span>
-                      <button
-                        className="p-2 text-muted-foreground dark:text-[#9DB0A9] hover:text-foreground dark:hover:text-[#F2F6F4] hover:bg-secondary dark:hover:bg-[#10201C] rounded-xl transition-colors disabled:opacity-40"
-                        aria-label="Increase quantity"
-                        onClick={() => setQty((q) => Math.min(product.stock ?? 1, q + 1))}
-                        disabled={qty >= (product.stock ?? 1)}
-                        title={
-                          qty >= (product.stock ?? 1)
-                            ? `Maximum stock available (${product.stock})`
-                            : undefined
-                        }
-                      >
-                        <Plus className="h-4 w-4" />
-                      </button>
-                    </div>
-
-                    <AddToCartAnimation
-                      onClick={handleAddToCart}
-                      disabled={!inStock}
-                      isAdding={addingToCart}
-                      isAdded={addedToCart}
-                      mode="onAction"
-                      text={!user ? "SIGN IN TO ORDER" : "ADD TO CLINIC CART"}
-                      pillColor="#0A1B17"
-                      textColor="#3FD1B3"
-                      className="flex-1 h-12 rounded-2xl overflow-hidden"
-                    />
-
+            {user?.role === "admin" || user?.role === "shop_owner" ? (
+              <Button asChild className="rounded-full">
+                <Link href={user.role === "admin" ? "/admin" : "/shop"}>
+                  Open inventory dashboard
+                </Link>
+              </Button>
+            ) : (
+              <div className="flex flex-wrap items-center gap-2">
+                {user && (
+                  <div className="inline-flex items-center rounded-full border bg-card">
                     <Button
-                      variant="outline"
+                      variant="ghost"
                       size="icon"
-                      aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
-                      onClick={handleWishlistToggle}
-                      className={`h-12 w-12 rounded-2xl border-border/70 dark:border-white/10 dark:bg-[#0B1210] ${
-                        isWishlisted
-                          ? "text-red-500 border-red-500/40 bg-red-500/10"
-                          : "text-muted-foreground dark:text-[#9DB0A9]"
-                      }`}
+                      className="rounded-full"
+                      aria-label="Decrease quantity"
+                      disabled={qty <= 1}
+                      onClick={() => setQty(qty - 1)}
                     >
-                      <Heart className={`h-5 w-5 ${isWishlisted ? "fill-current" : ""}`} />
+                      <Minus size={16} />
+                    </Button>
+                    <span className="min-w-8 text-center">{qty}</span>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="rounded-full"
+                      aria-label="Increase quantity"
+                      disabled={qty >= product.stock}
+                      onClick={() => setQty(qty + 1)}
+                    >
+                      <Plus size={16} />
                     </Button>
                   </div>
-
-                  {!user && (
-                    <div className="rounded-xl p-3 bg-primary/5 dark:bg-[#12A488]/10 border border-primary/20 dark:border-[#12A488]/20 flex items-center gap-2.5">
-                      <ShieldCheck className="h-4 w-4 text-primary dark:text-[#3FD1B3] shrink-0" />
-                      <span className="text-xs text-muted-foreground dark:text-[#9DB0A9]">
-                        Practicing dentists & clinic owners sign in to order with wholesale pricing
-                        & 2-hour local dispatch.
-                      </span>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-
-            {/* Clinical Delivery & Trust Highlights */}
-            <div className="space-y-3 pt-2">
-              <div className="p-3.5 rounded-2xl bg-teal-500/10 dark:bg-[#12A488]/15 border border-teal-500/20 dark:border-[#12A488]/30 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="h-9 w-9 rounded-xl bg-teal-500/20 dark:bg-[#3FD1B3]/20 text-teal-600 dark:text-[#3FD1B3] flex items-center justify-center shrink-0">
-                    <Clock className="h-4 w-4" />
-                  </div>
-                  <div>
-                    <div className="font-bold text-xs text-foreground">
-                      2-Hour Chairside Dispatch
-                    </div>
-                    <div className="text-[11px] text-muted-foreground dark:text-[#9DB0A9]">
-                      Local Vadodara Delivery from Shiyabaug Depot
-                    </div>
-                  </div>
-                </div>
-                <Badge className="bg-emerald-500/20 text-emerald-600 dark:text-[#3FD1B3] border-emerald-500/30 text-[10px] font-mono uppercase">
-                  {inStock ? "In stock" : "Enquire"}
-                </Badge>
-              </div>
-
-              {/* Direct Doctor Rep WhatsApp Procurement */}
-              <Button
-                variant="outline"
-                asChild
-                className="w-full rounded-2xl h-11 border-border/80 dark:border-white/15 dark:bg-[#0B1210] hover:bg-secondary text-xs font-semibold"
-              >
-                <a
-                  href={`https://wa.me/919727076119?text=Hello%20Darsh%20Dental%20Depot,%20I%20am%20a%20doctor%20inquiring%20about%20ordering%20${encodeURIComponent(product.name)}%20(SKU:%20${product.sku || product._id})`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-2"
+                )}
+                <Button
+                  className="rounded-full"
+                  disabled={!inStock || addingToCart}
+                  onClick={handleAddToCart}
                 >
-                  <MessageSquare className="h-4 w-4 text-emerald-500" />
-                  <span>Ask the depot on WhatsApp</span>
-                </a>
-              </Button>
+                  <ShoppingCart size={16} />{" "}
+                  {addedToCart
+                    ? "Added to cart"
+                    : addingToCart
+                      ? "Adding…"
+                      : user
+                        ? "Add to clinic cart"
+                        : "Sign in to order"}
+                </Button>
+                <Button
+                  className="rounded-full"
+                  variant="outline"
+                  size="icon"
+                  aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
+                  aria-pressed={isWishlisted}
+                  onClick={handleWishlistToggle}
+                >
+                  <Heart size={16} className={isWishlisted ? "fill-current" : undefined} />
+                </Button>
+              </div>
+            )}
+            <div className="mt-1 flex flex-wrap items-center gap-4 border-t pt-5 text-sm text-muted-foreground">
+              <span className="inline-flex items-center gap-2">
+                <Truck size={17} /> Local delivery in Vadodara
+              </span>
+              <a
+                className="depot-text-link"
+                href={`https://wa.me/${defaultSettings.phoneRaw}?text=${encodeURIComponent(`Hello Darsh Dental Depot, is ${product.name} available?`)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <MessageSquare size={16} /> Ask on WhatsApp
+              </a>
             </div>
-          </ScrollReveal>
+          </article>
         </div>
 
-        <section className="mt-12 border-t pt-8">
-          <h2 className="text-2xl font-semibold">Product details</h2>
+        <section className="mt-10 border-t pt-7">
+          <h2 className="font-heading text-2xl font-medium">Product details</h2>
           {product.description && (
             <p className="mt-3 max-w-3xl whitespace-pre-line text-muted-foreground">
               {product.description}
@@ -459,37 +307,23 @@ export default function ProductDetail() {
             ]
               .filter(([, value]) => value)
               .map(([label, value]) => (
-                <div key={label} className="rounded-2xl border bg-card p-4">
+                <div key={label} className="rounded-xl border bg-card p-4">
                   <dt className="text-xs text-muted-foreground">{label}</dt>
-                  <dd className="mt-1 font-semibold break-words">{value}</dd>
+                  <dd className="mt-1 break-words font-semibold">{value}</dd>
                 </div>
               ))}
           </dl>
         </section>
-        {/* Related Products */}
+
         {related.length > 0 && (
-          <ScrollReveal className="mt-20 pt-10 border-t border-border/50">
-            <div className="flex items-center justify-between mb-8">
-              <div>
-                <h2 className="text-2xl sm:text-3xl font-bold font-heading">
-                  More in this category
-                </h2>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Other supplies listed under {product.category}.
-                </p>
-              </div>
-              <Button variant="outline" size="sm" asChild className="rounded-full">
-                <Link href="/products">View All Catalog</Link>
-              </Button>
-            </div>
-            <StaggerContainer className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {related.map((p: any) => (
-                <StaggerItem key={p._id || p.id} scale>
-                  <ProductCard product={p} />
-                </StaggerItem>
+          <section className="mt-10 border-t pt-7">
+            <h2 className="mb-5 font-heading text-2xl font-medium">More in this category</h2>
+            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+              {related.map((item) => (
+                <ProductCard key={item._id} product={item} />
               ))}
-            </StaggerContainer>
-          </ScrollReveal>
+            </div>
+          </section>
         )}
       </div>
     </PublicLayout>

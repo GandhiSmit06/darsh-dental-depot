@@ -1260,8 +1260,17 @@ export const doctorApi = {
     const cart = getLocalCart();
     const existing = cart.find((i) => i.productId === productId);
 
+    if (p.status !== "active" || p.stock < quantity + (existing?.quantity ?? 0)) {
+      throw new ApiError(400, "The requested quantity is unavailable.");
+    }
+    const price =
+      p.discountPrice && p.discountPrice > 0 && p.discountPrice < p.sellingPrice
+        ? p.discountPrice
+        : p.sellingPrice;
     if (existing) {
       existing.quantity += quantity;
+      existing.stock = p.stock;
+      existing.price = price;
     } else {
       cart.push({
         cartItemId: "cart-" + Math.random().toString(36).substr(2, 9),
@@ -1269,7 +1278,7 @@ export const doctorApi = {
         name: p.name,
         brand: p.brand,
         imageUrl: p.imageUrl || p.images[0] || "",
-        price: p.discountPrice || p.sellingPrice || 0,
+        price,
         quantity,
         stock: p.stock,
       });
@@ -1382,11 +1391,12 @@ export const doctorApi = {
     const { data: userData } = await supabase.auth.getUser();
     if (!userData?.user) return { success: true as const, message: "OK", data: [] };
 
-    const { data: orders } = await supabase
+    const { data: orders, error } = await supabase
       .from("orders")
       .select("*, order_items(*)")
       .eq("user_id", userData.user.id)
       .order("created_at", { ascending: false });
+    if (error) throw new ApiError(502, "Couldn’t load your order history.");
 
     const mapped: DoctorOrderHistoryItem[] = (orders || []).map((o: any) => ({
       id: o.id,

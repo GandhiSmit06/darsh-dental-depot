@@ -110,7 +110,7 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <PortalEntry>
+    <PortalEntry recovery>
       {isSuccess ? (
         <div className="text-center space-y-4">
           <div className="mx-auto w-16 h-16 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 grid place-items-center mb-4 shadow-sm">

@@ -4,7 +4,6 @@ import { type ReactNode, useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { cn } from "@/lib/utils";
 import {
   Sidebar,
   SidebarBody,
@@ -43,7 +42,6 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { useTheme } from "@/components/theme-provider";
-import { LiquidToggle, NimbusToggleIcons } from "@/components/ui/liquid-glass-toggle";
 import { useAuth } from "@/lib/auth-context";
 import { notificationService, type AppNotification } from "@/lib/notifications";
 import { toast } from "sonner";
@@ -69,7 +67,7 @@ export function DashboardLayout({
   onSearchChange?: (val: string) => void;
   children: ReactNode;
 }) {
-  const { theme, setTheme } = useTheme();
+  const { toggle } = useTheme();
   const { user, logout } = useAuth();
   const nav = useRouter();
   const current = items.find((i) => i.key === active);
@@ -164,17 +162,25 @@ export function DashboardLayout({
                 </div>
               )}
 
-              <div className="flex items-center">
-                <LiquidToggle
-                  size={26}
-                  tone={theme === "dark" ? "dark" : "light"}
-                  checked={theme === "dark"}
-                  onCheckedChange={(isDark) => setTheme(isDark ? "dark" : "light")}
-                  icons={{ off: NimbusToggleIcons.sun, on: NimbusToggleIcons.moon }}
-                  label="Toggle light / dark mode"
-                  className="hover:scale-105 active:scale-95 transition-transform"
-                />
-              </div>
+              {role === "Doctor" && (
+                <button
+                  type="button"
+                  className="depot-tool"
+                  aria-label="Open clinic cart"
+                  onClick={() => onChange("cart")}
+                >
+                  <ShoppingBag size={17} />
+                </button>
+              )}
+              <button
+                type="button"
+                className="depot-tool"
+                onClick={toggle}
+                aria-label="Toggle color theme"
+              >
+                <Sun className="hidden dark:block" size={17} />
+                <Moon className="dark:hidden" size={17} />
+              </button>
 
               <NotificationsDropdown
                 role={role}
@@ -189,7 +195,7 @@ export function DashboardLayout({
             </div>
           </header>
 
-          <main className="depot-workspace p-4 sm:p-6 lg:p-8 flex-1 max-w-7xl w-full mx-auto">
+          <main className="depot-workspace p-4 sm:p-6 lg:p-8 flex-1 max-w-[1440px] w-full mx-auto">
             <AnimatePresence mode="wait">
               <motion.div
                 key={active}
@@ -240,45 +246,17 @@ function DashboardSidebarContent({
     <SidebarBody className="justify-between gap-4 h-full">
       <div className="flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
         {/* Brand / Logo */}
-        <Link
-          href="/"
-          className={cn(
-            "flex items-center select-none rounded-xl hover:bg-secondary/50 dark:hover:bg-[#10201C]/60 transition-colors mb-2",
-            open ? "gap-3 px-2 py-2" : "justify-center py-2",
-          )}
-        >
-          <div className="relative shrink-0">
-            <div className="h-9 w-9 rounded-xl overflow-hidden bg-white/95 dark:bg-[#10201C] border border-white/60 dark:border-white/10 shadow-xs flex items-center justify-center p-0.5">
-              <img
-                src="/site/assets/img/brand/logo-mark-64.png"
-                alt="Darsh Dental"
-                className="w-full h-full object-cover rounded-[inherit]"
-              />
-            </div>
-          </div>
+        <div className="depot-portal-user">
+          <Avatar className="size-10 shrink-0">
+            <AvatarFallback>{initials}</AvatarFallback>
+          </Avatar>
           {open && (
-            <div className="flex flex-col leading-tight overflow-hidden whitespace-nowrap">
-              <span className="font-extrabold text-sm font-heading tracking-tight text-foreground group-hover:text-primary dark:group-hover:text-[#3FD1B3] transition-colors truncate">
-                Darsh Dental
-              </span>
-              <span className="text-[10px] font-bold uppercase tracking-widest text-primary dark:text-[#3FD1B3]">
-                {role}
-              </span>
+            <div className="min-w-0">
+              <strong className="block truncate">{user?.fullName || role}</strong>
+              <small className="block truncate">{user?.clinicName || `${role} portal`}</small>
             </div>
-          )}
-        </Link>
-
-        {/* Section Label */}
-        <div className="mt-2 mb-2">
-          {open ? (
-            <span className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground/80 dark:text-[#9DB0A9]/80 px-3 truncate block">
-              Management
-            </span>
-          ) : (
-            <div className="h-[1px] w-6 mx-auto bg-border/40 dark:bg-white/10 my-1" />
           )}
         </div>
-
         {/* Menu Items */}
         <div className="flex flex-col gap-1.5">
           {items.map((item) => {
@@ -309,45 +287,15 @@ function DashboardSidebarContent({
       <div className="pt-3 border-t border-border/40 dark:border-white/10 flex flex-col gap-1.5 shrink-0">
         <SidebarLink
           link={{
-            label: "Back to Store",
+            label: "Back to storefront",
             to: "/",
             icon: <Home className="h-4 w-4 shrink-0" />,
           }}
         />
 
-        {/* User Profile */}
-        {open ? (
-          <div className="flex items-center gap-2.5 px-2.5 py-2 rounded-xl bg-secondary/50 dark:bg-[#10201C]/70 border border-border/40 dark:border-white/10 my-0.5">
-            <Avatar className="h-8 w-8 rounded-lg bg-gradient-to-br from-primary to-indigo-600 dark:from-[#12A488] dark:to-[#3FD1B3] text-white dark:text-[#04110E] font-bold text-xs shrink-0">
-              <AvatarFallback className="bg-transparent text-white dark:text-[#04110E] text-[10px] font-bold">
-                {initials}
-              </AvatarFallback>
-            </Avatar>
-            <div className="flex flex-col leading-none overflow-hidden whitespace-nowrap min-w-0">
-              <span className="text-xs font-bold text-foreground dark:text-[#F2F6F4] truncate">
-                {user?.fullName || "Practice Doctor"}
-              </span>
-              <span className="text-[10px] text-muted-foreground dark:text-[#9DB0A9] truncate mt-0.5">
-                {user?.email || role}
-              </span>
-            </div>
-          </div>
-        ) : (
-          <div
-            className="py-1 flex justify-center"
-            title={`${user?.fullName || "Doctor"} (${role})`}
-          >
-            <Avatar className="h-8 w-8 rounded-lg bg-gradient-to-br from-primary to-indigo-600 dark:from-[#12A488] dark:to-[#3FD1B3] text-white dark:text-[#04110E] font-bold text-xs">
-              <AvatarFallback className="bg-transparent text-white dark:text-[#04110E] text-[10px] font-bold">
-                {initials}
-              </AvatarFallback>
-            </Avatar>
-          </div>
-        )}
-
         <SidebarLink
           link={{
-            label: "Sign Out",
+            label: "Sign out",
             onClick: handleSignOut,
             icon: <LogOut className="h-4 w-4 shrink-0 text-destructive" />,
             className: "text-destructive hover:bg-destructive/10 dark:hover:bg-destructive/15",
